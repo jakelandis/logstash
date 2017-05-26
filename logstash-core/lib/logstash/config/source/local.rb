@@ -144,8 +144,10 @@ module LogStash module Config module Source
 
     def pipeline_configs
 
-      unless mutually_exclusive(config_string?, local_config?, remote_config?)
+      if config_path? && config_string?
         raise ConfigurationError.new("Settings 'config.string' and 'path.config' can't be used simultaneously.")
+      elsif !config_path? && !config_string?
+        raise ConfigurationError.new("Either 'config.string' or 'path.config' must be set.")
       end
 
       config_parts = if config_string?
@@ -223,10 +225,6 @@ module LogStash module Config module Source
       rescue URI::InvalidURIError
         false
       end
-    end
-
-    def mutually_exclusive(a, b, c)
-      (a ^ b ^ c) && !(a && b && c)
     end
   end
 end end end
