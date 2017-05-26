@@ -14,10 +14,12 @@ module LogStash module Config module Source
 
     def pipeline_configs
       pipelines = retrieve_yaml_pipelines()
-      detect_duplicate_pipelines(pipelines)
-      pipelines.map do |pipeline_settings|
-        @settings = ::LogStash::PipelineSettings.from_settings(@original_settings.clone)
-        @settings = @settings.merge(pipeline_settings)
+      pipelines_settings = pipelines.map do |pipeline_settings|
+        ::LogStash::PipelineSettings.from_settings(@original_settings.clone).merge(pipeline_settings)
+      end
+      detect_duplicate_pipelines(pipelines_settings)
+      pipelines_settings.map do |pipeline_settings|
+        @settings = pipeline_settings
         # this relies on instance variable @settings and the parent class' pipeline_configs
         # method. The alternative is to refactor most of the Local source methods to accept
         # a settings object instead of relying on @settings.
@@ -53,7 +55,7 @@ module LogStash module Config module Source
     end
 
     def detect_duplicate_pipelines(pipelines)
-      duplicate_ids = pipelines.group_by {|pipeline| pipeline["pipeline.id"] }.select {|k, v| v.size > 1 }.map {|k, v| k}
+      duplicate_ids = pipelines.group_by {|pipeline| pipeline.get("pipeline.id") }.select {|k, v| v.size > 1 }.map {|k, v| k}
       if duplicate_ids.any?
         raise ConfigurationError.new("Pipelines YAML file contains duplicate pipeline ids: #{duplicate_ids.inspect}. Location: #{pipelines_yaml_location}")
       end

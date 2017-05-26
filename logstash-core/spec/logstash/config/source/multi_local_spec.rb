@@ -56,26 +56,28 @@ describe LogStash::Config::Source::MultiLocal do
     end
   end
   describe "#detect_duplicate_pipelines" do
+    let(:retrieved_pipelines) { [{}] }
+    let(:retrieved_pipelines_configs) { retrieved_pipelines.map {|h| mock_settings(h) } }
     context "when there are duplicate pipeline ids" do
       let(:retrieved_pipelines) do
         [
-          {"pipeline.id" => "main"},
-          {"pipeline.id" => "main"},
+          {"pipeline.id" => "main", "config.string" => ""},
+          {"pipeline.id" => "main", "config.string" => ""},
         ]
       end
       it "should raise a ConfigurationError" do
-        expect { subject.detect_duplicate_pipelines(retrieved_pipelines) }.to raise_error(::LogStash::ConfigurationError)
+        expect { subject.detect_duplicate_pipelines(retrieved_pipelines_configs) }.to raise_error(::LogStash::ConfigurationError)
       end
     end
     context "when there are no duplicate pipeline ids" do
       let(:retrieved_pipelines) do
         [
-          {"pipeline.id" => "main"},
-          {"pipeline.id" => "backup"},
+          {"pipeline.id" => "main", "config.string" => ""},
+          {"pipeline.id" => "backup", "config.string" => ""},
         ]
       end
       it "should not raise an error" do
-        expect { subject.detect_duplicate_pipelines(retrieved_pipelines) }.to_not raise_error
+        expect { subject.detect_duplicate_pipelines(retrieved_pipelines_configs) }.to_not raise_error
       end
     end
   end
