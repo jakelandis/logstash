@@ -28,7 +28,15 @@ module LogStash module Config module Source
     end
 
     def match?
-      !@original_settings.get_setting("config.string").set? && !@original_settings.get_setting("path.config").set?
+      uses_config_string = @original_settings.get_setting("config.string").set?
+      uses_path_config = @original_settings.get_setting("path.config").set?
+      return true if !uses_config_string && !uses_path_config
+      if uses_path_config
+        logger.warn("Ignoring the 'pipelines.yml' file because 'path.config' (-f) is being used.")
+      elsif uses_config_string
+        logger.warn("Ignoring the 'pipelines.yml' file because 'config.string' (-e) is being used.")
+      end
+      false
     end
 
     def retrieve_yaml_pipelines
