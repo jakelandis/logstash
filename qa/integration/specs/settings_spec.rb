@@ -78,14 +78,14 @@ describe "Test Logstash instance whose default settings are overridden" do
   end
   
   it "should exit when config test_and_exit is set" do
-    s = {}
-    s["path.config"] = temp_dir
-    s["config.test_and_exit"] = true
-    s["path.logs"] = temp_dir
-    overwrite_settings(s)
     test_config_path = File.join(temp_dir, "test.config")
     IO.write(test_config_path, "#{tcp_config}")
     expect(File.exists?(test_config_path)).to be true
+    s = {}
+    s["path.config"] = test_config_path
+    s["config.test_and_exit"] = true
+    s["path.logs"] = temp_dir
+    overwrite_settings(s)
     @logstash_service.spawn_logstash
     try(num_retries) do
       expect(@logstash_service.exited?).to be true

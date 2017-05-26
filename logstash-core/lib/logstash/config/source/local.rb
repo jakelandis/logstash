@@ -96,8 +96,8 @@ module LogStash module Config module Source
 
       def get_unmatched_files
         # transform "/var/lib/*.conf" => /var/lib/*
-        t = File.split(@path)
-        all_files = Dir.glob(File.join(t.first, "*")).sort
+        t = ::File.split(@path)
+        all_files = Dir.glob(::File.join(t.first, "*")).sort
         all_files - get_matched_files
       end
 
