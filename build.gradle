@@ -4,6 +4,7 @@ allprojects {
   apply plugin: 'java'
   apply plugin: 'idea'
   
+
   project.sourceCompatibility = JavaVersion.VERSION_1_8
   project.targetCompatibility = JavaVersion.VERSION_1_8
 }
