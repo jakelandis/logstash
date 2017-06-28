@@ -8,6 +8,7 @@ module LogStash
     java_import org.apache.logging.log4j.core.config.Configurator
     java_import org.apache.logging.log4j.core.config.DefaultConfiguration
     java_import org.apache.logging.log4j.core.config.LoggerConfig
+    java_import org.logstash.log.LogstashLoggerContextFactory
 
     class Logger
       @@config_mutex = Mutex.new
@@ -79,10 +80,14 @@ module LogStash
               logs_location = java.lang.System.getProperty("ls.logs")
               puts "Sending Logstash's logs to #{logs_location} which is now configured via log4j2.properties"
               @@logging_context = Configurator.initialize(nil, config_location)
+              context_factory = LogstashLoggerContextFactory.new(@@logging_context)
+              LogManager.setFactory(context_factory)
             else
               # fall back to default config
               puts "Could not find log4j2 configuration at path #{file_path}. Using default config which logs to console"
               @@logging_context = Configurator.initialize(DefaultConfiguration.new)
+              context_factory = LogstashLoggerContextFactory.new(@@logging_context)
+              LogManager.setFactory(context_factory)
             end
           end
         end
