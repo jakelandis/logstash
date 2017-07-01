@@ -1,11 +1,21 @@
 package org.logstash.instrument.metrics;
 
 
+import java.util.EnumSet;
+
 public enum MetricType {
 
-    COUNTER("counter"),
+    COUNTER_LONG("counter/long"),
+    COUNTER_DOUBLE("counter/double"),
 
-    GAUGE("gauge");
+    GAUGE_TEXT("gauge/text"),
+    GAUGE_BOOLEAN("gauge/boolean"),
+    GAUGE_NUMERIC("gauge/numeric"),
+    GAUGE_UNKNOWN("gauge/unknown"),
+    GAUGE_RUBYHASH("gauge/rubyhash")
+
+
+    ;
 
     //TODO: see how this actally used and see if i can be more specific here, like gauge/text or gauge/double
 
@@ -17,6 +27,10 @@ public enum MetricType {
 
     public String asString() {
         return type;
+    }
+
+    public static MetricType fromString(String s){
+        return EnumSet.allOf(MetricType.class).stream().filter(e -> e.asString().equalsIgnoreCase(s)).findFirst().orElse(null);
     }
 
 }

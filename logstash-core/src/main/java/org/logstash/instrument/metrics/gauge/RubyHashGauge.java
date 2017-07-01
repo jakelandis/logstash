@@ -1,13 +1,15 @@
 package org.logstash.instrument.metrics.gauge;
 
 import org.jruby.RubyHash;
+import org.logstash.instrument.metrics.AbstractMetric;
+import org.logstash.instrument.metrics.MetricType;
 
 import java.util.List;
 
 /**
  * Created by jake on 6/30/17.
  */
-public class RubyHashGauge extends GaugeMetric<RubyHash> {
+public class RubyHashGauge extends AbstractMetric<RubyHash> implements GaugeMetric<RubyHash> {
 
     private volatile RubyHash value;
 
@@ -19,6 +21,11 @@ public class RubyHashGauge extends GaugeMetric<RubyHash> {
     @Override
     public RubyHash getValue() {
         return value;
+    }
+
+    @Override
+    public String type() {
+        return MetricType.GAUGE_RUBYHASH.asString();
     }
 
 

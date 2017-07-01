@@ -1,28 +1,34 @@
 package org.logstash.instrument.metrics;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import java.util.Arrays;
 import java.util.List;
 
-public abstract class BaseMetric<T> implements IMetric<T> {
+public abstract class AbstractMetric<T> implements Metric<T> {
     final String key;
 
     final List<String> nameSpaces;
 
 
-    protected BaseMetric(final List<String> nameSpaces, final String key) {
+    protected AbstractMetric(final List<String> nameSpaces, final String key) {
         this.nameSpaces = nameSpaces;
         this.key = key;
     }
 
+    /**
+     * Passify ruby
+     * @return
+     */
     public String inspect() {
         return toString();
     }
 
 
-    @JsonValue
+    //@JsonValue
+    @JsonProperty
     public abstract T getValue();
 
 
@@ -33,6 +39,8 @@ public abstract class BaseMetric<T> implements IMetric<T> {
     }
 
     //counter, gauge, etc
+    @JsonProperty
+    @Override
     public abstract String type();
 
 

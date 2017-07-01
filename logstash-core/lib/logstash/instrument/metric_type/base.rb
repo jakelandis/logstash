@@ -25,6 +25,7 @@ module LogStash module Instrument module MetricType
     end
 
     def type
+      puts caller[0]
       @type ||= LogStash::Util.class_name(self).downcase
     end
   end
