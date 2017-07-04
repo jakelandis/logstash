@@ -1,6 +1,7 @@
 package org.logstash.instrument.metrics.counter;
 
 import org.logstash.instrument.metrics.AbstractMetric;
+import org.logstash.instrument.metrics.MetricType;
 
 import java.util.List;
 
@@ -28,8 +29,8 @@ public class LazyDelegatingCounter extends AbstractMetric<Object> implements Cou
     }
 
     @Override
-    public String type() {
-        return lazyMetric == null ? null : lazyMetric.type();
+    public MetricType getType() {
+        return lazyMetric == null ? null : lazyMetric.getType();
     }
 
     @Override

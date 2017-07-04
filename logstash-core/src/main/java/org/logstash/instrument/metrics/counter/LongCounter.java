@@ -34,9 +34,10 @@ public class LongCounter extends AbstractMetric<Long> implements CounterMetric<L
         return longAdder.longValue();
     }
 
-
     @Override
-    public String type() {
-        return MetricType.COUNTER_LONG.asString();
+    public MetricType getType() {
+        return MetricType.COUNTER_LONG;
     }
+
+
 }

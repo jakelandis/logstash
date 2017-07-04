@@ -20,14 +20,16 @@ public class TextGuage extends AbstractMetric<String> implements GaugeMetric<Str
     }
 
     @Override
-    public String type() {
-        return MetricType.GAUGE_TEXT.asString();
+    public MetricType getType() {
+        return MetricType.GAUGE_TEXT;
     }
 
     @Override
     public void set(String value) {
         this.value = value;
     }
+
+
 
 
 }

@@ -12,7 +12,7 @@ public class BooleanGauge extends AbstractMetric<Boolean> implements GaugeMetric
 
     private volatile Boolean value;
 
-    protected BooleanGauge(List<String> nameSpaces, String key, Boolean value) {
+    public BooleanGauge(List<String> nameSpaces, String key, Boolean value) {
         super(nameSpaces, key);
     }
 
@@ -22,12 +22,14 @@ public class BooleanGauge extends AbstractMetric<Boolean> implements GaugeMetric
     }
 
     @Override
-    public String type() {
-        return MetricType.GAUGE_BOOLEAN.asString();
+    public MetricType getType() {
+        return MetricType.GAUGE_BOOLEAN;
     }
 
     @Override
     public void set(Boolean value) {
         this.value = value;
     }
+
+
 }

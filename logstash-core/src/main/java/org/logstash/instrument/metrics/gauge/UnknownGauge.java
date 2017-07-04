@@ -10,7 +10,7 @@ import java.util.List;
  */
 public class UnknownGauge extends AbstractMetric<Object> implements GaugeMetric<Object> {
     volatile Object value;
-    protected UnknownGauge(List<String> nameSpaces, String key, Object value) {
+    public UnknownGauge(List<String> nameSpaces, String key, Object value) {
         super(nameSpaces, key);
         this.value = value;
     }
@@ -21,12 +21,13 @@ public class UnknownGauge extends AbstractMetric<Object> implements GaugeMetric<
     }
 
     @Override
-    public String type() {
-        return MetricType.GAUGE_UNKNOWN.asString();    }
-
+    public MetricType getType() {
+        return MetricType.GAUGE_UNKNOWN;
+    }
 
     @Override
     public void set(Object value) {
         this.value = value;
     }
+
 }

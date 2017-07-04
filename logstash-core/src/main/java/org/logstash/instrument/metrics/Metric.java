@@ -7,13 +7,33 @@ public interface Metric<T> {
 
     T getValue();
 
+    /**
+     * @deprecated - Use getValue
+     * Pacify Ruby
+     * @return
+     */
     default T get(){
         return getValue();
     }
 
-    String type();
+    MetricType getType();
+
+    /**
+     * Pacify Ruby
+     * @return
+     */
+    default String type(){
+        return getType().asString();
+    }
 
 
+    /**
+     * Passify ruby
+     * @return
+     */
+    default String inspect() {
+        return toString();
+    }
 
 
 }

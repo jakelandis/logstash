@@ -4,34 +4,40 @@ import org.logstash.instrument.metrics.AbstractMetric;
 import org.logstash.instrument.metrics.MetricType;
 
 import java.util.List;
+import java.util.concurrent.atomic.DoubleAdder;
 
 /**
  *TODO
  */
 public class DoubleCounter extends AbstractMetric<Double> implements CounterMetric<Double> {
 
+    private final DoubleAdder doubleAdder;
     protected DoubleCounter(List<String> nameSpaces, String key, double initialValue) {
         super(nameSpaces, key);
+        doubleAdder = new DoubleAdder();
+        doubleAdder.add(initialValue);
     }
 
     @Override
     public Double getValue() {
-        return null;
+        return doubleAdder.doubleValue();
     }
 
     @Override
-    public String type() {
-        return MetricType.COUNTER_DOUBLE.asString();
+    public MetricType getType() {
+        return MetricType.COUNTER_DOUBLE;
     }
 
     @Override
     public void increment() {
- System.out.println("******************** Double incrementor **********************");
+        increment(1.0);
     }
 
     @Override
     public void increment(Double by) {
- System.out.println("******************** Double incrementor BY **********************");
+//TODO: ensure only positive by value
+        doubleAdder.add(by);
 
     }
+
 }

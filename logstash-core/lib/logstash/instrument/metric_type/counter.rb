@@ -1,4 +1,4 @@
-# encoding: utf-8
+#encoding: utf-8
 java_import org.logstash.instrument.metrics.counter.LazyDelegatingCounter
 
 module LogStash module Instrument module MetricType
@@ -14,7 +14,7 @@ module LogStash module Instrument module MetricType
 
   end
 end; end; end
-# encoding: utf-8
+#encoding: utf-8
 # require "logstash/instrument/metric_type/base"
 # require "concurrent"
 #

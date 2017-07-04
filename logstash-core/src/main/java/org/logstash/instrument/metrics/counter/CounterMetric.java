@@ -10,6 +10,4 @@ public interface CounterMetric<T> extends Metric<T> {
     void increment();
 
     void increment(T by) ;
-
-
 }

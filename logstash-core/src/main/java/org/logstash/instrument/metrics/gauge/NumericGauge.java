@@ -11,7 +11,7 @@ import java.util.List;
 public class NumericGauge extends AbstractMetric<Number> implements GaugeMetric<Number> {
     private volatile Number value;
 
-    protected NumericGauge(List<String> nameSpaces, String key, Number value) {
+    public NumericGauge(List<String> nameSpaces, String key, Number value) {
         super(nameSpaces, key);
         this.value = value;
     }
@@ -24,18 +24,19 @@ public class NumericGauge extends AbstractMetric<Number> implements GaugeMetric<
     }
 
     @Override
-    public void set(Number value) {
-        this.value = value;
-    }
-
-    @Override
     public Number getValue() {
         return value;
     }
 
     @Override
-    public String type() {
-        return MetricType.GAUGE_NUMERIC.asString();
+    public MetricType getType() {
+        return MetricType.GAUGE_NUMERIC;
     }
+
+    @Override
+    public void set(Number value) {
+        this.value = value;
+    }
+
 
 }
