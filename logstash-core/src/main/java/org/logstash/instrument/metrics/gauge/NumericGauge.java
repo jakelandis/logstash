@@ -15,18 +15,23 @@ public class NumericGauge extends AbstractMetric<Number> implements GaugeMetric<
     /**
      * Constructor
      *
+     * @param nameSpace The namespace for this metric
+     * @param key       The key <i>(with in the namespace)</i> for this metric
+     */
+    public NumericGauge(List<String> nameSpace, String key) {
+        this(nameSpace, key, null);
+    }
+
+    /**
+     * Constructor
+     *
      * @param nameSpace    The namespace for this metric
      * @param key          The key <i>(with in the namespace)</i> for this metric
-     * @param initialValue The initial value for this {@link GaugeMetric}
+     * @param initialValue The initial value for this {@link GaugeMetric}, may be null
      */
     public NumericGauge(List<String> nameSpace, String key, Number initialValue) {
         super(nameSpace, key);
         this.value = initialValue;
-    }
-
-    @Override
-    public Number get() {
-        return value;
     }
 
     @Override

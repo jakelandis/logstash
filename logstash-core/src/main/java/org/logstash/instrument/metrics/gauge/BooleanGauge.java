@@ -14,11 +14,21 @@ public class BooleanGauge extends AbstractMetric<Boolean> implements GaugeMetric
     private volatile Boolean value;
 
     /**
+     * Constructor - null initial value
+     *
+     * @param nameSpace    The namespace for this metric
+     * @param key          The key <i>(with in the namespace)</i> for this metric
+     */
+    public BooleanGauge(List<String> nameSpace, String key) {
+        this(nameSpace, key, null);
+    }
+
+    /**
      * Constructor
      *
      * @param nameSpace    The namespace for this metric
      * @param key          The key <i>(with in the namespace)</i> for this metric
-     * @param initialValue The initial value for this {@link GaugeMetric}
+     * @param initialValue The initial value for this {@link GaugeMetric}, may be null
      */
     public BooleanGauge(List<String> nameSpace, String key, Boolean initialValue) {
         super(nameSpace, key);

@@ -3,11 +3,12 @@ package org.logstash.instrument.metrics.gauge;
 import org.jruby.RubyHash;
 import org.logstash.instrument.metrics.AbstractMetric;
 import org.logstash.instrument.metrics.MetricType;
+import org.logstash.instrument.metrics.counter.CounterMetric;
 
 import java.util.List;
 
 /**
- * A lazy proxy to a more specific typed {@link GaugeMetric}. The metric will only be initialized once the {@code set} operation is called.
+ * A lazy proxy to a more specific typed {@link GaugeMetric}. The metric will only be initialized if the initial value is set, or once the {@code set} operation is called.
  * <p><strong>Intended only for use with Ruby's duck typing, Java consumers should use the specific typed {@link GaugeMetric}</strong></p>
  */
 public class LazyDelegatingGauge extends AbstractMetric<Object> implements GaugeMetric<Object> {
@@ -17,16 +18,31 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
 
     private GaugeMetric lazyMetric;
 
+
     /**
-     * Constructor - protected so that Ruby may sub class proxy and discourage usage from Java
+     * Constructor - protected so that Ruby may sub class proxy and discourage usage from Java, null initial value
      *
      * @param nameSpace The namespace for this metric
      * @param key       The key <i>(with in the namespace)</i> for this metric
      */
     public LazyDelegatingGauge(final List<String> nameSpace, final String key) {
+        this(nameSpace, key, null);
+    }
+
+    /**
+     * Constructor - protected so that Ruby may sub class proxy and discourage usage from Java
+     *
+     * @param nameSpace    The namespace for this metric
+     * @param key          The key <i>(with in the namespace)</i> for this metric
+     * @param initialValue The initial value for this {@link GaugeMetric}, may be null
+     */
+    protected LazyDelegatingGauge(List<String> nameSpace, String key, Object initialValue) {
         super(nameSpace, key);
         this.nameSpaces = nameSpace;
         this.key = key;
+        if (initialValue != null) {
+            wakeMetric(initialValue);
+        }
     }
 
     @Override
@@ -46,10 +62,11 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
 
     @Override
     public void set(Object value) {
-        if (value == null) {
-            return;
+        if (lazyMetric == null) {
+            wakeMetric(value);
+        } else {
+            lazyMetric.set(value);
         }
-        wakeMetric(value);
     }
 
     /**
@@ -63,7 +80,7 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
             if (value instanceof Number) {
                 lazyMetric = new NumericGauge(nameSpaces, key, (Number) value);
             } else if (value instanceof String) {
-                lazyMetric = new TextGuage(nameSpaces, key, (String) value);
+                lazyMetric = new TextGauge(nameSpaces, key, (String) value);
             } else if (value instanceof Boolean) {
                 lazyMetric = new BooleanGauge(nameSpaces, key, (Boolean) value);
             } else if (value instanceof RubyHash) {

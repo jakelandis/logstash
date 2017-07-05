@@ -9,18 +9,28 @@ import java.util.List;
 /**
  * A {@link GaugeMetric} that is backed by a {@link String}
  */
-public class TextGuage extends AbstractMetric<String> implements GaugeMetric<String> {
+public class TextGauge extends AbstractMetric<String> implements GaugeMetric<String> {
 
     private volatile String value;
+
+    /**
+     * Constructor - null initial value
+     *
+     * @param nameSpace The namespace for this metric
+     * @param key       The key <i>(with in the namespace)</i> for this metric
+     */
+    public TextGauge(List<String> nameSpace, String key) {
+        this(nameSpace, key, null);
+    }
 
     /**
      * Constructor
      *
      * @param nameSpace    The namespace for this metric
      * @param key          The key <i>(with in the namespace)</i> for this metric
-     * @param initialValue The initial value for this {@link GaugeMetric}
+     * @param initialValue The initial value for this {@link GaugeMetric}, may be null
      */
-    public TextGuage(List<String> nameSpace, String key, String initialValue) {
+    public TextGauge(List<String> nameSpace, String key, String initialValue) {
         super(nameSpace, key);
         this.value = initialValue;
     }

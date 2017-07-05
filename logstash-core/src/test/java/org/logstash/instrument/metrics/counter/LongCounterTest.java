@@ -10,39 +10,51 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 /**
- * Unit test for {@link LongCounter}
+ * Unit tests for {@link LongCounter}
  */
 public class LongCounterTest {
 
-    private LongCounter longCounter;
     private final long INITIAL_VALUE = 99l;
+    private LongCounter longCounter;
 
     @Before
-    public void setup() {
+    public void _setup() {
         longCounter = new LongCounter(Collections.singletonList("foo"), "bar", INITIAL_VALUE);
     }
 
     @Test
-    public void getValue() throws Exception {
+    public void getValue() {
         assertThat(longCounter.getValue()).isEqualTo(INITIAL_VALUE);
     }
 
     @Test
-    public void increment() throws Exception {
+    public void increment() {
 
         longCounter.increment();
         assertThat(longCounter.getValue()).isEqualTo(INITIAL_VALUE + 1);
     }
 
+    @Test(expected = UnsupportedOperationException.class)
+    public void incrementByNegativeValue() {
+        longCounter.increment(-100l);
+        assertThat(longCounter.getValue()).isEqualTo(INITIAL_VALUE + 100);
+    }
+
     @Test
-    public void incrementByValue() throws Exception {
+    public void incrementByValue() {
         longCounter.increment(100l);
         assertThat(longCounter.getValue()).isEqualTo(INITIAL_VALUE + 100);
     }
 
     @Test
-    public void type() throws Exception {
-        assertThat(longCounter.type()).isEqualTo(MetricType.COUNTER_LONG.asString());
+    public void noInitialValue() {
+        LongCounter counter = new LongCounter(Collections.singletonList("foo"), "bar");
+        counter.increment();
+        assertThat(counter.getValue()).isEqualTo(1l);
     }
 
+    @Test
+    public void type() {
+        assertThat(longCounter.type()).isEqualTo(MetricType.COUNTER_LONG.asString());
+    }
 }

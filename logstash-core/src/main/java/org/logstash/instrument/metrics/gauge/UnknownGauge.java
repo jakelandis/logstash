@@ -13,11 +13,21 @@ public class UnknownGauge extends AbstractMetric<Object> implements GaugeMetric<
     private volatile Object value;
 
     /**
+     * Constructor - null initial value
+     *
+     * @param nameSpace    The namespace for this metric
+     * @param key          The key <i>(with in the namespace)</i> for this metric
+     */
+    public UnknownGauge(List<String> nameSpace, String key) {
+        this(nameSpace, key, null);
+    }
+
+    /**
      * Constructor
      *
      * @param nameSpace    The namespace for this metric
      * @param key          The key <i>(with in the namespace)</i> for this metric
-     * @param initialValue The initial value for this {@link GaugeMetric}
+     * @param initialValue The initial value for this {@link GaugeMetric}, may be null
      */
     public UnknownGauge(List<String> nameSpace, String key, Object initialValue) {
         super(nameSpace, key);

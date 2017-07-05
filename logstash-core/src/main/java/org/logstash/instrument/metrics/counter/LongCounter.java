@@ -13,6 +13,16 @@ import java.util.concurrent.atomic.LongAdder;
 public class LongCounter extends AbstractMetric<Long> implements CounterMetric<Long> {
 
     private final LongAdder longAdder;
+
+    /**
+     * Constructor - initial value set to zero
+     * @param nameSpace The namespace for this metric
+     * @param key       The key <i>(with in the namespace)</i> for this metric
+     */
+    public LongCounter(List<String> nameSpace, String key) {
+        this(nameSpace, key, 0l);
+    }
+
     /**
      * Constructor
      * @param nameSpace The namespace for this metric

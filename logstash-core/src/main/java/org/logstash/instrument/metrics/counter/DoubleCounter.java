@@ -14,6 +14,16 @@ public class DoubleCounter extends AbstractMetric<Double> implements CounterMetr
     private final DoubleAdder doubleAdder;
 
     /**
+     * Constructor - initial value set to zero
+     *
+     * @param nameSpace    The namespace for this metric
+     * @param key          The key <i>(with in the namespace)</i> for this metric
+     */
+    public DoubleCounter(List<String> nameSpace, String key) {
+        this(nameSpace, key, 0.0);
+    }
+
+    /**
      * Constructor
      *
      * @param nameSpace    The namespace for this metric
