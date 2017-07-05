@@ -6,23 +6,32 @@ import org.logstash.instrument.metrics.MetricType;
 import java.util.List;
 
 /**
- * Created by jake on 6/30/17.
+ * A {@link GaugeMetric} that is backed by a {@link Object}.  Note - A stronger typed {@link GaugeMetric} should be used since this makes no guarantees of serializing properly.
  */
 public class UnknownGauge extends AbstractMetric<Object> implements GaugeMetric<Object> {
-    volatile Object value;
-    public UnknownGauge(List<String> nameSpaces, String key, Object value) {
-        super(nameSpaces, key);
-        this.value = value;
-    }
 
-    @Override
-    public Object getValue() {
-        return value;
+    private volatile Object value;
+
+    /**
+     * Constructor
+     *
+     * @param nameSpace    The namespace for this metric
+     * @param key          The key <i>(with in the namespace)</i> for this metric
+     * @param initialValue The initial value for this {@link GaugeMetric}
+     */
+    public UnknownGauge(List<String> nameSpace, String key, Object initialValue) {
+        super(nameSpace, key);
+        this.value = initialValue;
     }
 
     @Override
     public MetricType getType() {
         return MetricType.GAUGE_UNKNOWN;
+    }
+
+    @Override
+    public Object getValue() {
+        return value;
     }
 
     @Override

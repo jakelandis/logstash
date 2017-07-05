@@ -6,35 +6,35 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Abstract implementation of a {@link Metric}. All metrics should subclass this.
+ *
+ * @param <T> The underlying type for this metric. For example {@link Long} for Counter, or {@link String} for Gauge.
+ */
 public abstract class AbstractMetric<T> implements Metric<T> {
     final protected String key;
-
     final protected List<String> nameSpace;
 
-
+    /**
+     * Constructor
+     *
+     * @param nameSpace The namespace for this metric
+     * @param key       The key <i>(with in the namespace)</i> for this metric
+     */
     protected AbstractMetric(final List<String> nameSpace, final String key) {
         this.nameSpace = nameSpace;
         this.key = key;
     }
 
+    @Override
+    public abstract MetricType getType();
 
-
-    //FIXME: make this the single JSon value
     @JsonValue
-//    @JsonProperty
     public abstract T getValue();
-
-
 
     @Override
     public String toString() {
         return String.format("%s - namespaces: %s key: %s value:%s", this.getClass().getName(), Arrays.toString(nameSpace.toArray()), getValue().toString());
     }
-
-    //counter, gauge, etc
-//    @JsonProperty
-    @Override
-    public abstract MetricType getType();
-
 
 }

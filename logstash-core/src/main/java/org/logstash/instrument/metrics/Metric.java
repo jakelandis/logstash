@@ -1,39 +1,52 @@
 package org.logstash.instrument.metrics;
 
 /**
- * Created by jake on 6/30/17.
+ * Top level contract for metrics within Logstash.
+ *
+ * @param <T> The underlying type for this metric. For example {@link Long} for Counter, or {@link String} for Gauge.
+ * @since 6.0
  */
 public interface Metric<T> {
 
-    T getValue();
-
     /**
-     * @deprecated - Use getValue
-     * Pacify Ruby
-     * @return
+     * This should be equal to #getValue, exists for passivity with legacy Ruby code. Java consumers should use #getValue().
+     *
+     * @return This metric value
      */
-    default T get(){
+    default T get() {
         return getValue();
     }
 
+    /**
+     * The enumerated Metric Type. This is a semantic type <i>(not Java type)</i> that can be useful to help identify the type of Metric. For example "counter/long".
+     *
+     * @return The {@link MetricType} that this metric represents.
+     */
     MetricType getType();
 
     /**
-     * Pacify Ruby
-     * @return
+     * Retrieves the value associated with this metric
+     *
+     * @return This metric value
      */
-    default String type(){
-        return getType().asString();
-    }
-
+    T getValue();
 
     /**
-     * Passify ruby
-     * @return
+     * This may be equal to the #toString method, exists for passivity with legacy Ruby code. Java consumers should use #toString
+     *
+     * @return A description of this Metric that can be used for logging.
      */
     default String inspect() {
         return toString();
     }
 
+    /**
+     * This should be equal to {@link MetricType#asString()}, exists for passivity with legacy Ruby code. Java consumers should use #getType().
+     *
+     * @return The {@link String} version of the {@link MetricType}
+     */
+    default String type() {
+        return getType().asString();
+    }
 
 }
