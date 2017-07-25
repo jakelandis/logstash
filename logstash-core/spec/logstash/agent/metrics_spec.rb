@@ -6,22 +6,15 @@ require_relative "../../support/matchers"
 require_relative "../../support/mocks_classes"
 require "spec_helper"
 
-# Just make the tests a bit shorter to write and
-# assert, I will keep theses methods here for easier understanding.
-def mval(*path_elements)
-  mhash(*path_elements).value
-end
-
-def mhash(*path_elements)
-  metric.get_shallow(*path_elements)
-end
+java_import org.logstash.instrument.witness.Witness
 
 describe LogStash::Agent do
   # by default no tests uses the auto reload logic
   let(:agent_settings) { mock_settings("config.reload.automatic" => false) }
   let(:pipeline_settings) { { "pipeline.reloadable" => true } }
 
-  let(:pipeline_config) { mock_pipeline_config(:main, "input { generator {} } filter { mutate { add_tag => 'hello world' }} output { null {} }", pipeline_settings) }
+  let(:pipeline_config) { mock_pipeline_config(:main, "input { generator {} } filter { mutate { id => 'test_filter' add_tag => 'hello world' }} output { null {} }",
+                                               pipeline_settings) }
   let(:update_pipeline_config) { mock_pipeline_config(:main, "input { generator { id => 'new' } } output { null {} }", pipeline_settings) }
   let(:bad_update_pipeline_config) { mock_pipeline_config(:main, "hooo }", pipeline_settings) }
 
@@ -39,6 +32,8 @@ describe LogStash::Agent do
     # This MUST run first, before `subject` is invoked to ensure clean state
     clear_data_dir
 
+    Witness.setInstance(Witness.new)
+
     # TODO(ph) until we decouple the webserver from the agent
     # we just disable these calls
     allow(subject).to receive(:start_webserver).and_return(false)
@@ -51,12 +46,12 @@ describe LogStash::Agent do
     subject.shutdown
   end
 
-  let(:metric) { subject.metric.collector.snapshot_metric.metric_store }
 
   context "when starting the agent" do
+    let(:snitch) { Witness.instance.reloads.snitch }
     it "initialize the instance reload metrics" do
-      expect(mval(:stats, :reloads, :successes)).to eq(0)
-      expect(mval(:stats, :reloads, :failures)).to eq(0)
+      expect(snitch.successes).to eq(0)
+      expect(snitch.failures).to eq(0)
     end
   end
 
@@ -67,38 +62,44 @@ describe LogStash::Agent do
       end
 
       let(:pipeline_name) { :main }
+      let(:snitch) { Witness.instance.pipeline("main").reloads.snitch }
 
-      it "doesnt changes the global successes" do
-        expect { subject.converge_state_and_update }.not_to change { mval(:stats, :reloads, :successes) }
-      end
+      context "global state" do
+        let(:snitch) { Witness.instance.reloads.snitch } # global snitch
 
-      it "doesn't change the failures" do
-        expect { subject.converge_state_and_update }.not_to change { mval(:stats, :reloads, :failures) }
+        it "success doesnt changes" do
+          expect { subject.converge_state_and_update }.not_to change { snitch.successes }
+        end
+
+        it "failure doesn't change" do
+          expect { subject.converge_state_and_update }.not_to change { snitch.failures }
+        end
       end
 
       it "sets the failures to 0" do
         subject.converge_state_and_update
-        expect(mval(:stats, :pipelines, pipeline_name, :reloads, :failures)).to eq(0)
+        expect(snitch.failures).to eq(0)
       end
 
       it "sets the successes to 0" do
         subject.converge_state_and_update
-        expect(mval(:stats, :pipelines, pipeline_name, :reloads, :successes)).to eq(0)
+        expect(snitch.successes).to eq(0)
       end
 
       it "sets the `last_error` to nil" do
         subject.converge_state_and_update
-        expect(mval(:stats, :pipelines, pipeline_name, :reloads, :last_error)).to be_nil
+        expect(snitch.error.snitch.message).to be_nil
+        expect(snitch.error.snitch.backtrace).to be_nil
       end
 
       it "sets the `last_failure_timestamp` to nil" do
         subject.converge_state_and_update
-        expect(mval(:stats, :pipelines, :main, :reloads, :last_failure_timestamp)).to be_nil
+        expect(snitch.last_failure_timestamp).to be_nil
       end
 
       it "sets the `last_success_timestamp` to nil" do
         subject.converge_state_and_update
-        expect(mval(:stats, :pipelines, pipeline_name, :reloads, :last_success_timestamp)).to be_nil
+        expect(snitch.last_success_timestamp).to be_nil
       end
     end
 
@@ -108,47 +109,48 @@ describe LogStash::Agent do
       end
 
       let(:pipeline_name) { :bad }
+      let(:snitch) { Witness.instance.pipeline("bad").reloads.snitch }
+
 
       before do
         subject.converge_state_and_update
       end
 
-      it "doesnt changes the global successes" do
-        expect { subject.converge_state_and_update }.not_to change { mval(:stats, :reloads, :successes)}
-      end
+      context "golbal state" do
+        let(:snitch) { Witness.instance.reloads.snitch } # global snitch
+        it "doesnt changes the global successes" do
+          expect {subject.converge_state_and_update}.not_to change {snitch.successes}
+        end
 
-      it "doesn't change the failures" do
-        expect { subject.converge_state_and_update }.to change { mval(:stats, :reloads, :failures) }.by(1)
+        it "doesn't change the failures" do
+          expect {subject.converge_state_and_update}.to change {snitch.failures}.by(1)
+        end
       end
 
       it "increments the pipeline failures" do
-        expect { subject.converge_state_and_update }.to change { mval(:stats, :pipelines, pipeline_name, :reloads, :failures) }.by(1)
+        expect { subject.converge_state_and_update }.to change { snitch.failures }.by(1)
       end
 
       it "sets the successes to 0" do
         subject.converge_state_and_update
-        expect(mval(:stats, :pipelines, pipeline_name, :reloads, :successes)).to eq(0)
-      end
-
-      it "increase the global failures" do
-        expect { subject.converge_state_and_update }.to change { mval(:stats, :reloads, :failures) }
+        expect(snitch.successes).to eq(0)
       end
 
       it "records the `last_error`" do
-        expect(mval(:stats, :pipelines, pipeline_name, :reloads, :last_error)).to_not be_nil
+        expect(snitch.error).to_not be_nil
       end
 
       it "records the `message` and the `backtrace`" do
-        expect(mval(:stats, :pipelines, pipeline_name, :reloads, :last_error)[:message]).to_not be_nil
-        expect(mval(:stats, :pipelines, pipeline_name, :reloads, :last_error)[:backtrace]).to_not be_nil
+        expect(snitch.error.snitch.message).to_not be_nil
+        expect(snitch.error.snitch.backtrace).to_not be_nil
       end
 
       it "records the time of the last failure" do
-        expect(mval(:stats, :pipelines, pipeline_name, :reloads, :last_failure_timestamp)).to_not be_nil
+        expect(snitch.last_failure_timestamp).to_not be_nil
       end
 
       it "initializes the `last_success_timestamp`" do
-        expect(mval(:stats, :pipelines, pipeline_name, :reloads, :last_success_timestamp)).to be_nil
+        expect(snitch.last_success_timestamp).to be_nil
       end
     end
 
@@ -159,24 +161,28 @@ describe LogStash::Agent do
       end
 
       let(:pipeline_name) { :main }
+      let(:snitch) { Witness.instance.pipeline("main").reloads.snitch }
 
       context "and it succeed" do
         let(:source_loader) do
           TestSequenceSourceLoader.new(pipeline_config, update_pipeline_config)
         end
 
-        it "increments the global successes" do
-          expect { subject.converge_state_and_update }.to change { mval(:stats, :reloads, :successes) }.by(1)
+        context "golbal state" do
+          let(:snitch) { Witness.instance.reloads.snitch }
+          it "increments successes" do
+            expect {subject.converge_state_and_update}.to change {snitch.successes}.by(1)
+          end
         end
 
         it "increment the pipeline successes" do
-          expect{ subject.converge_state_and_update }.to change { mval(:stats, :pipelines, pipeline_name, :reloads, :successes) }.by(1)
+          expect{ subject.converge_state_and_update }.to change { snitch.successes }.by(1)
         end
 
         it "record the `last_success_timestamp`" do
-          expect(mval(:stats, :pipelines, pipeline_name, :reloads, :last_success_timestamp)).to be_nil
+          expect(snitch.last_success_timestamp).to be_nil
           subject.converge_state_and_update
-          expect(mval(:stats, :pipelines, pipeline_name, :reloads, :last_success_timestamp)).not_to be_nil
+          expect(snitch.last_success_timestamp).not_to be_nil
         end
       end
 
@@ -185,12 +191,14 @@ describe LogStash::Agent do
           TestSequenceSourceLoader.new(pipeline_config, bad_update_pipeline_config)
         end
 
-        it "increments the global failures" do
-          expect { subject.converge_state_and_update }.to change { mval(:stats, :reloads, :failures) }.by(1)
+        context "golbal state" do
+          it "increments failures" do
+            expect {subject.converge_state_and_update}.to change {snitch.failures}.by(1)
+          end
         end
 
         it "increment the pipeline failures" do
-          expect{ subject.converge_state_and_update }.to change { mval(:stats, :pipelines, pipeline_name, :reloads, :failures) }.by(1)
+          expect{ subject.converge_state_and_update }.to change { snitch.failures }.by(1)
         end
       end
     end
@@ -204,14 +212,30 @@ describe LogStash::Agent do
         expect(subject.converge_state_and_update.success?).to be_truthy
       end
 
-      it "it clear previous metrics" do
+      let(:snitch0) {Witness.instance.pipeline("main").events.snitch}
+      let(:snitch1) {Witness.instance.pipeline("main").filters("test_filter").events.snitch}
+
+      it "it clear previous metrics for removed" do
+
+        expect(snitch0.in).to be < 1000
+        expect(snitch1.in).to be < 1000
+
+        # since the pipeline is async, it can actually take some time to have metrics recordings
+        # the generator is chugging along in the background, so lets block until an arbitrary large number of events have been counted
         try(20) do
-          expect { mhash(:stats, :pipelines, :main, :plugins, :filters) }.not_to raise_error, "Filters stats should exist"
+          sleep(1) # to avoid spamming the logs
+          expect(snitch0.in).to be > 1000
+          expect(snitch1.in).to be > 1000
         end
         expect(subject.converge_state_and_update.success?).to be_truthy
 
-        # We do have to retry here, since stopping a pipeline is a blocking operation
-        expect { mhash(:stats, :pipelines, :main, :plugins, :filters) }.to raise_error
+        try(20) do
+          # The input generator is still going in the background, but the filter has been removed from the pipeline. This ensures that the data is flowing in, but not recorded by
+          # the filter since it is no longer part of the pipeline.
+          expect(snitch0.in).to be > 0
+          # need to call the whole chain again since the snitch1 is a cached copy of the now defunct filter
+          expect(Witness.instance.pipeline("main").filters("test_filter").events.snitch.in).to eq(0)
+        end
       end
     end
 
@@ -225,19 +249,21 @@ describe LogStash::Agent do
         expect(subject.converge_state_and_update.success?).to be_truthy
       end
 
-      it "clear pipeline specific metric" do
-        # since the pipeline is async, it can actually take some time to have metrics recordings
-        # so we try a few times
-        try(20) do
-          expect { mhash(:stats, :pipelines, :main, :events) }.not_to raise_error , "Events pipelien stats should exist"
-          expect { mhash(:stats, :pipelines, :main, :plugins) }.not_to raise_error, "Plugins pipeline stats should exist"
-        end
+      let(:snitch) {Witness.instance.pipeline("main").events.snitch}
 
+      it "clear pipeline specific metric" do
+
+        expect(snitch.in).to be < 1000
+
+        # since the pipeline is async, it can actually take some time to have metrics recordings
+        # the generator is chugging along in the background, so lets verify an arbitrary number of events have been counted
+        try(20) do
+          sleep(1) # to avoid spamming the logs
+          expect(snitch.in).to be > 1000
+        end
         expect(subject.converge_state_and_update.success?).to be_truthy
 
-        # We do have to retry here, since stopping a pipeline is a blocking operation
-        expect { mhash(:stats, :pipelines, :main, :plugins) }.to raise_error
-        expect { mhash(:stats, :pipelines, :main, :events) }.to raise_error
+        expect(snitch.in).to eq(0)
       end
     end
   end

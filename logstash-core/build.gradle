@@ -97,15 +97,24 @@ idea {
     }
 }
 
+
 dependencies {
     compile 'org.apache.logging.log4j:log4j-api:2.6.2'
     compile 'org.apache.logging.log4j:log4j-core:2.6.2'
     runtime 'org.apache.logging.log4j:log4j-slf4j-impl:2.6.2'
-    //Ensure Jackson version here is kept in sync with version used by jrjackson gem
-    compile 'com.fasterxml.jackson.core:jackson-core:2.7.3'
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.7.3'
-    compile 'com.fasterxml.jackson.core:jackson-annotations:2.7.3'
-    compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.7.3'
+    //Ensure Jackson version here is kept in sync with version used by jrjackson gem, don't allow transitive's to upgrade
+    compile ('com.fasterxml.jackson.core:jackson-core:2.7.3') { force = true}
+    compile ('com.fasterxml.jackson.core:jackson-databind:2.7.3') { force = true}
+    compile ('com.fasterxml.jackson.core:jackson-annotations:2.7.3') { force = true}
+    compile ('com.fasterxml.jackson.module:jackson-module-afterburner:2.7.3') { force = true}
+    compile ('com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.7.3') { force = true}
+    compile 'org.eclipse.jetty:jetty-servlet:9.4.6.v20170531'
+    compile 'org.eclipse.jetty:jetty-server:9.4.6.v20170531'
+    compile 'org.eclipse.jetty:jetty-util:9.4.6.v20170531'
+    compile 'org.glassfish.jersey.core:jersey-server:2.25.1'
+    compile 'org.glassfish.jersey.containers:jersey-container-servlet-core:2.25.1'
+    compile 'org.glassfish.jersey.containers:jersey-container-jetty-http:2.25.1'
+    compile 'org.glassfish.jersey.media:jersey-media-json-jackson:2.25.1'
     testCompile 'org.apache.logging.log4j:log4j-core:2.6.2:tests'
     testCompile 'org.apache.logging.log4j:log4j-api:2.6.2:tests'
     testCompile 'junit:junit:4.12'

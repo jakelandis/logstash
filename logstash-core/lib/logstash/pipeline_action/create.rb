@@ -12,9 +12,8 @@ module LogStash module PipelineAction
     # is needed to correctly create a pipeline, in a future
     # PR we could pass a factory to create the pipeline so we pass the logic
     # to create the pipeline instead.
-    def initialize(pipeline_config, metric)
+    def initialize(pipeline_config)
       @pipeline_config = pipeline_config
-      @metric = metric
     end
 
     def pipeline_id
@@ -32,7 +31,7 @@ module LogStash module PipelineAction
     # The execute assume that the thread safety access of the pipeline
     # is managed by the caller.
     def execute(agent, pipelines)
-      pipeline = LogStash::Pipeline.new(@pipeline_config, @metric, agent)
+      pipeline = LogStash::Pipeline.new(@pipeline_config, agent)
       
       status = pipeline.start # block until the pipeline is correctly started or crashed
 

@@ -69,26 +69,20 @@ module LogStash; module Util
         @wait_for = wait_for
       end
 
-      def set_events_metric(metric)
-        @event_metric = metric
-        @event_metric_out = @event_metric.counter(:out)
-        @event_metric_filtered = @event_metric.counter(:filtered)
-        @event_metric_time = @event_metric.counter(:duration_in_millis)
-        define_initial_metrics_values(@event_metric)
+      def set_events_metric(event_witness)
+        @witness_event = event_witness
+        define_initial_metrics_values(event_witness)
       end
 
-      def set_pipeline_metric(metric)
-        @pipeline_metric = metric
-        @pipeline_metric_out = @pipeline_metric.counter(:out)
-        @pipeline_metric_filtered = @pipeline_metric.counter(:filtered)
-        @pipeline_metric_time = @pipeline_metric.counter(:duration_in_millis)
-        define_initial_metrics_values(@pipeline_metric)
+      def set_pipeline_metric(event_witness)
+        @witness_pipeline_event = event_witness
+        define_initial_metrics_values(event_witness)
       end
 
-      def define_initial_metrics_values(namespaced_metric)
-        namespaced_metric.report_time(:duration_in_millis, 0)
-        namespaced_metric.increment(:filtered, 0)
-        namespaced_metric.increment(:out, 0)
+      def define_initial_metrics_values(event_witness)
+        event_witness.duration(0)
+        event_witness.filtered(0)
+        event_witness.out(0)
       end
 
       def inflight_batches
@@ -154,21 +148,21 @@ module LogStash; module Util
             # start_clock is now called at empty batch creation and an empty batch could
             # stay empty all the way down to the close_batch call.
             time_taken = java.lang.System.current_time_millis - @inflight_clocks[Thread.current]
-            @event_metric_time.increment(time_taken)
-            @pipeline_metric_time.increment(time_taken)
+            @witness_event.duration(time_taken)
+            @witness_pipeline_event.duration(time_taken)
           end
           @inflight_clocks.delete(Thread.current)
         end
       end
 
       def add_filtered_metrics(batch)
-        @event_metric_filtered.increment(batch.filtered_size)
-        @pipeline_metric_filtered.increment(batch.filtered_size)
+        @witness_event.filtered(batch.filtered_size)
+        @witness_pipeline_event.filtered(batch.filtered_size)
       end
 
       def add_output_metrics(batch)
-        @event_metric_out.increment(batch.filtered_size)
-        @pipeline_metric_out.increment(batch.filtered_size)
+        @witness_event.out(batch.filtered_size)
+        @witness_pipeline_event.out(batch.filtered_size)
       end
     end
 
