@@ -1,10 +1,12 @@
 # encoding: utf-8
 require "logstash/util/wrapped_acked_queue"
 require "logstash/event"
-require "logstash/instrument/namespaced_metric"
+
+java_import org.logstash.instrument.witness.Witness
 
 describe LogStash::Util::WrappedAckedQueue, :stress_test => true do
   let(:path) { Stud::Temporary.directory }
+  let(:witness) {Witness.new}
 
   context "with multiple writers" do
     let(:items) { expected_count / writers }
@@ -12,7 +14,7 @@ describe LogStash::Util::WrappedAckedQueue, :stress_test => true do
     let(:queue_capacity) { page_capacity * queue_capacity_multiplier }
 
     let(:output_strings) { [] }
-    let(:reject_memo_keys) { [:reject_memo_keys, :path, :queue, :writer_threads, :collector, :metric, :reader_threads, :output_strings] }
+    let(:reject_memo_keys) { [:reject_memo_keys, :path, :queue, :writer_threads, :reader_threads, :output_strings] }
 
     let(:queue) do
       described_class.create_file_based(path, page_capacity, 0, queue_checkpoint_acks, queue_checkpoint_writes, queue_checkpoint_interval, queue_capacity)
@@ -32,8 +34,8 @@ describe LogStash::Util::WrappedAckedQueue, :stress_test => true do
     let(:reader_threads) do
       reader = queue.read_client
       reader.set_batch_dimensions(batch_size, batch_wait)
-      reader.set_events_metric(metric.namespace([:stats, :events]))
-      reader.set_pipeline_metric(metric.namespace([:stats, :pipelines, :main, :events]))
+      reader.set_events_metric(witness.events)
+      reader.set_pipeline_metric(witness.pipeline("main").events)
 
       readers.times.map do |i|
         Thread.new(i, reader, counts) do |_i, _reader, _counts|
@@ -64,8 +66,6 @@ describe LogStash::Util::WrappedAckedQueue, :stress_test => true do
       p :publisher_error => e
     end
 
-    let(:collector) { LogStash::Instrument::Collector.new }
-    let(:metric) { LogStash::Instrument::Metric.new(collector) }
 
     shared_examples "a well behaved queue" do
       it "writes, reads, closes and reopens" do

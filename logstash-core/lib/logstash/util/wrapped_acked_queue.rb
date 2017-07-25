@@ -126,20 +126,20 @@ module LogStash; module Util
         @wait_for = wait_for
       end
 
-      def set_events_metric(metric)
-        @event_metric = metric
-        define_initial_metrics_values(@event_metric)
+      def set_events_metric(event_witness)
+        @witness_event = event_witness
+        define_initial_metrics_values(event_witness)
       end
 
-      def set_pipeline_metric(metric)
-        @pipeline_metric = metric
-        define_initial_metrics_values(@pipeline_metric)
+      def set_pipeline_metric(event_witness)
+        @witness_pipeline_event = event_witness
+        define_initial_metrics_values(event_witness)
       end
 
-      def define_initial_metrics_values(namespaced_metric)
-        namespaced_metric.report_time(:duration_in_millis, 0)
-        namespaced_metric.increment(:filtered, 0)
-        namespaced_metric.increment(:out, 0)
+      def define_initial_metrics_values(event_witness)
+        event_witness.duration(0)
+        event_witness.filtered(0)
+        event_witness.out(0)
       end
 
       def inflight_batches
@@ -214,26 +214,26 @@ module LogStash; module Util
             # start_clock is now called at empty batch creation and an empty batch could
             # stay empty all the way down to the close_batch call.
             time_taken = (java.lang.System.nano_time - start_time) / 1_000_000
-            @event_metric.report_time(:duration_in_millis, time_taken)
-            @pipeline_metric.report_time(:duration_in_millis, time_taken)
+            @witness_event.duration(time_taken)
+            @witness_pipeline_event.duration(time_taken)
           end
         end
       end
 
       def add_starting_metrics(batch)
         return if @event_metric.nil? || @pipeline_metric.nil?
-        @event_metric.increment(:in, batch.starting_size)
-        @pipeline_metric.increment(:in, batch.starting_size)
+        @witness_event.in(batch.filtered_size)
+        @witness_pipeline_event.in(batch.filtered_size)
       end
 
       def add_filtered_metrics(batch)
-        @event_metric.increment(:filtered, batch.filtered_size)
-        @pipeline_metric.increment(:filtered, batch.filtered_size)
+        @witness_event.filtered(batch.filtered_size)
+        @witness_pipeline_event.filtered(batch.filtered_size)
       end
 
       def add_output_metrics(batch)
-        @event_metric.increment(:out, batch.filtered_size)
-        @pipeline_metric.increment(:out, batch.filtered_size)
+        @witness_event.out(batch.filtered_size)
+        @witness_pipeline_event.out(batch.filtered_size)
       end
     end
 

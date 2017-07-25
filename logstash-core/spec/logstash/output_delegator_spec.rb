@@ -6,23 +6,15 @@ require "support/shared_contexts"
 
 describe LogStash::OutputDelegator do
 
-  class MockGauge
-    def increment(_)
-    end
-  end
-
   let(:logger) { double("logger") }
   let(:events) { 7.times.map { LogStash::Event.new }}
   let(:plugin_args) { {"id" => "foo", "arg1" => "val1"} }
-  let(:collector) { [] }
-  let(:counter_in) { MockGauge.new }
-  let(:counter_out) { MockGauge.new }
-  let(:counter_time) { MockGauge.new }
-  let(:metric) { LogStash::Instrument::NamespacedNullMetric.new(collector, :null) }
+  let(:plugin_id) {"a-simple-plugin"}
+  let(:witness) {Witness.instance.pipeline("foo").outputs(plugin_id)}
 
   include_context "execution_context"
 
-  subject { described_class.new(logger, out_klass, metric, execution_context, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args) }
+  subject { described_class.new(logger, out_klass, witness, execution_context, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args) }
 
   context "with a plain output plugin" do
     let(:out_klass) { double("output klass") }
@@ -30,11 +22,7 @@ describe LogStash::OutputDelegator do
     let(:concurrency) { :single }
 
     before(:each) do
-      # use the same metric instance
-      allow(metric).to receive(:namespace).with(any_args).and_return(metric)
-      allow(metric).to receive(:counter).with(:in).and_return(counter_in)
-      allow(metric).to receive(:counter).with(:out).and_return(counter_out)
-      allow(metric).to receive(:counter).with(:duration_in_millis).and_return(counter_time)
+      Witness.setInstance(Witness.new)
 
       allow(out_klass).to receive(:new).with(any_args).and_return(out_inst)
       allow(out_klass).to receive(:name).and_return("example")
@@ -42,11 +30,8 @@ describe LogStash::OutputDelegator do
       allow(out_klass).to receive(:config_name).and_return("dummy_plugin")
       allow(out_inst).to receive(:register)
       allow(out_inst).to receive(:multi_receive)
-      allow(out_inst).to receive(:metric=).with(any_args)
       allow(out_inst).to receive(:execution_context=).with(execution_context)
-      allow(out_inst).to receive(:id).and_return("a-simple-plugin")
-
-      allow(subject.metric_events).to receive(:increment).with(any_args)
+      allow(out_inst).to receive(:id).and_return(plugin_id)
       allow(logger).to receive(:debug).with(any_args)
     end
 
@@ -55,8 +40,8 @@ describe LogStash::OutputDelegator do
     end
 
     it "should push the name of the plugin to the metric" do
-      expect(metric).to receive(:gauge).with(:name, out_klass.config_name)
-      described_class.new(logger, out_klass, metric, execution_context, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args)
+      described_class.new(logger, out_klass, witness, execution_context, ::LogStash::OutputDelegatorStrategyRegistry.instance, plugin_args)
+      expect(witness.snitch.name).to eq(out_klass.config_name)
     end
 
     context "after having received a batch of events" do
@@ -70,15 +55,10 @@ describe LogStash::OutputDelegator do
       end
 
       it "should increment the number of events received" do
-        expect(counter_in).to receive(:increment).with(events.length)
-        expect(counter_out).to receive(:increment).with(events.length)
-        subject.multi_receive(events)
+        expect {subject.multi_receive(events)}.to change {witness.events.snitch.in}.by(events.length)
+        expect {subject.multi_receive(events)}.to change {witness.events.snitch.out}.by(events.length)
       end
 
-      it "should record the `duration_in_millis`" do
-        expect(counter_time).to receive(:increment).with(Integer)
-        subject.multi_receive(events)
-      end
     end
 
     describe "closing" do
@@ -112,25 +92,27 @@ describe LogStash::OutputDelegator do
           it "should find the correct concurrency type for the output" do
             expect(subject.concurrency).to eq(strategy_concurrency)
           end
-          
+
           it "should find the correct Strategy class for the worker" do
             expect(subject.strategy).to be_a(klass)
           end
 
           it "should set the correct parameters on the instance" do
+            expect { subject }.not_to raise_error
             expect(out_klass).to have_received(:new).with(plugin_args)
           end
 
-          it "should set the metric on the instance" do
-            expect(out_inst).to have_received(:metric=).with(metric)
-          end
+          #TODO !! jake send the witness to the output
+          # it "should set the metric on the instance" do
+          #   expect(out_inst).to have_received(:metric=).with(metric)
+          # end
 
           [[:register], [:do_close], [:multi_receive, [[]] ] ].each do |method, args|
             context "strategy objects" do
               before do
                 allow(subject.strategy).to receive(method)
               end
-              
+
               it "should delegate #{method} to the strategy" do
                 subject.send(method, *args)
                 if args
@@ -145,7 +127,7 @@ describe LogStash::OutputDelegator do
               before do
                 allow(out_inst).to receive(method)
               end
-              
+
               it "should delegate #{method} to the strategy" do
                 subject.send(method, *args)
                 if args

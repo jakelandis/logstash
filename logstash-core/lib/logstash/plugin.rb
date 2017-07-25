@@ -2,7 +2,6 @@
 require "logstash/namespace"
 require "logstash/logging"
 require "logstash/config/mixin"
-require "logstash/instrument/null_metric"
 require "logstash/util/dead_letter_queue_manager"
 require "concurrent"
 require "securerandom"
@@ -10,18 +9,13 @@ require "securerandom"
 class LogStash::Plugin
   include LogStash::Util::Loggable
 
-  attr_accessor :params, :execution_context
+  attr_accessor :params, :execution_context, :metric
 
   NL = "\n"
 
   include LogStash::Config::Mixin
 
-  # Disable or enable metric logging for this specific plugin instance
-  # by default we record all the metrics we can, but you can disable metrics collection
-  # for a specific plugin.
-  config :enable_metric, :validate => :boolean, :default => true
-
-  # Add a unique `ID` to the plugin configuration. If no ID is specified, Logstash will generate one. 
+  # Add a unique `ID` to the plugin configuration. If no ID is specified, Logstash will generate one.
   # It is strongly recommended to set this ID in your configuration. This is particularly useful 
   # when you have two or more plugins of the same type, for example, if you have 2 grok filters. 
   # Adding a named ID in this case will help in monitoring Logstash when using the monitoring APIs.
@@ -108,21 +102,6 @@ class LogStash::Plugin
 
   def debug_info
     [self.class.to_s, original_params]
-  end
-
-  def metric=(new_metric)
-    @metric = new_metric
-  end
-
-  def metric
-    # We can disable metric per plugin if we want in the configuration
-    # we will use the NullMetric in this case.
-    @metric_plugin ||= if @enable_metric
-                         # Fallback when testing plugin and no metric collector are correctly configured.
-                         @metric.nil? ? LogStash::Instrument::NamespacedNullMetric.new : @metric
-                       else
-                         LogStash::Instrument::NamespacedNullMetric.new(@metric, :null)
-                       end
   end
 
   # return the configured name of this plugin

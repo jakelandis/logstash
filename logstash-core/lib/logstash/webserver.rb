@@ -97,6 +97,7 @@ module LogStash
     private
     def set_http_address_metric(value)
       return unless @agent.metric
+      #TODO jake !!!
       @agent.metric.gauge([], :http_address, value)
     end
   end
