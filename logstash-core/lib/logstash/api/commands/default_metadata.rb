@@ -21,7 +21,7 @@ module LogStash
 
         def http_address
           @http_address ||= service.get_shallow(:http_address).value
-        rescue ::LogStash::Instrument::MetricStore::MetricNotFound, NoMethodError => e
+        rescue NoMethodError => e
           nil
         end
       end

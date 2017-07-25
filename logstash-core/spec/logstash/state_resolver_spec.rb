@@ -4,17 +4,16 @@ require_relative "../support/helpers"
 require_relative "../support/matchers"
 require "logstash/state_resolver"
 require "logstash/config/pipeline_config"
-require "logstash/instrument/null_metric"
 require "logstash/pipeline"
 require "ostruct"
 require "digest"
 
 describe LogStash::StateResolver do
-  subject { described_class.new(metric) }
-  let(:metric) { LogStash::Instrument::NullMetric.new }
+  subject { described_class.new }
 
   before do
     clear_data_dir
+    Witness.setInstance(Witness.new)
   end
 
   after do

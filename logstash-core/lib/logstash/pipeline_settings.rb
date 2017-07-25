@@ -12,7 +12,6 @@ module LogStash
       "config.reload.interval",
       "config.string",
       "dead_letter_queue.enable",
-      "metric.collect",
       "path.config",
       "path.queue",
       "pipeline.batch.delay",

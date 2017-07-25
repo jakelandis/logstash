@@ -112,7 +112,7 @@ public class ImperativeToGraphtest {
         assertSyntaxEquals(imperative, expected);
     }
 
-    // This is a good test for what the filter block will do, where there
+    // This is a good test for what the filters block will do, where there
     // will be a  composed set of ifs potentially, all of which must terminate at a
     // single node
     @Test

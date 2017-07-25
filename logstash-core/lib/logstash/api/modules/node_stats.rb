@@ -1,4 +1,8 @@
 # encoding: utf-8
+require 'json'
+
+java_import org.logstash.instrument.witness.Witness
+
 module LogStash
   module Api
     module Modules
@@ -26,33 +30,38 @@ module LogStash
           respond_with(payload, {:filter => params["filter"]})
         end
 
+
         private
         def os_payload
-          @stats.os
+        #  @stats.os
         end
 
         def events_payload
-          @stats.events
+          JSON.parse(Witness.instance.events.as_json)["events"]
         end
 
         def jvm_payload
-          @stats.jvm
+       #   @stats.jvm
         end
 
         def reloads_payload
-          @stats.reloads
+          JSON.parse(Witness.instance.reloads.as_json)["reloads"]
         end
 
         def process_payload
-          @stats.process
+         # @stats.process
         end
 
         def mem_payload
-          @stats.memory
+          #@stats.memory
         end
 
         def pipeline_payload(val = nil)
-          @stats.pipeline(val)
+          if val.nil?
+            JSON.parse(Witness.instance.pipelines.as_json)["pipelines"]
+          else
+            JSON.parse(Witness.instance.pipeline(val).as_json)["pipelines"]
+          end
         end
       end
     end
