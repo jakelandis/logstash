@@ -6,14 +6,17 @@ require_relative "../../support/matchers"
 require_relative "../../support/mocks_classes"
 require "spec_helper"
 
+java_import org.logstash.instrument.witness.Witness
+
 # Just make the tests a bit shorter to write and
 # assert, I will keep theses methods here for easier understanding.
 def mval(*path_elements)
-  mhash(*path_elements).value
+  hash = mhash(*path_elements)
+  hash[path_elements[-2].to_s][path_elements[-1].to_s]
 end
 
 def mhash(*path_elements)
-  metric.get_shallow(*path_elements)
+  JSON.parse(path_elements.to_witness.as_json)
 end
 
 describe LogStash::Agent do
@@ -21,7 +24,8 @@ describe LogStash::Agent do
   let(:agent_settings) { mock_settings("config.reload.automatic" => false) }
   let(:pipeline_settings) { { "pipeline.reloadable" => true } }
 
-  let(:pipeline_config) { mock_pipeline_config(:main, "input { generator {} } filter { mutate { add_tag => 'hello world' }} output { null {} }", pipeline_settings) }
+  let(:pipeline_config) { mock_pipeline_config(:main, "input { generator {} } filter { mutate { id => 'test_filter' add_tag => 'hello world' }} output { null {} }",
+                                               pipeline_settings) }
   let(:update_pipeline_config) { mock_pipeline_config(:main, "input { generator { id => 'new' } } output { null {} }", pipeline_settings) }
   let(:bad_update_pipeline_config) { mock_pipeline_config(:main, "hooo }", pipeline_settings) }
 
@@ -88,7 +92,7 @@ describe LogStash::Agent do
 
       it "sets the `last_error` to nil" do
         subject.converge_state_and_update
-        expect(mval(:stats, :pipelines, pipeline_name, :reloads, :last_error)).to be_nil
+        expect(mval(:stats, :pipelines, pipeline_name, :reloads, :last_error)).to be_empty
       end
 
       it "sets the `last_failure_timestamp` to nil" do
@@ -139,8 +143,8 @@ describe LogStash::Agent do
       end
 
       it "records the `message` and the `backtrace`" do
-        expect(mval(:stats, :pipelines, pipeline_name, :reloads, :last_error)[:message]).to_not be_nil
-        expect(mval(:stats, :pipelines, pipeline_name, :reloads, :last_error)[:backtrace]).to_not be_nil
+        expect(mval(:stats, :pipelines, pipeline_name, :reloads, :last_error)[:message.to_s]).to_not be_nil
+        expect(mval(:stats, :pipelines, pipeline_name, :reloads, :last_error)[:backtrace.to_s]).to_not be_nil
       end
 
       it "records the time of the last failure" do
@@ -204,14 +208,20 @@ describe LogStash::Agent do
         expect(subject.converge_state_and_update.success?).to be_truthy
       end
 
-      it "it clear previous metrics" do
+      it "it clear previous metrics for removed" do
+
+        expect {mhash(:stats, :pipelines, :main, :plugins, :filters)}.not_to raise_error, "Filters stats should exist"
+
+        # since the pipeline is async, it can actually take some time to have metrics recordings
+        # the generator is chugging along in the background, so lets block until an arbitrary large number of events have been counted
         try(20) do
-          expect { mhash(:stats, :pipelines, :main, :plugins, :filters) }.not_to raise_error, "Filters stats should exist"
+          sleep(1) # to avoid spamming the logs
+          expect(mval(:stats, :pipelines, :main, :plugins, :filters, :test_filter, :events, :in)).to be > 100
         end
         expect(subject.converge_state_and_update.success?).to be_truthy
 
         # We do have to retry here, since stopping a pipeline is a blocking operation
-        expect { mhash(:stats, :pipelines, :main, :plugins, :filters) }.to raise_error
+        expect { mval(:stats, :pipelines, :main, :plugins, :filters) }.to raise_error
       end
     end
 
@@ -226,18 +236,20 @@ describe LogStash::Agent do
       end
 
       it "clear pipeline specific metric" do
+
+        expect {mhash(:stats, :pipelines, :main, :events)}.not_to raise_error, "Events pipeline stats should exist"
+        expect {mhash(:stats, :pipelines, :main, :plugins)}.not_to raise_error, "Plugins pipeline stats should exist"
         # since the pipeline is async, it can actually take some time to have metrics recordings
-        # so we try a few times
+        # the generator is chugging along in the background, so lets verify an arbitrary number of events have been counted
         try(20) do
-          expect { mhash(:stats, :pipelines, :main, :events) }.not_to raise_error , "Events pipelien stats should exist"
-          expect { mhash(:stats, :pipelines, :main, :plugins) }.not_to raise_error, "Plugins pipeline stats should exist"
+          expect(mval(:stats, :pipelines, :main, :events, :in)).to be > 100
         end
 
         expect(subject.converge_state_and_update.success?).to be_truthy
 
         # We do have to retry here, since stopping a pipeline is a blocking operation
-        expect { mhash(:stats, :pipelines, :main, :plugins) }.to raise_error
-        expect { mhash(:stats, :pipelines, :main, :events) }.to raise_error
+        expect { mval(:stats, :pipelines, :main, :plugins) }.to raise_error
+        expect { mval(:stats, :pipelines, :main, :events) }.to raise_error
       end
     end
   end

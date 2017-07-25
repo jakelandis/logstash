@@ -29,6 +29,7 @@ require "securerandom"
 java_import org.logstash.common.DeadLetterQueueFactory
 java_import org.logstash.common.SourceWithMetadata
 java_import org.logstash.common.io.DeadLetterQueueWriter
+java_import org.logstash.instrument.witness.Witness
 
 module LogStash; class BasePipeline
   include LogStash::Util::Loggable
@@ -149,6 +150,7 @@ module LogStash; class BasePipeline
     elsif plugin_type == "filter"
       FilterDelegator.new(@logger, klass, type_scoped_metric, execution_context, args)
     else # input
+      #todo : jakelandis - are codecs intended to flow through here?
       input_plugin = klass.new(args)
       scoped_metric = type_scoped_metric.namespace(id.to_sym)
       scoped_metric.gauge(:name, input_plugin.config_name)
@@ -771,6 +773,7 @@ module LogStash; class Pipeline < BasePipeline
       collector.clear("stats/pipelines/#{pipeline_id}/plugins")
       collector.clear("stats/pipelines/#{pipeline_id}/events")
     end
+    Witness.instance.pipeline(pipeline_id).forget.partial
   end
 
   # Sometimes we log stuff that will dump the pipeline which may contain

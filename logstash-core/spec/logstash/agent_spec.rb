@@ -382,40 +382,36 @@ describe LogStash::Agent do
       after(:each) { File.unlink(new_file) }
 
       it "resets the pipeline metric collector" do
-        snapshot = subject.metric.collector.snapshot_metric
-        value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:events][:in].value
+        value = Witness.instance.pipeline("main").events.snitch.in
         expect(value).to be <= new_config_generator_counter
       end
 
       it "does not reset the global event count" do
-        snapshot = subject.metric.collector.snapshot_metric
-        value = snapshot.metric_store.get_with_path("/stats/events")[:stats][:events][:in].value
+        value = Witness.instance.events.snitch.in
         expect(value).to be > initial_generator_threshold
       end
 
       it "increases the successful reload count" do
-        snapshot = subject.metric.collector.snapshot_metric
-        value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:successes].value
+        value = Witness.instance.pipeline("main").reloads.snitch.success
         expect(value).to eq(1)
-        instance_value = snapshot.metric_store.get_with_path("/stats")[:stats][:reloads][:successes].value
+        instance_value = Witness.instance.reloads.snitch.success
         expect(instance_value).to eq(1)
       end
 
       it "does not set the failure reload timestamp" do
-        snapshot = subject.metric.collector.snapshot_metric
-        value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:last_failure_timestamp].value
+        value = Witness.instance.pipeline("main").reloads.snitch.last_failure_timestamp
         expect(value).to be(nil)
       end
 
       it "sets the success reload timestamp" do
-        snapshot = subject.metric.collector.snapshot_metric
-        value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:last_success_timestamp].value
+        value = Witness.instance.pipeline("main").reloads.snitch.last_success_timestamp
         expect(value).to be_a(Timestamp)
       end
 
       it "does not set the last reload error" do
-        snapshot = subject.metric.collector.snapshot_metric
-        value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:last_error].value
+        value = Witness.instance.pipeline("main").reloads.error.snitch.backtrace
+        expect(value).to be(nil)
+        value = Witness.instance.pipeline("main").reloads.error.snitch.message
         expect(value).to be(nil)
       end
     end
@@ -425,33 +421,29 @@ describe LogStash::Agent do
       before(:each) { subject.converge_state_and_update }
 
       it "does not increase the successful reload count" do
-        snapshot = subject.metric.collector.snapshot_metric
-        value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:successes].value
+        value = Witness.instance.pipeline("main").reloads.snitch.success
         expect(value).to eq(0)
       end
 
       it "does not set the successful reload timestamp" do
-        snapshot = subject.metric.collector.snapshot_metric
-        value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:last_success_timestamp].value
+        value = Witness.instance.pipeline("main").reloads.snitch.last_success_timestamp
         expect(value).to be(nil)
       end
 
       it "sets the failure reload timestamp" do
-        snapshot = subject.metric.collector.snapshot_metric
-        value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:last_failure_timestamp].value
+        value = Witness.instance.pipeline("main").reloads.snitch.last_failure_timestamp
         expect(value).to be_a(Timestamp)
       end
 
       it "sets the last reload error" do
-        snapshot = subject.metric.collector.snapshot_metric
-        value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:last_error].value
-        expect(value).to be_a(Hash)
-        expect(value).to include(:message, :backtrace)
+        value = Witness.instance.pipeline("main").reloads.error.snitch.message
+        expect(value).to_not be_nil
+        value = Witness.instance.pipeline("main").reloads.error.snitch.backtrace
+        expect(value).to_not be_nil
       end
 
       it "increases the failed reload count" do
-        snapshot = subject.metric.collector.snapshot_metric
-        value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads][:failures].value
+        value = Witness.instance.pipeline("main").reloads.snitch.failure
         expect(value).to be > 0
       end
     end
@@ -479,17 +471,13 @@ describe LogStash::Agent do
 
       it "does not increase the successful reload count" do
         expect { subject.converge_state_and_update }.to_not change {
-          snapshot = subject.metric.collector.snapshot_metric
-          reload_metrics = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads]
-          reload_metrics[:successes].value
+          Witness.instance.pipeline("main").reloads.snitch.success
         }
       end
 
       it "increases the failures reload count" do
         expect { subject.converge_state_and_update }.to change {
-          snapshot = subject.metric.collector.snapshot_metric
-          reload_metrics = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:reloads]
-          reload_metrics[:failures].value
+          Witness.instance.pipeline("main").reloads.snitch.failure
         }.by(1)
       end
     end
