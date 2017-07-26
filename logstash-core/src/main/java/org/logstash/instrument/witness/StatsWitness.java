@@ -1,14 +1,14 @@
 package org.logstash.instrument.witness;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class StatsWitness {
 
     private final ReloadWitness reloadWitness;
     private final EventsWitness eventsWitness;
-    private final PipelinesWitness pipelinesWitness;
+    private final Map<String, PipelineWitness> pipelines = new HashMap<>();
     private final List<String> NAME_SPACE = Collections.singletonList("stats");
+    private final List<String> PIPELINES_NAME_SPACE = Arrays.asList("stats", "pipelines");
 
     private static final StatsWitness statsWitness = new StatsWitness();
 
@@ -19,7 +19,6 @@ public class StatsWitness {
     private StatsWitness() {
         this.reloadWitness = new ReloadWitness(NAME_SPACE);
         this.eventsWitness = new EventsWitness(NAME_SPACE);
-        this.pipelinesWitness = new PipelinesWitness(NAME_SPACE);
     }
 
     public ReloadWitness reload() {
@@ -30,7 +29,8 @@ public class StatsWitness {
         return eventsWitness;
     }
 
-    public PipelinesWitness pipelines() {
-        return pipelinesWitness;
+
+    PipelineWitness pipeline(String name) {
+        return pipelines.containsKey(name) ? pipelines.get(name) : pipelines.put(name, new PipelineWitness(PIPELINES_NAME_SPACE, name));
     }
 }
