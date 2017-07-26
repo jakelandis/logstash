@@ -13,11 +13,11 @@ public class StatsWitnessTest {
         witness.event().filtered();
 
 
-        witness.pipelines().pipeline("foo").reload().failure();
-        witness.pipelines().pipeline("bar").event().in();
-        witness.pipelines().pipeline("bar").event().out();
+        witness.pipeline("foo").reload().failure();
+        witness.pipeline("bar").event().in();
+        witness.pipeline("bar").event().out();
 
-        witness.pipelines().pipeline("baz").config().batchSize(20);
-        witness.pipelines().pipeline("foo").config().deadLetterQueueEnabled(true);
+        witness.pipeline("baz").config().batchSize(20);
+        witness.pipeline("foo").config().deadLetterQueueEnabled(true);
     }
 }
