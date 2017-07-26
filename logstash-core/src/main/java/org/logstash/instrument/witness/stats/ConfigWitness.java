@@ -8,12 +8,9 @@ import org.logstash.instrument.metrics.gauge.NumericGauge;
 import org.logstash.instrument.witness.SerializableWitness;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 final public class ConfigWitness implements SerializableWitness {
 
-    private final List<String> namespaces;
 
     private final BooleanGauge deadLetterQueueEnabled;
     private final BooleanGauge configReloadAutomatic;
@@ -25,15 +22,13 @@ final public class ConfigWitness implements SerializableWitness {
     private final String KEY = "config";
 
 
-    ConfigWitness(final List<String> parentNameSpace) {
-        namespaces = new ArrayList<>(parentNameSpace);
-        namespaces.add(KEY);
-        deadLetterQueueEnabled = new BooleanGauge(namespaces, "dead_letter_queue_enabled");
-        configReloadAutomatic = new BooleanGauge(namespaces, "config_reload_automatic");
-        batchSize = new NumericGauge(namespaces, "batch_size");
-        workers = new NumericGauge(namespaces, "workers");
-        batchDelay = new NumericGauge(namespaces, "batch_delay");
-        configReloadInterval = new NumericGauge(namespaces, "config_reload_interval");
+    ConfigWitness() {
+        deadLetterQueueEnabled = new BooleanGauge("dead_letter_queue_enabled");
+        configReloadAutomatic = new BooleanGauge("config_reload_automatic");
+        batchSize = new NumericGauge("batch_size");
+        workers = new NumericGauge("workers");
+        batchDelay = new NumericGauge("batch_delay");
+        configReloadInterval = new NumericGauge("config_reload_interval");
     }
 
     public void deadLetterQueueEnabled(boolean enabled) {
@@ -102,10 +97,10 @@ final public class ConfigWitness implements SerializableWitness {
 
             Boolean value;
             if ((value = witness.configReloadAutomatic.getValue()) != null) {
-                gen.writeBooleanField(witness.configReloadAutomatic.getKey(), value);
+                gen.writeBooleanField(witness.configReloadAutomatic.getName(), value);
             }
             if ((value = witness.deadLetterQueueEnabled.getValue()) != null) {
-                gen.writeBooleanField(witness.deadLetterQueueEnabled.getKey(), value);
+                gen.writeBooleanField(witness.deadLetterQueueEnabled.getName(), value);
             }
             gen.writeEndObject();
         }

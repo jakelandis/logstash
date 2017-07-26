@@ -41,7 +41,7 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
      * @param initialValue The initial value for this {@link GaugeMetric}, may be null
      */
     protected LazyDelegatingGauge(List<String> nameSpace, String key, Object initialValue) {
-        super(nameSpace, key);
+        super(key);
         this.nameSpaces = nameSpace;
         this.key = key;
         if (initialValue != null) {
@@ -83,19 +83,19 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
         if (lazyMetric == null && value != null) {
             //"quack quack"
             if (value instanceof Number) {
-                lazyMetric = new NumericGauge(nameSpaces, key, (Number) value);
+                lazyMetric = new NumericGauge(key, (Number) value);
             } else if (value instanceof String) {
-                lazyMetric = new TextGauge(nameSpaces, key, (String) value);
+                lazyMetric = new TextGauge(key, (String) value);
             } else if (value instanceof Boolean) {
-                lazyMetric = new BooleanGauge(nameSpaces, key, (Boolean) value);
+                lazyMetric = new BooleanGauge(key, (Boolean) value);
             } else if (value instanceof RubyHash) {
-                lazyMetric = new RubyHashGauge(nameSpaces, key, (RubyHash) value);
+                lazyMetric = new RubyHashGauge(key, (RubyHash) value);
             } else if (value instanceof RubyTimestamp) {
-                lazyMetric = new RubyTimeStampGauge(nameSpaces, key, ((RubyTimestamp) value));
+                lazyMetric = new RubyTimeStampGauge(key, ((RubyTimestamp) value));
             } else {
                 LOGGER.warn("A gauge metric of an unknown type ({}) has been create for key: {}, namespace:{}. This may result in invalid serialization.  It is recommended to " +
                         "log an issue to the responsible developer/development team.", value.getClass().getCanonicalName(), key, nameSpaces);
-                lazyMetric = new UnknownGauge(nameSpaces, key, value);
+                lazyMetric = new UnknownGauge(key, value);
             }
         }
     }

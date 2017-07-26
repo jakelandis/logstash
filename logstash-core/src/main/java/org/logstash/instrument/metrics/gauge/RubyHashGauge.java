@@ -16,24 +16,22 @@ public class RubyHashGauge extends AbstractMetric<RubyHash> implements GaugeMetr
     private volatile RubyHash value;
 
     /**
-     * Constructor - protected so that Ruby may sub class proxy and discourage usage from Java, null initial value
+     * Constructor
      *
-     * @param nameSpace    The namespace for this metric
-     * @param key          The key <i>(with in the namespace)</i> for this metric
+     * @param name The name of this metric. This value may be used for display purposes.
      */
-    protected RubyHashGauge(List<String> nameSpace, String key) {
-        this(nameSpace, key, null);
+    protected RubyHashGauge(String name) {
+        this(name, null);
     }
 
     /**
      * Constructor - protected so that Ruby may sub class proxy and discourage usage from Java
      *
-     * @param nameSpace    The namespace for this metric
-     * @param key          The key <i>(with in the namespace)</i> for this metric
+     * @param name The name of this metric. This value may be used for display purposes.
      * @param initialValue The initial value for this {@link GaugeMetric}, may be null
      */
-    protected RubyHashGauge(List<String> nameSpace, String key, RubyHash initialValue) {
-        super(nameSpace, key);
+    protected RubyHashGauge(String name, RubyHash initialValue) {
+        super(name);
         this.value = initialValue;
     }
 

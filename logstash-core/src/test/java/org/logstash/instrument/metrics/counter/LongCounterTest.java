@@ -19,7 +19,7 @@ public class LongCounterTest {
 
     @Before
     public void _setup() {
-        longCounter = new LongCounter(Collections.singletonList("foo"), "bar");
+        longCounter = new LongCounter("bar");
     }
 
     @Test
@@ -47,13 +47,13 @@ public class LongCounterTest {
 
     @Test
     public void noInitialValue() {
-        LongCounter counter = new LongCounter(Collections.singletonList("foo"), "bar");
+        LongCounter counter = new LongCounter("bar");
         counter.increment();
         assertThat(counter.getValue()).isEqualTo(1l);
     }
 
     @Test
-    @SuppressWarnings( "deprecation" )
+    @SuppressWarnings("deprecation")
     public void type() {
         assertThat(longCounter.type()).isEqualTo(MetricType.COUNTER_LONG.asString());
     }

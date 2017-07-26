@@ -12,25 +12,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 @JsonSerialize(using = EventsWitness.Serializer.class)
-final public class EventsWitness implements SerializableWitness{
+final public class EventsWitness implements SerializableWitness {
 
     private LongCounter filtered;
     private LongCounter out;
     private LongCounter in;
     private LongCounter duration;
     private LongCounter queuePushDuration;
-    private List<String> namespaces;
     final String KEY = "events";
 
 
-    public EventsWitness(final List<String> parentNameSpace) {
-        namespaces = new ArrayList<>(parentNameSpace);
-        namespaces.add(KEY);
-        filtered = new LongCounter(namespaces, "filtered");
-        out = new LongCounter(namespaces, "in");
-        in = new LongCounter(namespaces, "out");
-        duration = new LongCounter(namespaces, "duration_in_millis");
-        queuePushDuration = new LongCounter(namespaces, "queue_push_duration_in_millis");
+    public EventsWitness() {
+        filtered = new LongCounter("filtered");
+        out = new LongCounter("in");
+        in = new LongCounter("out");
+        duration = new LongCounter("duration_in_millis");
+        queuePushDuration = new LongCounter("queue_push_duration_in_millis");
     }
 
 
@@ -88,11 +85,11 @@ final public class EventsWitness implements SerializableWitness{
 
         void innerSerialize(EventsWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             gen.writeObjectFieldStart(witness.KEY);
-            gen.writeNumberField(witness.in.getKey(), witness.in.getValue());
-            gen.writeNumberField(witness.out.getKey(), witness.out.getValue());
-            gen.writeNumberField(witness.filtered.getKey(), witness.filtered.getValue());
-            gen.writeNumberField(witness.duration.getKey(), witness.duration.getValue());
-            gen.writeNumberField(witness.queuePushDuration.getKey(), witness.queuePushDuration.getValue());
+            gen.writeNumberField(witness.in.getName(), witness.in.getValue());
+            gen.writeNumberField(witness.out.getName(), witness.out.getValue());
+            gen.writeNumberField(witness.filtered.getName(), witness.filtered.getValue());
+            gen.writeNumberField(witness.duration.getName(), witness.duration.getValue());
+            gen.writeNumberField(witness.queuePushDuration.getName(), witness.queuePushDuration.getValue());
             gen.writeEndObject();
         }
     }

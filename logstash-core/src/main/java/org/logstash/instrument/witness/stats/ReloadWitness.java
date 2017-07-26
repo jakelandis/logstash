@@ -15,18 +15,13 @@ import java.util.Map;
 @JsonSerialize(using = ReloadWitness.Serializer.class)
 final public class ReloadWitness implements SerializableWitness{
 
-
     private final LongCounter success;
     private final LongCounter failure;
-    private final List<String> namespaces;
     private final String KEY = "reloads";
 
-
-    ReloadWitness(final List<String> parentNameSpace) {
-        namespaces = new ArrayList<>(parentNameSpace);
-        namespaces.add(KEY);
-        success = new LongCounter(namespaces, "successes");
-        failure = new LongCounter(namespaces, "failures");
+    ReloadWitness() {
+        success = new LongCounter("successes");
+        failure = new LongCounter("failures");
     }
 
     @Override
@@ -34,11 +29,9 @@ final public class ReloadWitness implements SerializableWitness{
         new Serializer().innerSerialize(this, gen, provider);
     }
 
-
     public void success() {
         success.increment();
     }
-
 
     public void failure() {
         failure.increment();
@@ -71,11 +64,9 @@ final public class ReloadWitness implements SerializableWitness{
 
         void innerSerialize(ReloadWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             gen.writeObjectFieldStart(witness.KEY);
-            gen.writeNumberField(witness.success.getKey(), witness.success.getValue());
-            gen.writeNumberField(witness.failure.getKey(), witness.failure.getValue());
+            gen.writeNumberField(witness.success.getName(), witness.success.getValue());
+            gen.writeNumberField(witness.failure.getName(), witness.failure.getValue());
             gen.writeEndObject();
         }
-
     }
-
 }
