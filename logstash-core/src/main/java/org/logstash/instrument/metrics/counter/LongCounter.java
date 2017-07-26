@@ -17,13 +17,12 @@ public class LongCounter extends AbstractMetric<Long> implements CounterMetric<L
     /**
      * Constructor
      *
-     * @param nameSpace    The namespace for this metric
-     * @param key          The key <i>(with in the namespace)</i> for this metric
+     * @param name The name of this metric. This value may be used for display purposes.
      */
-    public LongCounter(List<String> nameSpace, String key) {
-        super(nameSpace, key);
+    public LongCounter(String name) {
+        super(name);
         longAdder = new LongAdder();
-     }
+    }
 
     @Override
     public MetricType getType() {

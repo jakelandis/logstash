@@ -14,24 +14,22 @@ public class TextGauge extends AbstractMetric<String> implements GaugeMetric<Str
     private volatile String value;
 
     /**
-     * Constructor - null initial value
+     * Constructor
      *
-     * @param nameSpace The namespace for this metric
-     * @param key       The key <i>(with in the namespace)</i> for this metric
+     * @param name The name of this metric. This value may be used for display purposes.
      */
-    public TextGauge(List<String> nameSpace, String key) {
-        this(nameSpace, key, null);
+    public TextGauge(String name) {
+        this(name, null);
     }
 
     /**
      * Constructor
      *
-     * @param nameSpace    The namespace for this metric
-     * @param key          The key <i>(with in the namespace)</i> for this metric
+     * @param name The name of this metric. This value may be used for display purposes.
      * @param initialValue The initial value for this {@link GaugeMetric}, may be null
      */
-    public TextGauge(List<String> nameSpace, String key, String initialValue) {
-        super(nameSpace, key);
+    public TextGauge(String name, String initialValue) {
+        super(name);
         this.value = initialValue;
     }
 

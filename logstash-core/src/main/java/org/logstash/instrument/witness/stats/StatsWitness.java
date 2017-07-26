@@ -17,8 +17,6 @@ final public class StatsWitness implements SerializableWitness {
     private final ReloadWitness reloadWitness;
     private final EventsWitness eventsWitness;
     private final Map<String, PipelineWitness> pipelines;
-    private final List<String> NAME_SPACE = Collections.singletonList("stats");
-    private final List<String> PIPELINES_NAME_SPACE = Arrays.asList("stats", "pipelines");
 
     private static final StatsWitness statsWitness = new StatsWitness();
 
@@ -27,8 +25,8 @@ final public class StatsWitness implements SerializableWitness {
     }
 
     private StatsWitness() {
-        this.reloadWitness = new ReloadWitness(NAME_SPACE);
-        this.eventsWitness = new EventsWitness(NAME_SPACE);
+        this.reloadWitness = new ReloadWitness();
+        this.eventsWitness = new EventsWitness();
         this.pipelines = new ConcurrentHashMap<>();
     }
 
@@ -51,7 +49,7 @@ final public class StatsWitness implements SerializableWitness {
         if (pipelines.containsKey(name)) {
             return pipelines.get(name);
         } else {
-            PipelineWitness pipeline = new PipelineWitness(PIPELINES_NAME_SPACE, name);
+            PipelineWitness pipeline = new PipelineWitness(name);
             pipelines.put(name, pipeline);
             return pipeline;
         }

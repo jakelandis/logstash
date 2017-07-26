@@ -13,19 +13,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class BooleanGaugeTest {
     @Test
     public void getValue() {
-        BooleanGauge gauge = new BooleanGauge(Collections.singletonList("foo"), "bar", true);
+        BooleanGauge gauge = new BooleanGauge("bar", true);
         assertThat(gauge.getValue()).isTrue();
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_BOOLEAN);
 
         //Null initialize
-        gauge = new BooleanGauge(Collections.singletonList("foo"), "bar");
+        gauge = new BooleanGauge("bar");
         assertThat(gauge.getValue()).isNull();
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_BOOLEAN);
     }
 
     @Test
     public void set() {
-        BooleanGauge gauge = new BooleanGauge(Collections.singletonList("foo"), "bar");
+        BooleanGauge gauge = new BooleanGauge("bar");
         gauge.set(true);
         assertThat(gauge.getValue()).isTrue();
         gauge.set(false);

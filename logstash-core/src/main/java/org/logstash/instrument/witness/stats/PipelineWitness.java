@@ -7,15 +7,11 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.logstash.instrument.witness.SerializableWitness;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @JsonSerialize(using = PipelineWitness.Serializer.class)
 final public class PipelineWitness implements SerializableWitness {
-
-    private final List<String> namespaces;
 
     private final ReloadWitness reloadWitness;
     private final EventsWitness eventsWitness;
@@ -23,13 +19,11 @@ final public class PipelineWitness implements SerializableWitness {
     private final Map<String, PluginWitness> plugins;
     private final String KEY;
 
-    PipelineWitness(final List<String> parentNameSpace, String pipelineName) {
-        namespaces = new ArrayList<>(parentNameSpace);
-        namespaces.add(pipelineName);
+    PipelineWitness(String pipelineName) {
         this.KEY = pipelineName;
-        this.reloadWitness = new ReloadWitness(namespaces);
-        this.eventsWitness = new EventsWitness(namespaces);
-        this.configWitness = new ConfigWitness(namespaces);
+        this.reloadWitness = new ReloadWitness();
+        this.eventsWitness = new EventsWitness();
+        this.configWitness = new ConfigWitness();
         this.plugins = new HashMap<>();
     }
 
@@ -55,7 +49,7 @@ final public class PipelineWitness implements SerializableWitness {
         if (plugins.containsKey(name)) {
             return plugins.get(name);
         } else {
-            PluginWitness pluginWitness = new PluginWitness(namespaces, name);
+            PluginWitness pluginWitness = new PluginWitness(name);
             plugins.put(name, pluginWitness);
             return pluginWitness;
         }
