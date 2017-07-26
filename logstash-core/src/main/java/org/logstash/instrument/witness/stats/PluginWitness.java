@@ -7,24 +7,19 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.logstash.instrument.witness.SerializableWitness;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 @JsonSerialize(using = PluginWitness.Serializer.class)
 final public class PluginWitness implements SerializableWitness {
 
-    private final List<String> namespaces;
 
     private final EventsWitness eventsWitness;
     private final String KEY;
     //TODO: inputs, output and filters
 
 
-    PluginWitness(final List<String> parentNameSpace, String pluginName) {
-        namespaces = new ArrayList<>(parentNameSpace);
-        namespaces.add(pluginName);
+    PluginWitness(String pluginName) {
         KEY = pluginName;
-        this.eventsWitness = new EventsWitness(namespaces);
+        this.eventsWitness = new EventsWitness();
     }
 
     public EventsWitness event() {

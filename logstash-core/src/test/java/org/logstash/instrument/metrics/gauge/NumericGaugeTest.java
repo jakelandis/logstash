@@ -19,17 +19,17 @@ public class NumericGaugeTest {
     public void getValue() {
 
         //Long
-        NumericGauge gauge = new NumericGauge(Collections.singletonList("foo"), "bar", 99l);
+        NumericGauge gauge = new NumericGauge("bar", 99l);
         assertThat(gauge.getValue()).isEqualTo(99l);
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_NUMERIC);
 
         //Float
-        gauge = new NumericGauge(Collections.singletonList("foo"), "bar", 123.0f);
+        gauge = new NumericGauge("bar", 123.0f);
         assertThat(gauge.getValue()).isEqualTo(123.0f);
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_NUMERIC);
 
         //Null
-        gauge = new NumericGauge(Collections.singletonList("foo"), "bar");
+        gauge = new NumericGauge("bar");
         assertThat(gauge.getValue()).isNull();
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_NUMERIC);
     }
@@ -38,19 +38,19 @@ public class NumericGaugeTest {
     @Test
     public void set() {
         //Long
-        NumericGauge gauge = new NumericGauge(Collections.singletonList("foo"), "bar");
+        NumericGauge gauge = new NumericGauge("bar");
         gauge.set(99l);
         assertThat(gauge.getValue()).isEqualTo(99l);
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_NUMERIC);
 
         //Float
-        gauge = new NumericGauge(Collections.singletonList("foo"), "bar");
+        gauge = new NumericGauge("bar");
         gauge.set(123.0f);
         assertThat(gauge.getValue()).isEqualTo(123.0f);
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_NUMERIC);
 
         //Null
-        gauge = new NumericGauge(Collections.singletonList("foo"), "bar");
+        gauge = new NumericGauge("bar");
         gauge.set(BigInteger.TEN);
         assertThat(gauge.getValue()).isEqualTo(BigInteger.TEN);
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_NUMERIC);

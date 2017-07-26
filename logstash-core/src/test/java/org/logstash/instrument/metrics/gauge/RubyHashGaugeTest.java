@@ -33,12 +33,12 @@ public class RubyHashGaugeTest {
 
     @Test
     public void getValue() {
-        RubyHashGauge gauge = new RubyHashGauge(Collections.singletonList("foo"), "bar", rubyHash);
+        RubyHashGauge gauge = new RubyHashGauge("bar", rubyHash);
         assertThat(gauge.getValue().toString()).isEqualTo(RUBY_HASH_AS_STRING);
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_RUBYHASH);
 
         //Null initialize
-        final RubyHashGauge gauge2 = new RubyHashGauge(Collections.singletonList("foo"), "bar");
+        final RubyHashGauge gauge2 = new RubyHashGauge("bar");
         Throwable thrown = catchThrowable(() -> {
             gauge2.getValue().toString();
         });
@@ -48,7 +48,7 @@ public class RubyHashGaugeTest {
 
     @Test
     public void set() {
-        RubyHashGauge gauge = new RubyHashGauge(Collections.singletonList("foo"), "bar");
+        RubyHashGauge gauge = new RubyHashGauge("bar");
         gauge.set(rubyHash);
         assertThat(gauge.getValue().toString()).isEqualTo(RUBY_HASH_AS_STRING);
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_RUBYHASH);
