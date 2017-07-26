@@ -33,9 +33,9 @@ final public class StatsWitness implements SerializableWitness {
     }
 
 
-//    public ReloadWitness reload() {
-//        return reloadWitness;
-//    }
+    public ReloadWitness reload() {
+        return reloadWitness;
+    }
 
 
     public EventsWitness event() {
@@ -56,8 +56,6 @@ final public class StatsWitness implements SerializableWitness {
             return pipeline;
         }
     }
-
-
 
     static class Serializer extends StdSerializer<StatsWitness> {
 
@@ -86,13 +84,12 @@ final public class StatsWitness implements SerializableWitness {
 
         void innerSerialize(StatsWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             witness.event().genJson(gen, provider);
+            witness.reload().genJson(gen, provider);
+            gen.writeObjectFieldStart("pipelines");
             for (Map.Entry<String, PipelineWitness> entry : witness.pipelines.entrySet()) {
                 entry.getValue().genJson(gen, provider);
             }
+            gen.writeEndObject();
         }
-
-
     }
-
-
 }
