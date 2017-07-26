@@ -1,8 +1,6 @@
 package org.logstash.instrument.witness.stats;
 
-import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
@@ -10,7 +8,6 @@ import org.logstash.instrument.metrics.counter.LongCounter;
 import org.logstash.instrument.witness.SerializableWitness;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,7 +53,7 @@ final public class EventsWitness implements SerializableWitness{
 
     @Override
     public void genJson(final JsonGenerator gen, SerializerProvider provider) throws IOException {
-        new Serializer().serialize(this, gen, provider);
+        new Serializer().innerSerialize(this, gen, provider);
     }
 
     public void queuePushDuration(long durationToAdd) {
@@ -82,9 +79,14 @@ final public class EventsWitness implements SerializableWitness{
             super(t);
         }
 
-
         @Override
         public void serialize(EventsWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            gen.writeStartObject();
+            innerSerialize(witness, gen, provider);
+            gen.writeEndObject();
+        }
+
+        void innerSerialize(EventsWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             gen.writeObjectFieldStart(witness.KEY);
             gen.writeNumberField(witness.in.getKey(), witness.in.getValue());
             gen.writeNumberField(witness.out.getKey(), witness.out.getValue());
@@ -92,7 +94,6 @@ final public class EventsWitness implements SerializableWitness{
             gen.writeNumberField(witness.duration.getKey(), witness.duration.getValue());
             gen.writeNumberField(witness.queuePushDuration.getKey(), witness.queuePushDuration.getValue());
             gen.writeEndObject();
-
         }
     }
 

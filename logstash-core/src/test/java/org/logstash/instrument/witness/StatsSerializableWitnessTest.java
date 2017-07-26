@@ -28,14 +28,26 @@ public class StatsSerializableWitnessTest {
         witness.pipeline("baz").config().batchSize(20);
         witness.pipeline("foo").config().deadLetterQueueEnabled(true);
 
-        witness.pipeline("test").plugin("foo").event().in();
-        witness.pipeline("test").plugin("foo").event().duration(100l);
-        witness.pipeline("test").plugin("foo").event().queuePushDuration(100l);
+        witness.pipeline("test").plugin("pi").event().in();
+        witness.pipeline("test").plugin("pi").event().duration(100l);
+        witness.pipeline("test").plugin("pi").event().queuePushDuration(100l);
 //
         ObjectMapper mapper = new ObjectMapper();
         System.out.println(mapper.writeValueAsString(witness));
+       mapper = new ObjectMapper();
+        System.out.println(mapper.writeValueAsString(witness.event()));
+        mapper = new ObjectMapper();
+        System.out.println(mapper.writeValueAsString(witness.pipeline("foo")));
         System.out.println(witness.event().asJson());
         System.out.println(witness.asJson());
+        System.out.println(witness.pipeline("foo").asJson());
+
+        mapper = new ObjectMapper();
+        System.out.println(mapper.writeValueAsString(witness.reload()));
+
+        mapper = new ObjectMapper();
+        System.out.println(mapper.writeValueAsString(witness.pipeline("test").plugin("pi")));
+
     }
 
 
