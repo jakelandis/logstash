@@ -1,16 +1,16 @@
-package org.logstash.instrument.witness;
+package org.logstash.instrument.witness.stats;
 
 import org.logstash.instrument.metrics.counter.LongCounter;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ReloadWitness {
+final public class ReloadWitness{
 
 
     private final LongCounter success;
     private final LongCounter failure;
-    private List<String> namespaces;
+    private final List<String> namespaces;
 
 
     ReloadWitness(final List<String> parentNameSpace) {
@@ -21,12 +21,13 @@ public class ReloadWitness {
     }
 
 
-    void success() {
+
+    public void success() {
         success.increment();
     }
 
 
-    void failure() {
+    public void failure() {
         failure.increment();
     }
 
