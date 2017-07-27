@@ -1,30 +1,29 @@
-package org.logstash.instrument.witness.stats;
+package org.logstash.instrument.witness;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import org.logstash.instrument.witness.SerializableWitness;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-@JsonSerialize(using = StatsWitness.Serializer.class)
-final public class StatsWitness implements SerializableWitness {
+@JsonSerialize(using = Witness.Serializer.class)
+final public class Witness implements SerializableWitness {
 
     private final ReloadWitness reloadWitness;
     private final EventsWitness eventsWitness;
     private final Map<String, PipelineWitness> pipelines;
 
-    private static final StatsWitness statsWitness = new StatsWitness();
+    private static final Witness WITNESS = new Witness();
 
-    public static StatsWitness getInstance() {
-        return statsWitness;
+    public static Witness getInstance() {
+        return WITNESS;
     }
 
-    private StatsWitness() {
+    private Witness() {
         this.reloadWitness = new ReloadWitness();
         this.eventsWitness = new EventsWitness();
         this.pipelines = new ConcurrentHashMap<>();
@@ -55,13 +54,13 @@ final public class StatsWitness implements SerializableWitness {
         }
     }
 
-    static class Serializer extends StdSerializer<StatsWitness> {
+    static class Serializer extends StdSerializer<Witness> {
 
         /**
          * Default constructor - required for Jackson
          */
         public Serializer() {
-            this(StatsWitness.class);
+            this(Witness.class);
         }
 
         /**
@@ -69,18 +68,18 @@ final public class StatsWitness implements SerializableWitness {
          *
          * @param t the type to serialize
          */
-        protected Serializer(Class<StatsWitness> t) {
+        protected Serializer(Class<Witness> t) {
             super(t);
         }
 
         @Override
-        public void serialize(StatsWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        public void serialize(Witness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             gen.writeStartObject();
             innerSerialize(witness, gen, provider);
             gen.writeEndObject();
         }
 
-        void innerSerialize(StatsWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        void innerSerialize(Witness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             witness.event().genJson(gen, provider);
             witness.reload().genJson(gen, provider);
             gen.writeObjectFieldStart("pipelines");

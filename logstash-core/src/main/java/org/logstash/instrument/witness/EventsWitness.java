@@ -1,15 +1,12 @@
-package org.logstash.instrument.witness.stats;
+package org.logstash.instrument.witness;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.logstash.instrument.metrics.counter.LongCounter;
-import org.logstash.instrument.witness.SerializableWitness;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 @JsonSerialize(using = EventsWitness.Serializer.class)
 final public class EventsWitness implements SerializableWitness {
