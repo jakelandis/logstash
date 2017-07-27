@@ -4,16 +4,14 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.junit.Test;
-import org.logstash.instrument.witness.stats.PipelineWitness;
-import org.logstash.instrument.witness.stats.StatsWitness;
 
 import java.io.IOException;
 
-public class StatsSerializableWitnessTest {
+public class WitnessTest {
 
     @Test
     public void test() throws IOException {
-        StatsWitness witness = StatsWitness.getInstance();
+        Witness witness = Witness.getInstance();
         witness.reload().failure();
         witness.event().in();
         witness.event().out();
