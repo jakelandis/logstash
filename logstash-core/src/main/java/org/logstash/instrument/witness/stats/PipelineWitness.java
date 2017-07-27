@@ -16,7 +16,9 @@ final public class PipelineWitness implements SerializableWitness {
     private final ReloadWitness reloadWitness;
     private final EventsWitness eventsWitness;
     private final ConfigWitness configWitness;
-    private final Map<String, PluginWitness> plugins;
+    private final Map<String, PluginWitness> inputs;
+    private final Map<String, PluginWitness> outputs;
+    private final Map<String, PluginWitness> filters;
     private final String KEY;
 
     PipelineWitness(String pipelineName) {
@@ -24,7 +26,9 @@ final public class PipelineWitness implements SerializableWitness {
         this.reloadWitness = new ReloadWitness();
         this.eventsWitness = new EventsWitness();
         this.configWitness = new ConfigWitness();
-        this.plugins = new HashMap<>();
+        this.inputs = new HashMap<>();
+        this.outputs = new HashMap<>();
+        this.filters = new HashMap<>();
     }
 
     @Override
@@ -45,15 +49,26 @@ final public class PipelineWitness implements SerializableWitness {
     }
 
 
-    public PluginWitness plugin(String name) {
-        if (plugins.containsKey(name)) {
-            return plugins.get(name);
+    public PluginWitness input(String name) {
+        return getPlugin(inputs, name);
+    }
+
+    public PluginWitness output(String name) {
+        return getPlugin(outputs, name);
+    }
+
+    public PluginWitness filter(String name) {
+        return getPlugin(filters, name);
+    }
+
+    private PluginWitness getPlugin(Map<String, PluginWitness> plugin, String name){
+        if (plugin.containsKey(name)) {
+            return plugin.get(name);
         } else {
             PluginWitness pluginWitness = new PluginWitness(name);
-            plugins.put(name, pluginWitness);
+            plugin.put(name, pluginWitness);
             return pluginWitness;
         }
-
     }
 
     static class Serializer extends StdSerializer<PipelineWitness> {
@@ -86,11 +101,24 @@ final public class PipelineWitness implements SerializableWitness {
             witness.event().genJson(gen, provider);
             witness.config().genJson(gen, provider);
             gen.writeObjectFieldStart("plugins");
-            for (Map.Entry<String, PluginWitness> entry : witness.plugins.entrySet()) {
+
+            serializePlugins("inputs", witness.inputs, gen, provider);
+            serializePlugins("filters", witness.filters, gen, provider);
+            serializePlugins("outputs", witness.outputs, gen, provider);
+
+            gen.writeEndObject();
+            gen.writeEndObject();
+        }
+
+        private void serializePlugins(String key, Map<String, PluginWitness> plugin, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            gen.writeArrayFieldStart(key);
+            for (Map.Entry<String, PluginWitness> entry : plugin.entrySet()) {
+                gen.writeStartObject();
                 entry.getValue().genJson(gen, provider);
+                gen.writeEndObject();
             }
-            gen.writeEndObject();
-            gen.writeEndObject();
+            gen.writeEndArray();
+
         }
     }
 }
