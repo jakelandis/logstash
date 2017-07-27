@@ -1,6 +1,8 @@
 package org.logstash.instrument.witness;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import org.junit.Test;
 import org.logstash.instrument.witness.stats.PipelineWitness;
 import org.logstash.instrument.witness.stats.StatsWitness;
@@ -12,7 +14,7 @@ public class StatsSerializableWitnessTest {
     @Test
     public void test() throws IOException {
         StatsWitness witness = StatsWitness.getInstance();
-//        witness.reload().failure();
+        witness.reload().failure();
         witness.event().in();
         witness.event().out();
         witness.event().filtered();
@@ -28,10 +30,17 @@ public class StatsSerializableWitnessTest {
         witness.pipeline("baz").config().batchSize(20);
         witness.pipeline("foo").config().deadLetterQueueEnabled(true);
 
-        witness.pipeline("test").plugin("pi").event().in();
-        witness.pipeline("test").plugin("pi").event().duration(100l);
-        witness.pipeline("test").plugin("pi").event().queuePushDuration(100l);
-//
+        witness.pipeline("test").input("pi").event().in();
+        witness.pipeline("test").input("pi2").event().in();
+        witness.pipeline("test").input("pi3").event().in();
+        witness.pipeline("test").input("pi").event().duration(100l);
+        witness.pipeline("test").input("pi").event().queuePushDuration(100l);
+
+        witness.pipeline("test").output("pi").addCustom(new CustomWitness());
+        witness.pipeline("test").output("pi").custom(CustomWitness.class).hiThere();
+        witness.pipeline("test").filter("pi").addCustom(new CustomWitness2());
+        witness.pipeline("test").filter("pi").custom(CustomWitness2.class).bye();
+
         ObjectMapper mapper = new ObjectMapper();
         System.out.println(mapper.writeValueAsString(witness));
        mapper = new ObjectMapper();
@@ -46,10 +55,36 @@ public class StatsSerializableWitnessTest {
         System.out.println(mapper.writeValueAsString(witness.reload()));
 
         mapper = new ObjectMapper();
-        System.out.println(mapper.writeValueAsString(witness.pipeline("test").plugin("pi")));
+        System.out.println(mapper.writeValueAsString(witness.pipeline("test").output("pi")));
 
     }
 
+
+    class CustomWitness
+            implements SerializableWitness{
+
+        String hiThere = " Hidey HoE!";
+        @Override
+        public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
+            gen.writeStringField("hello", hiThere);
+        }
+
+        public void hiThere(){
+            hiThere = "I am here!";
+        }
+    }
+    class CustomWitness2  implements SerializableWitness{
+
+        String bye ;
+        @Override
+        public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
+            gen.writeStringField("bye", bye);
+        }
+
+        public void bye(){
+            bye = "goodbye";
+        }
+    }
 
 
 }
