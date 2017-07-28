@@ -129,7 +129,7 @@ module LogStash; class BasePipeline
 
     if plugin_type == "output"
       @witness.pipeline(pipeline_id.to_s).output(name).id(id);
-      OutputDelegator.new(@logger, klass, type_scoped_metric, execution_context, OutputDelegatorStrategyRegistry.instance, args)
+      OutputDelegator.new(@logger, klass, type_scoped_metric, execution_context, OutputDelegatorStrategyRegistry.instance, args, pipeline_id.to_s)
     elsif plugin_type == "filter"
       @witness.pipeline(pipeline_id.to_s).filter(name).id(id);
       FilterDelegator.new(@logger, klass, type_scoped_metric, execution_context, args)
@@ -800,6 +800,6 @@ module LogStash; class Pipeline < BasePipeline
   end
 
   def wrapped_write_client(plugin)
-    LogStash::Instrument::WrappedWriteClient.new(@input_queue_client, self, metric, plugin)
+    LogStash::Instrument::WrappedWriteClient.new(@input_queue_client, self, metric, plugin, @logger)
   end
 end; end
