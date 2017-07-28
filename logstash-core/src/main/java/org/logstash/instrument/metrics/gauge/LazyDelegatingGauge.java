@@ -66,12 +66,27 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
     }
 
     @Override
+    public void reset() {
+        lazyMetric.reset();
+    }
+
+    @Override
+    public boolean isDirty() {
+        return lazyMetric.isDirty();
+    }
+
+    @Override
     public void set(Object value) {
         if (lazyMetric == null) {
             wakeMetric(value);
         } else {
             lazyMetric.set(value);
         }
+    }
+
+    @Override
+    public void setDirty(boolean dirty) {
+        lazyMetric.setDirty(dirty);
     }
 
     /**
@@ -97,6 +112,7 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
                         "log an issue to the responsible developer/development team.", value.getClass().getCanonicalName(), key, nameSpaces);
                 lazyMetric = new UnknownGauge(key, value);
             }
+            lazyMetric.setDirty(true);
         }
     }
 

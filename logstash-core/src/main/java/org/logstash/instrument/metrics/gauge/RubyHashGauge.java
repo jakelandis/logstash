@@ -11,9 +11,7 @@ import java.util.List;
  * A {@link GaugeMetric} that is backed by a {@link RubyHash}.  Note - This should not be used directly from Java code and exists for passivity with legacy Ruby code. Depending
  * on the types in in the {@link RubyHash} there are no guarantees serializing properly.
  */
-public class RubyHashGauge extends AbstractMetric<RubyHash> implements GaugeMetric<RubyHash,RubyHash> {
-
-    private volatile RubyHash value;
+public class RubyHashGauge extends AbstractMetric<RubyHash> implements GaugeMetric<RubyHash, RubyHash> {
 
     /**
      * Constructor
@@ -31,23 +29,12 @@ public class RubyHashGauge extends AbstractMetric<RubyHash> implements GaugeMetr
      * @param initialValue The initial value for this {@link GaugeMetric}, may be null
      */
     protected RubyHashGauge(String name, RubyHash initialValue) {
-        super(name);
-        this.value = initialValue;
+        super(name, initialValue);
     }
 
     @Override
     public MetricType getType() {
         return MetricType.GAUGE_RUBYHASH;
-    }
-
-    @Override
-    public RubyHash getValue() {
-        return value;
-    }
-
-    @Override
-    public void set(RubyHash value) {
-        this.value = value;
     }
 
 }

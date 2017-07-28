@@ -6,8 +6,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 @JsonSerialize(using = PipelineWitness.Serializer.class)
 final public class PipelineWitness implements SerializableWitness {
@@ -88,6 +86,7 @@ final public class PipelineWitness implements SerializableWitness {
         void innerSerialize(PipelineWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             gen.writeObjectFieldStart(witness.KEY);
             witness.event().genJson(gen, provider);
+            witness.reload().genJson(gen,provider);
             witness.config().genJson(gen, provider);
             witness.plugins().genJson(gen, provider);
             gen.writeEndObject();

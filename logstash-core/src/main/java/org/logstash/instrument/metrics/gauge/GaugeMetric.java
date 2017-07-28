@@ -16,4 +16,8 @@ public interface GaugeMetric<G,S> extends Metric<G> {
      * @param value The value to set
      */
     void set(S value);
+
+
+    void setDirty(boolean dirty);
+
 }

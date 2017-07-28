@@ -37,7 +37,7 @@ class LogStash::Agent
   #   :reload_interval [Integer] - reload pipelines every X seconds
   def initialize(settings = LogStash::SETTINGS, source_loader = nil)
 
-    HttpServer.start #todo: find better place for this ?
+    HttpServer.start #todo: is there a better place for this ?
     @logger = self.class.logger
     @settings = settings
     @auto_reload = setting("config.reload.automatic")
@@ -503,24 +503,28 @@ class LogStash::Agent
 
     @instance_reload_metric.increment(:failures) #todo: delete
     @witness.reload.failure
+    #todo @witness.reload.failure(cause)
 
 
-    @pipeline_reload_metric.namespace([action.pipeline_id, :reloads]).tap do |n|
+    @witness.pipeline(action.pipeline_id).reload.failure
+    @pipeline_reload_metric.namespace([action.pipeline_id, :reloads]).tap do |n| #todo: delete
       n.increment(:failures)
-      n.gauge(:last_error, { :message => action_result.message, :backtrace => action_result.backtrace}) #todo: add to witness
+      n.gauge(:last_error, { :message => action_result.message, :backtrace => action_result.backtrace})
       n.gauge(:last_failure_timestamp, LogStash::Timestamp.now) #todo: remove from metrics and replace with ??
     end
 
   end
 
-  def initialize_agent_metrics
+  def initialize_agent_metrics #todo: delete
     @instance_reload_metric.increment(:successes, 0) #todo: delete
     @instance_reload_metric.increment(:failures, 0) #todo: delete
     #witness is already initialized to zero
   end
 
-  def initialize_pipeline_metrics(action) #todo support a reset option in witness
-    @pipeline_reload_metric.namespace([action.pipeline_id, :reloads]).tap do |n|
+  def initialize_pipeline_metrics(action)
+    @witness.pipeline(action.pipeline_id).reload.reset;
+
+    @pipeline_reload_metric.namespace([action.pipeline_id, :reloads]).tap do |n| #todo: delete
       n.increment(:successes, 0)
       n.increment(:failures, 0)
       n.gauge(:last_error, nil)
@@ -532,10 +536,10 @@ class LogStash::Agent
   def update_successful_reload_metrics(action, action_result)
     @instance_reload_metric.increment(:successes) #todo: delete
     @witness.reload.success
-
-    @pipeline_reload_metric.namespace([action.pipeline_id, :reloads]).tap do |n|
+    @witness.pipeline(action.pipeline_id).reload.success
+    @pipeline_reload_metric.namespace([action.pipeline_id, :reloads]).tap do |n| #todo: delete
       n.increment(:successes)
-      n.gauge(:last_success_timestamp, action_result.executed_at)
+      n.gauge(:last_success_timestamp, action_result.executed_at)  #todo: remove from metrics and replace with ??
     end
   end
 end # class LogStash::Agent
