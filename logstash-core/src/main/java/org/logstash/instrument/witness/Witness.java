@@ -15,7 +15,8 @@ final public class Witness implements SerializableWitness {
 
     private final ReloadWitness reloadWitness;
     private final EventsWitness eventsWitness;
-    private final Map<String, PipelineWitness> pipelines;
+    private final PipelinesWitness pipelinesWitness;
+
 
     private static final Witness WITNESS = new Witness();
 
@@ -26,7 +27,8 @@ final public class Witness implements SerializableWitness {
     private Witness() {
         this.reloadWitness = new ReloadWitness();
         this.eventsWitness = new EventsWitness();
-        this.pipelines = new ConcurrentHashMap<>();
+        this.pipelinesWitness = new PipelinesWitness();
+
     }
 
 
@@ -44,14 +46,18 @@ final public class Witness implements SerializableWitness {
         new Serializer().innerSerialize(this, gen, provider);
     }
 
+    public PipelinesWitness pipelines(){
+        return pipelinesWitness;
+    }
+    /**
+     * TODO
+     * Shortcut method for pipelines.pipeline(name)
+     * @param name
+     * @return
+     */
     public PipelineWitness pipeline(String name) {
-        if (pipelines.containsKey(name)) {
-            return pipelines.get(name);
-        } else {
-            PipelineWitness pipeline = new PipelineWitness(name);
-            pipelines.put(name, pipeline);
-            return pipeline;
-        }
+       return  pipelinesWitness.pipeline(name);
+
     }
 
     static class Serializer extends StdSerializer<Witness> {
@@ -82,11 +88,7 @@ final public class Witness implements SerializableWitness {
         void innerSerialize(Witness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             witness.event().genJson(gen, provider);
             witness.reload().genJson(gen, provider);
-            gen.writeObjectFieldStart("pipelines");
-            for (Map.Entry<String, PipelineWitness> entry : witness.pipelines.entrySet()) {
-                entry.getValue().genJson(gen, provider);
-            }
-            gen.writeEndObject();
+            witness.pipelinesWitness.genJson(gen, provider);
         }
     }
 }
