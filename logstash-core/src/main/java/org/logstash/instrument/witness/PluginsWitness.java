@@ -28,6 +28,7 @@ public class PluginsWitness implements SerializableWitness  {
         new Serializer().innerSerialize(this, gen, provider);
     }
 
+    //TODO: flip all of these to be keyed by ID not name :( need to support multiple plugins of same type within the same pipeline
     public PluginWitness input(String name) {
         return getPlugin(inputs, name);
     }
