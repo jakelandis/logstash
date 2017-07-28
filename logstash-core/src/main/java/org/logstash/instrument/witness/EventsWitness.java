@@ -36,6 +36,18 @@ final public class EventsWitness implements SerializableWitness {
         out.increment();
     }
 
+    public void in(long count) {
+        in.increment(count);
+    }
+
+    public void filtered(long count) {
+        filtered.increment(count);
+    }
+
+    public void out(long count) {
+        out.increment(count);
+    }
+
     public void in() {
         in.increment();
     }

@@ -30,6 +30,7 @@ public class WitnessTest {
 
         witness.pipeline("a").reload().reset();
         witness.pipeline("test").input("pi").event().in();
+        witness.pipeline("test").input("pi").event().in(4);
         witness.pipeline("test").input("pi2").event().in();
         witness.pipeline("test").input("pi3").event().in();
         witness.pipeline("test").input("pi").event().duration(100l);
