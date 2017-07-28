@@ -54,6 +54,8 @@ public class WitnessTest {
 
         mapper = new ObjectMapper();
         System.out.println(mapper.writeValueAsString(witness.pipeline("test").output("pi")));
+        System.out.println(mapper.writeValueAsString(witness.pipelines().pipeline("test").output("pi")));
+        System.out.println(mapper.writeValueAsString(witness.pipelines().pipeline("test").plugins().output("pi")));
 
     }
 

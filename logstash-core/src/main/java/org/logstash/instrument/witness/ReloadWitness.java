@@ -13,7 +13,7 @@ final public class ReloadWitness implements SerializableWitness{
 
     private final LongCounter success;
     private final LongCounter failure;
-    private final String KEY = "reloads";
+    private final static String KEY = "reloads";
 
     ReloadWitness() {
         success = new LongCounter("successes");
