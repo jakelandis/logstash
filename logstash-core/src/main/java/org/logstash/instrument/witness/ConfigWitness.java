@@ -7,10 +7,8 @@ import org.logstash.instrument.metrics.Metric;
 import org.logstash.instrument.metrics.gauge.BooleanGauge;
 import org.logstash.instrument.metrics.gauge.GaugeMetric;
 import org.logstash.instrument.metrics.gauge.LongGauge;
-import org.logstash.instrument.metrics.gauge.NumericGauge;
 
 import java.io.IOException;
-import java.util.function.Consumer;
 
 final public class ConfigWitness implements SerializableWitness {
 
@@ -91,27 +89,14 @@ final public class ConfigWitness implements SerializableWitness {
 
         void innerSerialize(ConfigWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             gen.writeObjectFieldStart(witness.KEY);
-            GaugeSerializer<GaugeMetric<Long>> longGaugeSerializer = m -> {
-                Long value;
-                if ((value = m.getValue()) != null) {
-                    gen.writeNumberField(m.getName(), value);
-                }
-            };
 
-            longGaugeSerializer.serialize(witness.batchSize);
-            longGaugeSerializer.serialize(witness.workers);
-            longGaugeSerializer.serialize(witness.batchDelay);
-            longGaugeSerializer.serialize(witness.configReloadInterval);
+            MetricSerializer.Get.longSerializer(gen).serialize(witness.batchSize);
+            MetricSerializer.Get.longSerializer(gen).serialize(witness.workers);
+            MetricSerializer.Get.longSerializer(gen).serialize(witness.batchDelay);
+            MetricSerializer.Get.longSerializer(gen).serialize(witness.configReloadInterval);
 
-            GaugeSerializer<GaugeMetric<Boolean>> booleanGaugeSerializer = m -> {
-                Boolean value;
-                if ((value = m.getValue()) != null) {
-                    gen.writeBooleanField(m.getName(), value);
-                }
-            };
-
-            booleanGaugeSerializer.serialize(witness.configReloadAutomatic);
-            booleanGaugeSerializer.serialize(witness.deadLetterQueueEnabled);
+            MetricSerializer.Get.booleanSerializer(gen).serialize(witness.configReloadAutomatic);
+            MetricSerializer.Get.booleanSerializer(gen).serialize(witness.deadLetterQueueEnabled);
         }
 
     }

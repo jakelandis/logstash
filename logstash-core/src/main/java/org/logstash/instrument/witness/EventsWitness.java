@@ -94,11 +94,11 @@ final public class EventsWitness implements SerializableWitness {
 
         void innerSerialize(EventsWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             gen.writeObjectFieldStart(witness.KEY);
-            gen.writeNumberField(witness.in.getName(), witness.in.getValue());
-            gen.writeNumberField(witness.out.getName(), witness.out.getValue());
-            gen.writeNumberField(witness.filtered.getName(), witness.filtered.getValue());
-            gen.writeNumberField(witness.duration.getName(), witness.duration.getValue());
-            gen.writeNumberField(witness.queuePushDuration.getName(), witness.queuePushDuration.getValue());
+            MetricSerializer.Get.longSerializer(gen).serialize(witness.in);
+            MetricSerializer.Get.longSerializer(gen).serialize(witness.filtered);
+            MetricSerializer.Get.longSerializer(gen).serialize(witness.out);
+            MetricSerializer.Get.longSerializer(gen).serialize(witness.duration);
+            MetricSerializer.Get.longSerializer(gen).serialize(witness.queuePushDuration);
             gen.writeEndObject();
         }
     }

@@ -81,8 +81,8 @@ public class PluginWitness implements SerializableWitness {
         }
 
         void innerSerialize(PluginWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
-            gen.writeStringField(witness.id.getName(), witness.id.getValue());
-            gen.writeStringField(witness.name.getName(), witness.name.getValue());
+            MetricSerializer.Get.stringSerializer(gen).serialize(witness.id);
+            MetricSerializer.Get.stringSerializer(gen).serialize(witness.name);
             witness.event().genJson(gen, provider);
             for (SerializableWitness customWitness : witness.customWitnesses.values()) {
                 customWitness.genJson(gen, provider);
