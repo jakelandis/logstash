@@ -22,6 +22,7 @@ final public class PipelineWitness implements SerializableWitness {
         this.eventsWitness = new EventsWitness();
         this.configWitness = new ConfigWitness();
         this.pluginsWitness = new PluginsWitness();
+        //TODO: add queue(type)
     }
 
     @Override
@@ -40,7 +41,6 @@ final public class PipelineWitness implements SerializableWitness {
     public ConfigWitness config() {
         return configWitness;
     }
-
 
     public PluginWitness input(String name) {
         return pluginsWitness.input(name);

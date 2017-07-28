@@ -37,6 +37,10 @@ final public class ReloadWitness implements SerializableWitness{
     public void reset(){
         success.reset();
         failure.reset();
+
+        //ensure this is serialized
+        success.setDirty(true);
+        failure.setDirty(true);
         //todo: also reset last error
     }
 
@@ -67,8 +71,8 @@ final public class ReloadWitness implements SerializableWitness{
 
         void innerSerialize(ReloadWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             gen.writeObjectFieldStart(witness.KEY);
-            gen.writeNumberField(witness.success.getName(), witness.success.getValue());
-            gen.writeNumberField(witness.failure.getName(), witness.failure.getValue());
+            MetricSerializer.Get.longSerializer(gen).serialize(witness.success);
+            MetricSerializer.Get.longSerializer(gen).serialize(witness.failure);
             gen.writeEndObject();
         }
     }
