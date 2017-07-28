@@ -8,7 +8,6 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 
-//TODO: make this not suck
 public class HttpServer {
 
     private static final Logger LOGGER = LogManager.getLogger(HttpServer.class);
@@ -29,9 +28,8 @@ public class HttpServer {
             ResourceConfig config = new ResourceConfig();
             config.packages("org.logstash.http");
             ServletHolder servlet = new ServletHolder(new ServletContainer(config));
-            Server server = new Server(8080);
-
-
+            //TODO: walk up the ports till one is found
+            Server server = new Server(9700);
             ServletContextHandler context = new ServletContextHandler(server, "/*", false, false);
             context.addServlet(servlet, "/*");
 
