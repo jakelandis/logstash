@@ -29,6 +29,11 @@ public class PluginWitness implements SerializableWitness {
         return eventsWitness;
     }
 
+    public PluginWitness id(String id){
+        this.id.set(id);
+        return this;
+    }
+
 
     public <T extends SerializableWitness> void addCustom(T witness) {
         customWitnesses.putIfAbsent(witness.getClass(), witness);
@@ -44,10 +49,6 @@ public class PluginWitness implements SerializableWitness {
         SerializableWitness w = customWitnesses.get(clazz);
         return  w == null ? null : clazz.cast(w);
     }
-
-
-
-
 
     @Override
     public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {

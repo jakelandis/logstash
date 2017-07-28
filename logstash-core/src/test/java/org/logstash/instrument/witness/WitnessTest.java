@@ -28,6 +28,7 @@ public class WitnessTest {
         witness.pipeline("baz").config().batchSize(20);
         witness.pipeline("foo").config().deadLetterQueueEnabled(true);
 
+        witness.pipeline("a").reload().reset();
         witness.pipeline("test").input("pi").event().in();
         witness.pipeline("test").input("pi2").event().in();
         witness.pipeline("test").input("pi3").event().in();
@@ -38,6 +39,9 @@ public class WitnessTest {
         witness.pipeline("test").output("pi").custom(CustomWitness.class).hiThere();
         witness.pipeline("test").filter("pi").addCustom(new CustomWitness2());
         witness.pipeline("test").filter("pi").custom(CustomWitness2.class).bye();
+        witness.pipeline("test").filter("pi").id("fsadfadsfadsf");
+
+      //  pipeline_scoped_metric = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :plugins]) #todo: delete
 
         ObjectMapper mapper = new ObjectMapper();
         System.out.println(mapper.writeValueAsString(witness));

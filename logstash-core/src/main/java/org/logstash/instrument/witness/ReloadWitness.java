@@ -18,6 +18,7 @@ final public class ReloadWitness implements SerializableWitness{
     ReloadWitness() {
         success = new LongCounter("successes");
         failure = new LongCounter("failures");
+        //TOOD: add last error
     }
 
     @Override
@@ -31,6 +32,12 @@ final public class ReloadWitness implements SerializableWitness{
 
     public void failure() {
         failure.increment();
+    }
+
+    public void reset(){
+        success.reset();
+        failure.reset();
+        //todo: also reset last error
     }
 
     static class Serializer extends StdSerializer<ReloadWitness> {

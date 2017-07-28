@@ -1,17 +1,12 @@
 package org.logstash.instrument.metrics.gauge;
 
 
-import org.logstash.instrument.metrics.AbstractMetric;
 import org.logstash.instrument.metrics.MetricType;
-
-import java.util.List;
 
 /**
  * A {@link GaugeMetric} that is backed by a {@link String}
  */
-public class TextGauge extends AbstractMetric<String> implements GaugeMetric<String,String> {
-
-    private volatile String value;
+public class TextGauge extends AbstractMetric<String> implements GaugeMetric<String, String> {
 
     /**
      * Constructor
@@ -29,24 +24,12 @@ public class TextGauge extends AbstractMetric<String> implements GaugeMetric<Str
      * @param initialValue The initial value for this {@link GaugeMetric}, may be null
      */
     public TextGauge(String name, String initialValue) {
-        super(name);
-        this.value = initialValue;
+        super(name, initialValue);
     }
 
     @Override
     public MetricType getType() {
         return MetricType.GAUGE_TEXT;
     }
-
-    @Override
-    public String getValue() {
-        return value;
-    }
-
-    @Override
-    public void set(String value) {
-        this.value = value;
-    }
-
 
 }
