@@ -70,4 +70,10 @@ public interface Metric<T> {
      */
     boolean isDirty();
 
+    /**
+     * Sets the dirty state of this metric. A metric is dirty if it is anything other then it's default state.
+     *
+     * @param dirty the dirty state
+     */
+    void setDirty(boolean dirty);
 }
