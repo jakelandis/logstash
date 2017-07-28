@@ -87,7 +87,7 @@ final public class PipelineWitness implements SerializableWitness {
             gen.writeObjectFieldStart(witness.KEY);
             witness.event().genJson(gen, provider);
             witness.reload().genJson(gen,provider);
-            witness.config().genJson(gen, provider);
+           // witness.config().genJson(gen, provider);
             witness.plugins().genJson(gen, provider);
             gen.writeEndObject();
         }

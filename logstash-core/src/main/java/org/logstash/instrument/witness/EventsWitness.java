@@ -21,8 +21,8 @@ final public class EventsWitness implements SerializableWitness {
 
     public EventsWitness() {
         filtered = new LongCounter("filtered");
-        out = new LongCounter("in");
-        in = new LongCounter("out");
+        out = new LongCounter("out");
+        in = new LongCounter("in");
         duration = new LongCounter("duration_in_millis");
         queuePushDuration = new LongCounter("queue_push_duration_in_millis");
     }

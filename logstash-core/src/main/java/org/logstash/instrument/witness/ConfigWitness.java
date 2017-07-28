@@ -97,6 +97,7 @@ final public class ConfigWitness implements SerializableWitness {
 
             MetricSerializer.Get.booleanSerializer(gen).serialize(witness.configReloadAutomatic);
             MetricSerializer.Get.booleanSerializer(gen).serialize(witness.deadLetterQueueEnabled);
+            gen.writeEndObject();
         }
 
     }
