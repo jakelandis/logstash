@@ -8,6 +8,9 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 
+/**
+ * Http server backed by Jetty.
+ */
 public class HttpServer {
 
     private static final Logger LOGGER = LogManager.getLogger(HttpServer.class);
@@ -28,7 +31,7 @@ public class HttpServer {
             ResourceConfig config = new ResourceConfig();
             config.packages("org.logstash.http");
             ServletHolder servlet = new ServletHolder(new ServletContainer(config));
-            //TODO: walk up the ports till one is found
+            //TODO: walk up the ports till an open one is found
             Server server = new Server(9700);
             ServletContextHandler context = new ServletContextHandler(server, "/*", false, false);
             context.addServlet(servlet, "/*");

@@ -10,6 +10,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+/**
+ * Jax-Rs resource. Handles http requests at the _node/stats and it's children.
+ */
 @Path("_node/stats")
 public class StatsHttp {
 
