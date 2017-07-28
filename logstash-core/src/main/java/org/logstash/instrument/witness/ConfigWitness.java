@@ -3,31 +3,35 @@ package org.logstash.instrument.witness;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import org.logstash.instrument.metrics.Metric;
 import org.logstash.instrument.metrics.gauge.BooleanGauge;
+import org.logstash.instrument.metrics.gauge.GaugeMetric;
+import org.logstash.instrument.metrics.gauge.LongGauge;
 import org.logstash.instrument.metrics.gauge.NumericGauge;
 
 import java.io.IOException;
+import java.util.function.Consumer;
 
 final public class ConfigWitness implements SerializableWitness {
 
 
     private final BooleanGauge deadLetterQueueEnabled;
     private final BooleanGauge configReloadAutomatic;
-    private final NumericGauge batchSize;
-    private final NumericGauge workers;
-    //TODO: Is this a counter or gauge ?
-    private final NumericGauge batchDelay;
-    private final NumericGauge configReloadInterval;
+    private final LongGauge batchSize;
+    private final LongGauge workers;
+
+    private final LongGauge batchDelay;
+    private final LongGauge configReloadInterval;
     private final String KEY = "config";
 
 
     ConfigWitness() {
         deadLetterQueueEnabled = new BooleanGauge("dead_letter_queue_enabled");
         configReloadAutomatic = new BooleanGauge("config_reload_automatic");
-        batchSize = new NumericGauge("batch_size");
-        workers = new NumericGauge("workers");
-        batchDelay = new NumericGauge("batch_delay");
-        configReloadInterval = new NumericGauge("config_reload_interval");
+        batchSize = new LongGauge("batch_size");
+        workers = new LongGauge("workers");
+        batchDelay = new LongGauge("batch_delay");
+        configReloadInterval = new LongGauge("config_reload_interval");
     }
 
     public void deadLetterQueueEnabled(boolean enabled) {
@@ -87,21 +91,30 @@ final public class ConfigWitness implements SerializableWitness {
 
         void innerSerialize(ConfigWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             gen.writeObjectFieldStart(witness.KEY);
-            //FIXME: assuming a long value is not correct :( , need a better guage
+            GaugeSerializer<GaugeMetric<Long>> longGaugeSerializer = m -> {
+                Long value;
+                if ((value = m.getValue()) != null) {
+                    gen.writeNumberField(m.getName(), value);
+                }
+            };
 
-//            gen.writeNumberField(witness.batchSize.getKey(), witness.batchSize.getValue());
-//            gen.writeNumberField(witness.workers.getKey(), witness.workers.getValue());
-//            gen.writeNumberField(witness.batchDelay.getKey(), witness.batchDelay.getValue());
-//            gen.writeNumberField(witness.configReloadInterval.getKey(), witness.configReloadInterval.getValue());
+            longGaugeSerializer.serialize(witness.batchSize);
+            longGaugeSerializer.serialize(witness.workers);
+            longGaugeSerializer.serialize(witness.batchDelay);
+            longGaugeSerializer.serialize(witness.configReloadInterval);
 
-            Boolean value;
-            if ((value = witness.configReloadAutomatic.getValue()) != null) {
-                gen.writeBooleanField(witness.configReloadAutomatic.getName(), value);
-            }
-            if ((value = witness.deadLetterQueueEnabled.getValue()) != null) {
-                gen.writeBooleanField(witness.deadLetterQueueEnabled.getName(), value);
-            }
-            gen.writeEndObject();
+            GaugeSerializer<GaugeMetric<Boolean>> booleanGaugeSerializer = m -> {
+                Boolean value;
+                if ((value = m.getValue()) != null) {
+                    gen.writeBooleanField(m.getName(), value);
+                }
+            };
+
+            booleanGaugeSerializer.serialize(witness.configReloadAutomatic);
+            booleanGaugeSerializer.serialize(witness.deadLetterQueueEnabled);
         }
+
     }
+
+
 }
