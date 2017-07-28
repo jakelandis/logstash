@@ -4,6 +4,8 @@ import org.logstash.instrument.metrics.AbstractMetric;
 
 public abstract class AbstractGaugeMetric<T> extends AbstractMetric<T> implements GaugeMetric<T>{
 
+    private volatile boolean dirty;
+
     private volatile T value;
 
     /**
@@ -24,11 +26,24 @@ public abstract class AbstractGaugeMetric<T> extends AbstractMetric<T> implement
     public AbstractGaugeMetric(String name, T initialValue) {
         super(name);
         this.value = initialValue;
+        setDirty(true);
+
     }
 
     @Override
     public void reset() {
         this.value = null;
+        setDirty(false);
+    }
+
+    @Override
+    public boolean isDirty() {
+        return dirty;
+    }
+
+    @Override
+    public void setDirty(boolean dirty){
+        this.dirty = dirty;
     }
 
     @Override
@@ -40,6 +55,7 @@ public abstract class AbstractGaugeMetric<T> extends AbstractMetric<T> implement
     @Override
     public void set(T value) {
         this.value = value;
+        setDirty(true);
     }
 
 }

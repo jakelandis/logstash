@@ -64,4 +64,10 @@ public interface Metric<T> {
      */
      void reset();
 
+    /**
+     * Determine if this metric has a value explicitly set.
+     * @return true if this metric has been set to a specific value, false if it is the default state
+     */
+    boolean isDirty();
+
 }
