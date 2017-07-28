@@ -42,11 +42,6 @@ public class LongCounter extends AbstractMetric<Long> implements CounterMetric<L
     }
 
     @Override
-    public boolean isDirty() {
-        return dirty;
-    }
-
-    @Override
     public void increment() {
         increment(1l);
     }
