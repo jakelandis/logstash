@@ -16,25 +16,25 @@ public class RubyTimeStampGauge extends AbstractMetric<Timestamp> implements Gau
 
     private volatile Timestamp value;
 
+    private volatile boolean dirty;
+
     /**
      * Constructor - protected so that Ruby may sub class proxy and discourage usage from Java, null initial value
      *
-     * @param nameSpace The namespace for this metric
      * @param key       The key <i>(with in the namespace)</i> for this metric
      */
-    protected RubyTimeStampGauge(List<String> nameSpace, String key) {
-        this(nameSpace, key, null);
+    protected RubyTimeStampGauge(String key) {
+        this(key, null);
     }
 
     /**
      * Constructor - protected so that Ruby may sub class proxy and discourage usage from Java
      *
-     * @param nameSpace    The namespace for this metric
      * @param key          The key <i>(with in the namespace)</i> for this metric
      * @param initialValue The initial value for this {@link GaugeMetric}, may be null
      */
-    protected RubyTimeStampGauge(List<String> nameSpace, String key, RubyTimestamp initialValue) {
-        super(nameSpace, key);
+    protected RubyTimeStampGauge(String key, RubyTimestamp initialValue) {
+        super(key);
         this.value = initialValue == null ? null : initialValue.getTimestamp();
     }
 
@@ -46,6 +46,21 @@ public class RubyTimeStampGauge extends AbstractMetric<Timestamp> implements Gau
     @Override
     public Timestamp getValue() {
         return value;
+    }
+
+    @Override
+    public void reset() {
+        this.value = null;
+    }
+
+    @Override
+    public boolean isDirty() {
+        return dirty;
+    }
+
+    @Override
+    public void setDirty(boolean dirty) {
+        this.dirty = dirty;
     }
 
     @Override
