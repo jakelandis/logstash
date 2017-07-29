@@ -6,7 +6,7 @@ import org.logstash.instrument.metrics.MetricType;
 /**
  * A {@link GaugeMetric} that is backed by a {@link String}
  */
-public class TextGauge extends AbstractMetric<String> implements GaugeMetric<String, String> {
+public class TextGauge extends AbstractGaugeMetric<String> {
 
     /**
      * Constructor
@@ -20,7 +20,7 @@ public class TextGauge extends AbstractMetric<String> implements GaugeMetric<Str
     /**
      * Constructor
      *
-     * @param name The name of this metric. This value may be used for display purposes.
+     * @param name         The name of this metric. This value may be used for display purposes.
      * @param initialValue The initial value for this {@link GaugeMetric}, may be null
      */
     public TextGauge(String name, String initialValue) {

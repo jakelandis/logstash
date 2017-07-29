@@ -5,7 +5,7 @@ import org.logstash.instrument.metrics.MetricType;
 /**
  * A {@link GaugeMetric} that is backed by a {@link Boolean}
  */
-public class BooleanGauge extends AbstractMetric<Boolean> implements GaugeMetric<Boolean, Boolean> {
+public class BooleanGauge extends AbstractGaugeMetric<Boolean> {
 
     /**
      * Constructor - null initial value

@@ -5,7 +5,7 @@ import org.logstash.instrument.metrics.MetricType;
 /**
  * A {@link GaugeMetric} that is backed by a {@link Number}
  */
-public class NumericGauge extends AbstractMetric<Number> implements GaugeMetric<Number, Number> {
+public class NumericGauge extends AbstractGaugeMetric<Number>{
 
     /**
      * Constructor
