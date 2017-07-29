@@ -141,7 +141,7 @@ module LogStash; class BasePipeline
       @witness.pipeline(pipeline_id.to_s).filter(name).id(id);
       FilterDelegator.new(@logger, klass, type_scoped_metric, execution_context, args)
     else # input
-      @witness.pipeline(pipeline_id.to_s).input(name).id(id);
+      #input witness handled in WrappedWriteClient
       input_plugin = klass.new(args)
       scoped_metric = type_scoped_metric.namespace(id.to_sym)
       scoped_metric.gauge(:name, input_plugin.config_name)
