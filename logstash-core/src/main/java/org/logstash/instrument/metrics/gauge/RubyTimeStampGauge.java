@@ -19,11 +19,12 @@ public class RubyTimeStampGauge extends AbstractMetric<Timestamp> implements Gau
     private volatile boolean dirty;
 
     /**
-     * Constructor - protected so that Ruby may sub class proxy and discourage usage from Java, null initial value
+     * Constructor
      *
      * @param key       The key <i>(with in the namespace)</i> for this metric
+     * @deprecated - There are no plans to replace this.
      */
-    protected RubyTimeStampGauge(String key) {
+    public RubyTimeStampGauge(String key) {
         this(key, null);
     }
 

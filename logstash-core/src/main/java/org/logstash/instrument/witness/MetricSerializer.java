@@ -1,8 +1,12 @@
 package org.logstash.instrument.witness;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import org.logstash.Timestamp;
+import org.logstash.ext.JrubyTimestampExtLibrary;
 import org.logstash.instrument.metrics.Metric;
 import org.logstash.instrument.metrics.gauge.GaugeMetric;
+import org.logstash.instrument.metrics.gauge.RubyHashGauge;
+import org.logstash.instrument.metrics.gauge.RubyTimeStampGauge;
 
 import java.io.IOException;
 
@@ -59,6 +63,31 @@ public interface MetricSerializer<T extends Metric<?>>{
             return m -> {
                 if (m != null && m.isDirty() && m.getValue() != null) {
                     gen.writeStringField(m.getName(), m.getValue());
+                }
+            };
+        }
+        /**
+         * Proper way to serialize a {@link String} type metric to JSON that should emit a {@code null} JSON value if missing
+         * @param gen The {@link JsonGenerator} used to generate JSON
+         * @return the {@link MetricSerializer} which is the function used to serialize the metric
+         */
+        static MetricSerializer<Metric<String>> nullStringSerializer(JsonGenerator gen){
+            return m -> {
+                if (m != null) {
+                    gen.writeStringField(m.getName(), m.getValue());
+                }
+            };
+        }
+
+        /**
+         * Proper way to serialize a {@link RubyTimeStampGauge} type metric to JSON that should emit a {@code null} JSON value if missing
+         * @param gen The {@link JsonGenerator} used to generate JSON
+         * @return the {@link MetricSerializer} which is the function used to serialize the metric
+         */
+        static MetricSerializer<RubyTimeStampGauge> timestampSerializer(JsonGenerator gen){
+            return m -> {
+                if (m != null ) {
+                    gen.writeStringField(m.getName(),m.getValue() != null ? m.getValue().toString() : null);
                 }
             };
         }
