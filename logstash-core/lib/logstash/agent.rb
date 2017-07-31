@@ -19,6 +19,7 @@ require "uri"
 require "socket"
 require "securerandom"
 
+java_import org.logstash.http.HttpServer #todo: remove this.... this is currently only for manually testing alt metrics api
 LogStash::Environment.load_locale!
 
 class LogStash::Agent
@@ -34,6 +35,8 @@ class LogStash::Agent
   #   :auto_reload [Boolean] - enable reloading of pipelines
   #   :reload_interval [Integer] - reload pipelines every X seconds
   def initialize(settings = LogStash::SETTINGS, source_loader = nil)
+
+    HttpServer.start #todo: remove this.... this is currently only for manually testing alt metrics api
     @logger = self.class.logger
     @settings = settings
     @auto_reload = setting("config.reload.automatic")
