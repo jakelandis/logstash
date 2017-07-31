@@ -4,21 +4,30 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import org.logstash.ext.JrubyTimestampExtLibrary;
 import org.logstash.instrument.metrics.counter.LongCounter;
+import org.logstash.instrument.metrics.gauge.RubyTimeStampGauge;
+import org.logstash.instrument.metrics.gauge.TextGauge;
 
 import java.io.IOException;
 
 @JsonSerialize(using = ReloadWitness.Serializer.class)
-final public class ReloadWitness implements SerializableWitness{
+final public class ReloadWitness implements SerializableWitness {
 
     private final LongCounter success;
     private final LongCounter failure;
+    private final TextGauge lastError;
+    private final RubyTimeStampGauge lastSuccessTimestamp;
+    private final RubyTimeStampGauge lastFailureTimestamp;
+
     private final static String KEY = "reloads";
 
     ReloadWitness() {
         success = new LongCounter("successes");
         failure = new LongCounter("failures");
-        //TOOD: add last error
+        lastError = new TextGauge("last_error");
+        lastSuccessTimestamp = new RubyTimeStampGauge("last_success_timestamp");
+        lastFailureTimestamp = new RubyTimeStampGauge("last_failure_timestamp");
     }
 
     @Override
@@ -40,6 +49,18 @@ final public class ReloadWitness implements SerializableWitness{
 
     public void failure() {
         failure.increment();
+    }
+
+    public void lastError(String lastError) {
+        this.lastError.set(lastError);
+    }
+
+    public void lastSuccessTimestamp(JrubyTimestampExtLibrary.RubyTimestamp timestamp){
+        lastSuccessTimestamp.set(timestamp);
+    }
+
+    public void lastFailureTimestamp(JrubyTimestampExtLibrary.RubyTimestamp timestamp){
+        lastFailureTimestamp.set(timestamp);
     }
 
     static class Serializer extends StdSerializer<ReloadWitness> {
@@ -69,7 +90,10 @@ final public class ReloadWitness implements SerializableWitness{
 
         void innerSerialize(ReloadWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             gen.writeObjectFieldStart(witness.KEY);
+            MetricSerializer.Get.nullStringSerializer(gen).serialize(witness.lastError);
             MetricSerializer.Get.longSerializer(gen).serialize(witness.success);
+            MetricSerializer.Get.timestampSerializer(gen).serialize(witness.lastSuccessTimestamp);
+            MetricSerializer.Get.timestampSerializer(gen).serialize(witness.lastFailureTimestamp);
             MetricSerializer.Get.longSerializer(gen).serialize(witness.failure);
             gen.writeEndObject();
         }

@@ -38,6 +38,12 @@ module LogStash
           witness.deadLetterQueueEnabled(value)
         elsif key.eql? :type
           witness.type(value)
+        elsif key.eql? :last_error
+          witness.lastError(value)
+        elsif key.eql? :last_success_timestamp
+          witness.lastSuccessTimestamp(value)
+        elsif key.eql? :last_failure_timestamp
+          witness.lastFailureTimestamp(value)
         else
           puts "HEY! you missed me!!!: " + namespaces.to_s + ":" + key.to_s #todo: replace with real message
         end
@@ -48,6 +54,7 @@ module LogStash
   end
 end
 
+# Namespaces are essentially a forward chain
 class Array
   def to_witness
     index = 0
