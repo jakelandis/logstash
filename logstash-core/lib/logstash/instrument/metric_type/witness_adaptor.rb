@@ -21,11 +21,25 @@ module LogStash
         elsif key.eql? :name
           witness.name(value)
         elsif key.eql? :successes
-          witness.success
+          witness.success(value)
         elsif key.eql? :failures
-          witness.failure
+          witness.failure(value)
+        elsif key.eql? :workers
+          witness.workers(value)
+        elsif key.eql? :batch_size
+          witness.batchSize(value)
+        elsif key.eql? :batch_delay
+          witness.batchDelay(value)
+        elsif key.eql? :config_reload_automatic
+          witness.configReloadAutomatic(value)
+        elsif key.eql? :config_reload_interval
+          witness.configReloadInterval(value)
+        elsif key.eql? :dead_letter_queue_enabled
+          witness.deadLetterQueueEnabled(value)
+        elsif key.eql? :type
+          witness.type(value)
         else
-          puts "HEY! you missed me!!!: " + namespaces.to_s + ":" + key.to_s
+          puts "HEY! you missed me!!!: " + namespaces.to_s + ":" + key.to_s #todo: replace with real message
         end
 
       end
@@ -60,6 +74,10 @@ class Array
           witness = witness.event
         elsif current.eql? :plugins
           witness = witness.plugins
+        elsif current.eql? :config
+          witness = witness.config
+        elsif current.eql? :queue
+          witness = witness.queue
         end
       end
       index += 1
