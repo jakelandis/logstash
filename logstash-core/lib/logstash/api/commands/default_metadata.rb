@@ -12,7 +12,7 @@ module LogStash
         end
 
         def host
-          Socket.gethostname
+          @@host ||= Socket.gethostname #part of 7858 PR ..todo: delete this comment
         end
 
         def version

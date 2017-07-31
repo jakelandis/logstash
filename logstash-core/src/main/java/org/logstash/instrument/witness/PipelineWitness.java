@@ -91,9 +91,8 @@ final public class PipelineWitness implements SerializableWitness {
         void innerSerialize(PipelineWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             gen.writeObjectFieldStart(witness.KEY);
             witness.event().genJson(gen, provider);
-            witness.reload().genJson(gen,provider);
-           // witness.config().genJson(gen, provider);
             witness.plugins().genJson(gen, provider);
+            witness.reload().genJson(gen,provider);
             witness.queue().genJson(gen, provider);
             gen.writeEndObject();
         }

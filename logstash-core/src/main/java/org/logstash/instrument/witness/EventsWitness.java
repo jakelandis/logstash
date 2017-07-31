@@ -17,6 +17,7 @@ final public class EventsWitness implements SerializableWitness {
     private LongCounter duration;
     private LongCounter queuePushDuration;
     final String KEY = "events";
+    private boolean dirty; //here for passivity with legacy Ruby implementation
 
 
     public EventsWitness() {
@@ -25,35 +26,43 @@ final public class EventsWitness implements SerializableWitness {
         in = new LongCounter("in");
         duration = new LongCounter("duration_in_millis");
         queuePushDuration = new LongCounter("queue_push_duration_in_millis");
+        dirty = false;
     }
 
 
     public void filtered() {
         filtered.increment();
+        dirty = true;
     }
 
     public void out() {
         out.increment();
+        dirty = true;
     }
 
     public void in(long count) {
         in.increment(count);
+        dirty = true;
     }
 
     public void filtered(long count) {
         filtered.increment(count);
+        dirty = true;
     }
 
     public void out(long count) {
         out.increment(count);
+        dirty = true;
     }
 
     public void in() {
         in.increment();
+        dirty = true;
     }
 
     public void duration(long durationToAdd) {
         duration.increment(durationToAdd);
+        dirty = true;
     }
 
 
@@ -64,6 +73,7 @@ final public class EventsWitness implements SerializableWitness {
 
     public void queuePushDuration(long durationToAdd) {
         queuePushDuration.increment(durationToAdd);
+        dirty = true;
     }
 
 
@@ -87,19 +97,23 @@ final public class EventsWitness implements SerializableWitness {
 
         @Override
         public void serialize(EventsWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
-            gen.writeStartObject();
-            innerSerialize(witness, gen, provider);
-            gen.writeEndObject();
+            if(witness.dirty) {
+                gen.writeStartObject();
+                innerSerialize(witness, gen, provider);
+                gen.writeEndObject();
+            }
         }
 
         void innerSerialize(EventsWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
-            gen.writeObjectFieldStart(witness.KEY);
-            MetricSerializer.Get.longSerializer(gen).serialize(witness.in);
-            MetricSerializer.Get.longSerializer(gen).serialize(witness.filtered);
-            MetricSerializer.Get.longSerializer(gen).serialize(witness.out);
-            MetricSerializer.Get.longSerializer(gen).serialize(witness.duration);
-            MetricSerializer.Get.longSerializer(gen).serialize(witness.queuePushDuration);
-            gen.writeEndObject();
+            if(witness.dirty) {
+                gen.writeObjectFieldStart(witness.KEY);
+                MetricSerializer.Get.longSerializer(gen).serialize(witness.duration);
+                MetricSerializer.Get.longSerializer(gen).serialize(witness.in);
+                MetricSerializer.Get.longSerializer(gen).serialize(witness.filtered);
+                MetricSerializer.Get.longSerializer(gen).serialize(witness.out);
+                MetricSerializer.Get.longSerializer(gen).serialize(witness.queuePushDuration);
+                gen.writeEndObject();
+            }
         }
     }
 
