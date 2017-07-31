@@ -14,6 +14,7 @@ final public class PipelineWitness implements SerializableWitness {
     private final EventsWitness eventsWitness;
     private final ConfigWitness configWitness;
     private final PluginsWitness pluginsWitness;
+    private final QueueWitness queueWitness;
     private final String KEY;
 
     PipelineWitness(String pipelineName) {
@@ -22,7 +23,7 @@ final public class PipelineWitness implements SerializableWitness {
         this.eventsWitness = new EventsWitness();
         this.configWitness = new ConfigWitness();
         this.pluginsWitness = new PluginsWitness();
-        //TODO: add queue(type)
+        this.queueWitness = new QueueWitness();
     }
 
     @Override
@@ -40,6 +41,10 @@ final public class PipelineWitness implements SerializableWitness {
 
     public ConfigWitness config() {
         return configWitness;
+    }
+
+    public QueueWitness queue() {
+        return queueWitness;
     }
 
     public PluginWitness input(String name) {
@@ -89,6 +94,7 @@ final public class PipelineWitness implements SerializableWitness {
             witness.reload().genJson(gen,provider);
            // witness.config().genJson(gen, provider);
             witness.plugins().genJson(gen, provider);
+            witness.queue().genJson(gen, provider);
             gen.writeEndObject();
         }
 

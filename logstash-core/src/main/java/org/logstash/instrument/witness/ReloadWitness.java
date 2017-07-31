@@ -26,22 +26,20 @@ final public class ReloadWitness implements SerializableWitness{
         new Serializer().innerSerialize(this, gen, provider);
     }
 
+    public void success(long count) {
+        success.increment(count);
+    }
+
+    public void failure(long count) {
+        failure.increment(count);
+    }
+
     public void success() {
         success.increment();
     }
 
     public void failure() {
         failure.increment();
-    }
-
-    public void reset(){
-        success.reset();
-        failure.reset();
-
-        //ensure this is serialized
-        success.setDirty(true);
-        failure.setDirty(true);
-        //todo: also reset last error
     }
 
     static class Serializer extends StdSerializer<ReloadWitness> {
