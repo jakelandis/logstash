@@ -29,7 +29,6 @@ require "securerandom"
 java_import org.logstash.common.DeadLetterQueueFactory
 java_import org.logstash.common.SourceWithMetadata
 java_import org.logstash.common.io.DeadLetterQueueWriter
-java_import org.logstash.instrument.witness.Witness
 
 module LogStash; class BasePipeline
   include LogStash::Util::Loggable
@@ -39,6 +38,7 @@ module LogStash; class BasePipeline
 
   def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
     @logger = self.logger
+
     @ephemeral_id = SecureRandom.uuid
 
     @pipeline_config = pipeline_config
@@ -116,25 +116,21 @@ module LogStash; class BasePipeline
     @plugins_by_id[id] = true
 
     # use NullMetric if called in the BasePipeline context otherwise use the @metric value
-    metric = @metric || Instrument::NullMetric.new #todo: delete
+    metric = @metric || Instrument::NullMetric.new
 
-    pipeline_scoped_metric = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :plugins]) #todo: delete
-
+    pipeline_scoped_metric = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :plugins])
     # Scope plugins of type 'input' to 'inputs'
-    type_scoped_metric = pipeline_scoped_metric.namespace("#{plugin_type}s".to_sym) #todo: delete
+    type_scoped_metric = pipeline_scoped_metric.namespace("#{plugin_type}s".to_sym)
 
     klass = Plugin.lookup(plugin_type, name)
 
     execution_context = ExecutionContext.new(self, @agent, id, klass.config_name, @dlq_writer)
 
     if plugin_type == "output"
-      @witness.pipeline(pipeline_id.to_s).output(name).id(id);
-      OutputDelegator.new(@logger, klass, type_scoped_metric, execution_context, OutputDelegatorStrategyRegistry.instance, args, pipeline_id.to_s)
+      OutputDelegator.new(@logger, klass, type_scoped_metric, execution_context, OutputDelegatorStrategyRegistry.instance, args)
     elsif plugin_type == "filter"
-      @witness.pipeline(pipeline_id.to_s).filter(name).id(id);
       FilterDelegator.new(@logger, klass, type_scoped_metric, execution_context, args)
     else # input
-      #input witness handled in WrappedWriteClient
       input_plugin = klass.new(args)
       scoped_metric = type_scoped_metric.namespace(id.to_sym)
       scoped_metric.gauge(:name, input_plugin.config_name)
@@ -187,12 +183,11 @@ module LogStash; class Pipeline < BasePipeline
     @settings = pipeline_config.settings
     # This needs to be configured before we call super which will evaluate the code to make
     # sure the metric instance is correctly send to the plugins to make the namespace scoping work
-    @metric = if namespaced_metric #todo: delete
+    @metric = if namespaced_metric
       settings.get("metric.collect") ? namespaced_metric : Instrument::NullMetric.new(namespaced_metric.collector)
     else
       Instrument::NullMetric.new
-              end
-    @witness = Witness.getInstance()
+    end
 
     @ephemeral_id = SecureRandom.uuid
     @settings = settings
@@ -801,6 +796,6 @@ module LogStash; class Pipeline < BasePipeline
   end
 
   def wrapped_write_client(plugin)
-    LogStash::Instrument::WrappedWriteClient.new(@input_queue_client, self, metric, plugin, @logger)
+    LogStash::Instrument::WrappedWriteClient.new(@input_queue_client, self, metric, plugin)
   end
 end; end
