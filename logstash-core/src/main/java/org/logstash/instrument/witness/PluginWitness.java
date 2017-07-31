@@ -19,18 +19,18 @@ public class PluginWitness implements SerializableWitness {
     private final TextGauge name;
     private final Map<Class<? extends SerializableWitness>, SerializableWitness > customWitnesses = new ConcurrentHashMap<>(1);
 
-    public PluginWitness(String name) {
+    public PluginWitness(String id) {
         eventsWitness = new EventsWitness();
-        id = new TextGauge("id");
-        this.name = new TextGauge("name", name);
+        this.id = new TextGauge("id", id);
+        this.name = new TextGauge("name");
     }
 
     public EventsWitness event() {
         return eventsWitness;
     }
 
-    public PluginWitness id(String id){
-        this.id.set(id);
+    public PluginWitness name(String name){
+        this.name.set(name);
         return this;
     }
 
