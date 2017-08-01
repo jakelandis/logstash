@@ -13,7 +13,7 @@ public class BooleanGauge extends AbstractGaugeMetric<Boolean> {
      * @param name The name of this metric. This value may be used for display purposes.
      */
     public BooleanGauge(String name) {
-        this(name, null);
+        super(name);
     }
 
     /**

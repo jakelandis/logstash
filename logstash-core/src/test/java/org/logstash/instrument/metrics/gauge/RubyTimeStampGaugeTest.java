@@ -34,6 +34,7 @@ public class RubyTimeStampGaugeTest {
     @Test
     public void getValue() {
         RubyTimeStampGauge gauge = new RubyTimeStampGauge("bar", rubyTimestamp);
+        assertThat(gauge.isDirty()).isTrue();
         assertThat(gauge.getValue()).isEqualTo(rubyTimestamp.getTimestamp());
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_RUBYTIMESTAMP);
 
@@ -45,9 +46,13 @@ public class RubyTimeStampGaugeTest {
 
     @Test
     public void set() {
-        RubyTimeStampGauge gauge = new RubyTimeStampGauge("bar", Mockito.mock(RubyTimestamp.class));
+        RubyTimeStampGauge gauge = new RubyTimeStampGauge("bar");
+        assertThat(gauge.isDirty()).isFalse();
         gauge.set(rubyTimestamp);
         assertThat(gauge.getValue()).isEqualTo(rubyTimestamp.getTimestamp());
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_RUBYTIMESTAMP);
+        assertThat(gauge.isDirty()).isTrue();
+        gauge.setDirty(false);
+        assertThat(gauge.isDirty()).isFalse();
     }
 }

@@ -14,7 +14,7 @@ public class TextGauge extends AbstractGaugeMetric<String> {
      * @param name The name of this metric. This value may be used for display purposes.
      */
     public TextGauge(String name) {
-        this(name, null);
+        super(name);
     }
 
     /**

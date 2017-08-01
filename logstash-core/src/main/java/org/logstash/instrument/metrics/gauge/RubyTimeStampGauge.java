@@ -11,6 +11,7 @@ import java.util.List;
 /**
  * A {@link GaugeMetric} that is set by a {@link RubyTimestamp}, and retrieved/serialized as a {@link Timestamp}.  Note - This should not be used directly from Java code and
  * exists for passivity with legacy Ruby code.
+ * @deprecated - There are no plans to replace this.
  */
 public class RubyTimeStampGauge extends AbstractMetric<Timestamp> implements GaugeMetric<Timestamp, RubyTimestamp> {
 
@@ -25,7 +26,7 @@ public class RubyTimeStampGauge extends AbstractMetric<Timestamp> implements Gau
      * @deprecated - There are no plans to replace this.
      */
     public RubyTimeStampGauge(String key) {
-        this(key, null);
+        super(key);
     }
 
     /**
@@ -33,10 +34,12 @@ public class RubyTimeStampGauge extends AbstractMetric<Timestamp> implements Gau
      *
      * @param key          The key <i>(with in the namespace)</i> for this metric
      * @param initialValue The initial value for this {@link GaugeMetric}, may be null
+     * @deprecated - There are no plans to replace this.
      */
     protected RubyTimeStampGauge(String key, RubyTimestamp initialValue) {
         super(key);
         this.value = initialValue == null ? null : initialValue.getTimestamp();
+        setDirty(true);
     }
 
     @Override
@@ -47,11 +50,6 @@ public class RubyTimeStampGauge extends AbstractMetric<Timestamp> implements Gau
     @Override
     public Timestamp getValue() {
         return value;
-    }
-
-    @Override
-    public void reset() {
-        this.value = null;
     }
 
     @Override
@@ -67,5 +65,6 @@ public class RubyTimeStampGauge extends AbstractMetric<Timestamp> implements Gau
     @Override
     public void set(RubyTimestamp value) {
         this.value = value == null ? null : value.getTimestamp();
+        setDirty(true);
     }
 }

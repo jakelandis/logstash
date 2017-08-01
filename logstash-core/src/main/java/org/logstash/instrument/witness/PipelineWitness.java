@@ -94,6 +94,8 @@ final public class PipelineWitness implements SerializableWitness {
             witness.plugins().genJson(gen, provider);
             witness.reload().genJson(gen,provider);
             witness.queue().genJson(gen, provider);
+            //TODO: implement for https://github.com/elastic/logstash/issues/7870 (need to support via Sinatra too)
+            //witness.config().genJson(gen, provider);
             gen.writeEndObject();
         }
 

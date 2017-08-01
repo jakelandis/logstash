@@ -34,6 +34,7 @@ public class RubyHashGaugeTest {
     @Test
     public void getValue() {
         RubyHashGauge gauge = new RubyHashGauge("bar", rubyHash);
+        assertThat(gauge.isDirty()).isTrue();
         assertThat(gauge.getValue().toString()).isEqualTo(RUBY_HASH_AS_STRING);
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_RUBYHASH);
 
@@ -49,9 +50,13 @@ public class RubyHashGaugeTest {
     @Test
     public void set() {
         RubyHashGauge gauge = new RubyHashGauge("bar");
+        assertThat(gauge.isDirty()).isFalse();
         gauge.set(rubyHash);
         assertThat(gauge.getValue().toString()).isEqualTo(RUBY_HASH_AS_STRING);
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_RUBYHASH);
+        assertThat(gauge.isDirty()).isTrue();
+        gauge.setDirty(false);
+        assertThat(gauge.isDirty()).isFalse();
     }
 
 }

@@ -2,6 +2,10 @@ package org.logstash.instrument.metrics.gauge;
 
 import org.logstash.instrument.metrics.AbstractMetric;
 
+/**
+ * Abstract {@link GaugeMetric} to hold the gauge value and handle the dirty state. Simplifies the contract by requiring the both the getter and setter to be the same type.
+ * @param <T> The type to set and get this gauge.
+ */
 public abstract class AbstractGaugeMetric<T> extends AbstractMetric<T> implements GaugeMetric<T,T>{
 
     private volatile boolean dirty;
@@ -28,12 +32,6 @@ public abstract class AbstractGaugeMetric<T> extends AbstractMetric<T> implement
         this.value = initialValue;
         setDirty(true);
 
-    }
-
-    @Override
-    public void reset() {
-        this.value = null;
-        setDirty(false);
     }
 
     @Override
