@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.LongAdder;
  */
 public class LongCounter extends AbstractMetric<Long> implements CounterMetric<Long> {
 
+    private static final IllegalArgumentException NEGATIVE_COUNT_EXCEPTION = new IllegalArgumentException("Counters can not be incremented by negative values");
     private LongAdder longAdder;
     private volatile boolean dirty;
 
@@ -50,14 +51,10 @@ public class LongCounter extends AbstractMetric<Long> implements CounterMetric<L
         increment(1l);
     }
 
-    /**
-     * {@inheritDoc}
-     * throws {@link UnsupportedOperationException} if attempt is made to increment by a negative value
-     */
     @Override
     public void increment(Long by) {
         if (by < 0) {
-            throw new UnsupportedOperationException("Counters can not be incremented by negative values");
+            throw NEGATIVE_COUNT_EXCEPTION;
         }
         longAdder.add(by);
         dirty = true;
@@ -65,11 +62,11 @@ public class LongCounter extends AbstractMetric<Long> implements CounterMetric<L
 
     /**
      * Optimized version of {@link #increment(Long)} to avoid auto-boxing.
-     * throws {@link UnsupportedOperationException} if attempt is made to increment by a negative value
+     * @param by The value which to increment by. Can not be negative.
      */
     public void increment(long by) {
         if (by < 0) {
-            throw new UnsupportedOperationException("Counters can not be incremented by negative values");
+            throw NEGATIVE_COUNT_EXCEPTION;
         }
         longAdder.add(by);
         dirty = true;
