@@ -16,7 +16,7 @@ final public class ReloadWitness implements SerializableWitness {
 
     private final LongCounter success;
     private final LongCounter failure;
-    private final TextGauge lastError;
+    private final ErrorWitness lastError;
     private final RubyTimeStampGauge lastSuccessTimestamp;
     private final RubyTimeStampGauge lastFailureTimestamp;
 
@@ -25,7 +25,7 @@ final public class ReloadWitness implements SerializableWitness {
     ReloadWitness() {
         success = new LongCounter("successes");
         failure = new LongCounter("failures");
-        lastError = new TextGauge("last_error");
+        lastError = new ErrorWitness();
         lastSuccessTimestamp = new RubyTimeStampGauge("last_success_timestamp");
         lastFailureTimestamp = new RubyTimeStampGauge("last_failure_timestamp");
     }
@@ -51,8 +51,8 @@ final public class ReloadWitness implements SerializableWitness {
         failure.increment();
     }
 
-    public void lastError(String lastError) {
-        this.lastError.set(lastError);
+    public ErrorWitness error() {
+        return this.lastError;
     }
 
     public void lastSuccessTimestamp(JrubyTimestampExtLibrary.RubyTimestamp timestamp){
@@ -90,7 +90,7 @@ final public class ReloadWitness implements SerializableWitness {
 
         void innerSerialize(ReloadWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             gen.writeObjectFieldStart(witness.KEY);
-            MetricSerializer.Get.nullStringSerializer(gen).serialize(witness.lastError);
+            witness.lastError.genJson(gen, provider);
             MetricSerializer.Get.longSerializer(gen).serialize(witness.success);
             MetricSerializer.Get.timestampSerializer(gen).serialize(witness.lastSuccessTimestamp);
             MetricSerializer.Get.timestampSerializer(gen).serialize(witness.lastFailureTimestamp);

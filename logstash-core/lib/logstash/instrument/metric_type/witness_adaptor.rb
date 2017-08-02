@@ -5,8 +5,6 @@ module LogStash
     class WitnessAdaptor
 
       def self.adapt(namespaces, key, value)
-
-
         witness = namespaces.to_witness
         if key.eql? :in
           witness.in(value)
@@ -39,7 +37,11 @@ module LogStash
         elsif key.eql? :type
           witness.type(value)
         elsif key.eql? :last_error
-          witness.lastError(value)
+          unless value.nil?
+            witness = witness.error
+            witness.message(value[:message])
+            witness.backtrace(value[:backtrace].join('\n'))
+          end
         elsif key.eql? :last_success_timestamp
           witness.lastSuccessTimestamp(value)
         elsif key.eql? :last_failure_timestamp
@@ -85,6 +87,8 @@ class Array
           witness = witness.config
         elsif current.eql? :queue
           witness = witness.queue
+        elsif current.eql? :error
+          witness = witness.error
         end
       end
       index += 1
