@@ -7,7 +7,7 @@ public class JettyTest {
 
     @Test
     public void jetty() throws Exception {
-        new HttpServer.Jetty().run();
+       // new HttpServer.Jetty().run();
     }
 
 }

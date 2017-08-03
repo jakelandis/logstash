@@ -73,7 +73,7 @@ class Array
         elsif current.eql? :outputs
           witness = witness.output(arg)
         elsif current.eql? :filters
-          witness = witness.filters(arg)
+          witness = witness.filter(arg)
         end
         index += 1
       else #no arguments

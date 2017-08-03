@@ -18,10 +18,21 @@ final public class Witness implements SerializableWitness {
     private final PipelinesWitness pipelinesWitness;
 
 
-    private static final Witness WITNESS = new Witness();
+    private static Witness WITNESS = new Witness();
 
     public static Witness getInstance() {
+        if(WITNESS == null){
+            WITNESS = new Witness();
+        }
         return WITNESS;
+    }
+
+
+    /**
+     * Testing only
+     */
+    public void resetWitness(){
+        WITNESS = new Witness();
     }
 
     private Witness() {
@@ -91,4 +102,7 @@ final public class Witness implements SerializableWitness {
             witness.pipelinesWitness.genJson(gen, provider);
         }
     }
+
+
+
 }

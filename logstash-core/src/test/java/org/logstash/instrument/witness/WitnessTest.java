@@ -19,6 +19,8 @@ public class WitnessTest {
         StackTraceElement[] a = new Throwable().getStackTrace();
 
         witness.reload().error().backtrace(a);
+
+        Witness.getInstance().resetWitness();
 //[:stats, :pipelines, :main, :events]duration_in_millis
 //        witness.pipeline("main").event().duration(100);
 //
