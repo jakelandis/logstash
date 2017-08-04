@@ -14,7 +14,7 @@ module LogStash module Instrument module MetricType
 
     def execute(action, value = nil)
       if (@namespaces.first.eql? :stats)
-        WitnessAdaptor.adapt(@namespaces, @key, value)
+        StatsWitnessAdaptor.adapt(@namespaces, @key, value)
       end
       send(action, value)
     end

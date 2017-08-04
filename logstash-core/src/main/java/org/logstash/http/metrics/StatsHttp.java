@@ -1,9 +1,9 @@
 package org.logstash.http.metrics;
 
-import org.logstash.instrument.witness.EventsWitness;
-import org.logstash.instrument.witness.PipelinesWitness;
-import org.logstash.instrument.witness.ReloadWitness;
-import org.logstash.instrument.witness.Witness;
+import org.logstash.instrument.witness.stats.EventsWitness;
+import org.logstash.instrument.witness.stats.PipelinesWitness;
+import org.logstash.instrument.witness.stats.ReloadWitness;
+import org.logstash.instrument.witness.stats.StatsWitness;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -18,29 +18,29 @@ public class StatsHttp {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Witness stats() {
-        return Witness.getInstance();
+    public StatsWitness stats() {
+        return StatsWitness.getInstance();
     }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("reloads")
     public ReloadWitness reloads() {
-        return Witness.getInstance().reload();
+        return StatsWitness.getInstance().reload();
     }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("events")
     public EventsWitness events() {
-        return Witness.getInstance().event();
+        return StatsWitness.getInstance().event();
     }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("pipelines")
     public PipelinesWitness pipelines() {
-        return Witness.getInstance().pipelines();
+        return StatsWitness.getInstance().pipelines();
     }
 
 

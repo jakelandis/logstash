@@ -1,4 +1,4 @@
-package org.logstash.instrument.witness;
+package org.logstash.instrument.witness.stats;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -8,7 +8,7 @@ import org.logstash.Timestamp;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 import org.logstash.instrument.metrics.counter.LongCounter;
 import org.logstash.instrument.metrics.gauge.RubyTimeStampGauge;
-import org.logstash.instrument.metrics.gauge.TextGauge;
+import org.logstash.instrument.witness.SerializableWitness;
 
 import java.io.IOException;
 

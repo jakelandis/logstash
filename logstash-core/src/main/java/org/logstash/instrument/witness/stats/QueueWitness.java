@@ -1,16 +1,16 @@
-package org.logstash.instrument.witness;
+package org.logstash.instrument.witness.stats;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import org.logstash.instrument.metrics.counter.LongCounter;
 import org.logstash.instrument.metrics.gauge.TextGauge;
+import org.logstash.instrument.witness.SerializableWitness;
 
 import java.io.IOException;
 
 @JsonSerialize(using = QueueWitness.Serializer.class)
-final public class QueueWitness implements SerializableWitness{
+final public class QueueWitness implements SerializableWitness {
 
     private final TextGauge type;
     private final static String KEY = "queue";

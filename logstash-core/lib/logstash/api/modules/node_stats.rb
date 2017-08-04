@@ -1,7 +1,7 @@
 # encoding: utf-8
 require 'json'
 
-java_import org.logstash.instrument.witness.Witness
+java_import org.logstash.instrument.witness.stats.StatsWitness
 
 module LogStash
   module Api
@@ -59,7 +59,7 @@ module LogStash
         end
 
         def events_payload_v2
-          JSON.parse(Witness.getInstance.event.as_json)["events"]
+          JSON.parse(StatsWitness.getInstance.event.as_json)["events"]
         end
 
         def jvm_payload
@@ -71,7 +71,7 @@ module LogStash
         end
 
         def reloads_payload_v2
-          JSON.parse(Witness.getInstance.reload.as_json)["reloads"]
+          JSON.parse(StatsWitness.getInstance.reload.as_json)["reloads"]
         end
 
         def process_payload
@@ -88,9 +88,9 @@ module LogStash
 
         def pipeline_payload_v2(val = nil)
           if val.nil?
-            JSON.parse(Witness.getInstance.pipelines.as_json)["pipelines"]
+            JSON.parse(StatsWitness.getInstance.pipelines.as_json)["pipelines"]
           else
-            JSON.parse(Witness.getInstance.pipeline(val).as_json)["pipelines"]
+            JSON.parse(StatsWitness.getInstance.pipeline(val).as_json)["pipelines"]
           end
         end
       end

@@ -1,11 +1,8 @@
-package org.logstash.instrument.witness;
+package org.logstash.instrument.witness.stats;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import org.logstash.Timestamp;
-import org.logstash.ext.JrubyTimestampExtLibrary;
 import org.logstash.instrument.metrics.Metric;
 import org.logstash.instrument.metrics.gauge.GaugeMetric;
-import org.logstash.instrument.metrics.gauge.RubyHashGauge;
 import org.logstash.instrument.metrics.gauge.RubyTimeStampGauge;
 
 import java.io.IOException;

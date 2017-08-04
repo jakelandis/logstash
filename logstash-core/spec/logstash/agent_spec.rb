@@ -11,7 +11,7 @@ require_relative "../support/matchers"
 require 'timeout'
 
 java_import org.logstash.Timestamp
-java_import org.logstash.instrument.witness.Witness
+java_import org.logstash.instrument.witness.stats.StatsWitness
 
 describe LogStash::Agent do
   let(:agent_settings) { mock_settings({}) }
@@ -35,7 +35,7 @@ describe LogStash::Agent do
   before :each do
     # This MUST run first, before `subject` is invoked to ensure clean state
     clear_data_dir
-    Witness.getInstance.resetWitness
+    StatsWitness.getInstance.resetWitness #TODO: delete, this should not be needed!
 
 
     File.open(config_file, "w") { |f| f.puts config_file_txt }
@@ -374,7 +374,7 @@ describe LogStash::Agent do
 
       before :each do
         subject.converge_state_and_update
-        Witness.getInstance.resetWitness
+        StatsWitness.getInstance.resetWitness
         Timeout.timeout(timeout) do
           sleep(0.01) while ::File.read(new_file).chomp.empty?
         end
@@ -389,7 +389,7 @@ describe LogStash::Agent do
         30.times{
        snapshot = subject.metric.collector.snapshot_metric
        old_value = snapshot.metric_store.get_with_path("/stats/pipelines")[:stats][:pipelines][:main][:events][:in].value
-        value = Witness.getInstance.pipeline("main").event.snitch.in;
+        value = StatsWitness.getInstance.pipeline("main").event.snitch.in;
         puts "***********"
        puts old_value
         puts value

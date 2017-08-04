@@ -62,12 +62,6 @@ module LogStash module Instrument
     end
 
     def clear(keypath)
-      begin
-        1/0
-      rescue => e
-
-         puts e.backtrace
-      end
       @metric_store.prune(keypath)
     end
   end

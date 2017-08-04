@@ -6,7 +6,7 @@ require_relative "../../support/matchers"
 require_relative "../../support/mocks_classes"
 require "spec_helper"
 
-java_import org.logstash.instrument.witness.Witness
+java_import org.logstash.instrument.witness.stats.StatsWitness
 
 # Just make the tests a bit shorter to write and
 # assert, I will keep theses methods here for easier understanding.
@@ -46,7 +46,7 @@ describe LogStash::Agent do
     # This MUST run first, before `subject` is invoked to ensure clean state
     clear_data_dir
 
-    Witness.getInstance.resetWitness
+    StatsWitness.getInstance.resetWitness #TODO: DELETE THIS SHOULD NOT BE NEEDED!
     # TODO(ph) until we decouple the webserver from the agent
     # we just disable these calls
     allow(subject).to receive(:start_webserver).and_return(false)

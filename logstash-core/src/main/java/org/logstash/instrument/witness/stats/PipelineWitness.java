@@ -1,9 +1,10 @@
-package org.logstash.instrument.witness;
+package org.logstash.instrument.witness.stats;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import org.logstash.instrument.witness.SerializableWitness;
 
 import java.io.IOException;
 
@@ -48,15 +49,15 @@ final public class PipelineWitness implements SerializableWitness {
     }
 
     public PluginWitness input(String name) {
-        return pluginsWitness.input(name);
+        return pluginsWitness.inputs(name);
     }
 
     public PluginWitness output(String name) {
-        return pluginsWitness.output(name);
+        return pluginsWitness.outputs(name);
     }
 
     public PluginWitness filter(String name) {
-        return pluginsWitness.filter(name);
+        return pluginsWitness.filters(name);
     }
 
     public PluginsWitness plugins() {

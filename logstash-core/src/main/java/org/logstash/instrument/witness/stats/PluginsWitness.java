@@ -1,14 +1,15 @@
-package org.logstash.instrument.witness;
+package org.logstash.instrument.witness.stats;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import org.logstash.instrument.witness.SerializableWitness;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PluginsWitness implements SerializableWitness  {
+public class PluginsWitness implements SerializableWitness {
 
     private final Map<String, PluginWitness> inputs;
     private final Map<String, PluginWitness> outputs;
@@ -28,15 +29,15 @@ public class PluginsWitness implements SerializableWitness  {
         new Serializer().innerSerialize(this, gen, provider);
     }
 
-    public PluginWitness input(String id) {
+    public PluginWitness inputs(String id) {
         return getPlugin(inputs, id);
     }
 
-    public PluginWitness output(String id) {
+    public PluginWitness outputs(String id) {
         return getPlugin(outputs, id);
     }
 
-    public PluginWitness filter(String id) {
+    public PluginWitness filters(String id) {
         return getPlugin(filters, id);
     }
 

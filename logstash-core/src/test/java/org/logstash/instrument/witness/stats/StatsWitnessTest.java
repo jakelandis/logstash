@@ -1,26 +1,27 @@
-package org.logstash.instrument.witness;
+package org.logstash.instrument.witness.stats;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.junit.Test;
+import org.logstash.instrument.witness.SerializableWitness;
+import org.logstash.instrument.witness.stats.EventsWitness;
+import org.logstash.instrument.witness.stats.StatsWitness;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 
-public class WitnessTest {
+public class StatsWitnessTest {
 
     @Test
     public void test() throws IOException {
-        Witness witness = Witness.getInstance();
+        StatsWitness witness = StatsWitness.getInstance();
 
         witness.reload().error().message("foo");
         StackTraceElement[] a = new Throwable().getStackTrace();
 
         witness.reload().error().backtrace(a);
-        Witness.getInstance().reload().failure(3);
-        System.out.println(Witness.getInstance().reload().snitch().failure());
+        StatsWitness.getInstance().reload().failure(3);
+        System.out.println(StatsWitness.getInstance().reload().snitch().failure());
 //[:stats, :pipelines, :main, :events]duration_in_millis
 //        witness.pipeline("main").event().duration(100);
 //
@@ -50,17 +51,17 @@ public class WitnessTest {
 //        witness.pipeline("baz").config().batchSize(20);
 //        witness.pipeline("foo").config().deadLetterQueueEnabled(true);
 ////
-//        witness.pipeline("main").input("tcp").event().in();
-//        witness.pipeline("main").input("tcp").event().in(2);
-//        witness.pipeline("main").output("stdout").event().out(99);
-//        witness.pipeline("test").input("pi2").event().in();
-//        witness.pipeline("test").input("pi3").event().in();
-//        witness.pipeline("test").input("pi").event().duration(100l);
-//        witness.pipeline("test").input("pi").event().queuePushDuration(100l);
+//        witness.pipeline("main").inputs("tcp").event().in();
+//        witness.pipeline("main").inputs("tcp").event().in(2);
+//        witness.pipeline("main").outputs("stdout").event().out(99);
+//        witness.pipeline("test").inputs("pi2").event().in();
+//        witness.pipeline("test").inputs("pi3").event().in();
+//        witness.pipeline("test").inputs("pi").event().duration(100l);
+//        witness.pipeline("test").inputs("pi").event().queuePushDuration(100l);
 //
-//        witness.pipeline("test").output("pi").addCustom(new CustomWitness());
-//        witness.pipeline("test").output("pi").custom(CustomWitness.class).sayHi("hello world");
-//        PluginWitness a = witness.pipeline("test").output("pi");
+//        witness.pipeline("test").outputs("pi").addCustom(new CustomWitness());
+//        witness.pipeline("test").outputs("pi").custom(CustomWitness.class).sayHi("hello world");
+//        PluginWitness a = witness.pipeline("test").outputs("pi");
 //
 //        a.custom(CustomWitness.class).events().in();
         System.out.println(witness.asJson());
@@ -69,7 +70,7 @@ public class WitnessTest {
 
 
     class CustomWitness
-            implements SerializableWitness{
+            implements SerializableWitness {
 
         String hiThere = " Hidey HoE!";
 
