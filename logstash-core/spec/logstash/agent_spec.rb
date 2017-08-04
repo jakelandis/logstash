@@ -374,7 +374,6 @@ describe LogStash::Agent do
 
       before :each do
         subject.converge_state_and_update
-        StatsWitness.getInstance.resetWitness
         Timeout.timeout(timeout) do
           sleep(0.01) while ::File.read(new_file).chomp.empty?
         end

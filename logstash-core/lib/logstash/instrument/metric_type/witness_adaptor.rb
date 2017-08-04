@@ -60,7 +60,7 @@ end
 class Array
   def to_witness
     index = 0
-    witness = StatsWitness.getInstance
+    witness = StatsWitness.instance
     while index <= self.size-1
       current = self[index]
       # one argument

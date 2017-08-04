@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.logstash.instrument.witness.SerializableWitness;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 
 @JsonSerialize(using = StatsWitness.Serializer.class)
@@ -16,29 +17,34 @@ final public class StatsWitness implements SerializableWitness {
     private final EventsWitness eventsWitness;
     private final PipelinesWitness pipelinesWitness;
 
-    private static StatsWitness WITNESS = new StatsWitness();
-
-    public static StatsWitness getInstance() {
-        if(WITNESS == null){
-            WITNESS = new StatsWitness();
-        }
-        return WITNESS;
-    }
-
+    private static StatsWitness _instance;
 
     /**
-     * Todo: delete ... this should not be needed if we are properly cleaning up on pipeline restart
+     * <p>THIS IS ONLY TO BE USED BY THE RUBY AGENT</p>
      */
-    public void resetWitness(){
-        WITNESS = new StatsWitness();
-    }
-
-    private StatsWitness() {
+    public StatsWitness() {
         this.reloadWitness = new ReloadWitness();
         this.eventsWitness = new EventsWitness();
         this.pipelinesWitness = new PipelinesWitness();
     }
 
+    /**
+     * This is a dirty hack since the {@link StatsWitness} needs to mirror the Ruby agent's lifecycle, but needs to used during the Ruby object construction. Exposing this allows
+     * Ruby to create the instance for use in it's constructor, then set it here for all to use as a singleton.
+     * <p>THIS IS ONLY TO BE USED BY THE RUBY AGENT</p>
+     *
+     * @param __instance The instance of the {@link StatsWitness} to use as the singleton instance that mirror's the agent's lifecycle.
+     */
+    public static void setInstance(StatsWitness __instance) {
+        _instance = __instance;
+    }
+
+    public static StatsWitness instance() {
+        if (_instance == null) {
+            throw new IllegalStateException("The stats witness instance must be set before it used. Called from: " + Arrays.toString(new Throwable().getStackTrace()));
+        }
+        return _instance;
+    }
 
     public ReloadWitness reload() {
         return reloadWitness;
@@ -53,17 +59,19 @@ final public class StatsWitness implements SerializableWitness {
         new Serializer().innerSerialize(this, gen, provider);
     }
 
-    public PipelinesWitness pipelines(){
+    public PipelinesWitness pipelines() {
         return pipelinesWitness;
     }
+
     /**
      * TODO
      * Shortcut method for pipelines.pipeline(name)
+     *
      * @param name
      * @return
      */
     public PipelineWitness pipeline(String name) {
-       return  pipelinesWitness.pipeline(name);
+        return pipelinesWitness.pipeline(name);
 
     }
 

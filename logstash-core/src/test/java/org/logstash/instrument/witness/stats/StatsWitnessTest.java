@@ -4,8 +4,6 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.junit.Test;
 import org.logstash.instrument.witness.SerializableWitness;
-import org.logstash.instrument.witness.stats.EventsWitness;
-import org.logstash.instrument.witness.stats.StatsWitness;
 
 import java.io.IOException;
 
@@ -14,14 +12,14 @@ public class StatsWitnessTest {
 
     @Test
     public void test() throws IOException {
-        StatsWitness witness = StatsWitness.getInstance();
+        StatsWitness witness = StatsWitness.instance();
 
         witness.reload().error().message("foo");
         StackTraceElement[] a = new Throwable().getStackTrace();
 
         witness.reload().error().backtrace(a);
-        StatsWitness.getInstance().reload().failure(3);
-        System.out.println(StatsWitness.getInstance().reload().snitch().failure());
+        StatsWitness.instance().reload().failure(3);
+        System.out.println(StatsWitness.instance().reload().snitch().failure());
 //[:stats, :pipelines, :main, :events]duration_in_millis
 //        witness.pipeline("main").event().duration(100);
 //

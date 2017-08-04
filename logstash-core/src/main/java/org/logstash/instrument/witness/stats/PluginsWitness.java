@@ -14,6 +14,7 @@ public class PluginsWitness implements SerializableWitness {
     private final Map<String, PluginWitness> inputs;
     private final Map<String, PluginWitness> outputs;
     private final Map<String, PluginWitness> filters;
+    private final Forgetter forgetter;
     private final static String KEY = "plugins";
 
 
@@ -22,6 +23,7 @@ public class PluginsWitness implements SerializableWitness {
         this.inputs = new HashMap<>();
         this.outputs = new HashMap<>();
         this.filters = new HashMap<>();
+        this.forgetter = new Forgetter(this);
     }
 
     @Override
@@ -39,6 +41,10 @@ public class PluginsWitness implements SerializableWitness {
 
     public PluginWitness filters(String id) {
         return getPlugin(filters, id);
+    }
+
+    public Forgetter forget(){
+        return forgetter;
     }
 
     private PluginWitness getPlugin(Map<String, PluginWitness> plugin, String id){
@@ -97,5 +103,21 @@ public class PluginsWitness implements SerializableWitness {
             gen.writeEndArray();
 
         }
+    }
+
+    static class Forgetter{
+
+        private final PluginsWitness witness;
+
+        Forgetter(PluginsWitness witness) {
+            this.witness = witness;
+        }
+
+       public void all(){
+            witness.inputs.clear();
+            witness.outputs.clear();
+            witness.filters.clear();
+        }
+
     }
 }

@@ -19,6 +19,7 @@ final public class EventsWitness implements SerializableWitness {
     private LongCounter queuePushDuration;
     final String KEY = "events";
     private final Snitch snitch;
+    private final Forgetter forgetter;
     private boolean dirty; //here for passivity with legacy Ruby implementation
 
 
@@ -29,9 +30,14 @@ final public class EventsWitness implements SerializableWitness {
         duration = new LongCounter("duration_in_millis");
         queuePushDuration = new LongCounter("queue_push_duration_in_millis");
         snitch = new Snitch(this);
+        forgetter = new Forgetter(this);
         dirty = false;
     }
 
+
+    public Forgetter forget(){
+        return forgetter;
+    }
 
     public void filtered() {
         filtered.increment();
@@ -154,6 +160,23 @@ final public class EventsWitness implements SerializableWitness {
         }
 
 
+    }
+
+    static class Forgetter{
+        private final EventsWitness witness;
+
+        Forgetter(EventsWitness witness) {
+            this.witness = witness;
+        }
+
+        public void all(){
+            witness.filtered.reset();
+            witness.out.reset();
+            witness.in.reset();
+            witness.duration.reset();
+            witness.queuePushDuration.reset();
+            witness.dirty = false;
+        }
     }
 
 }

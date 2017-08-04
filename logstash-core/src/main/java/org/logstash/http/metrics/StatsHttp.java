@@ -19,28 +19,28 @@ public class StatsHttp {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public StatsWitness stats() {
-        return StatsWitness.getInstance();
+        return StatsWitness.instance();
     }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("reloads")
     public ReloadWitness reloads() {
-        return StatsWitness.getInstance().reload();
+        return StatsWitness.instance().reload();
     }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("events")
     public EventsWitness events() {
-        return StatsWitness.getInstance().event();
+        return StatsWitness.instance().event();
     }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("pipelines")
     public PipelinesWitness pipelines() {
-        return StatsWitness.getInstance().pipelines();
+        return StatsWitness.instance().pipelines();
     }
 
 

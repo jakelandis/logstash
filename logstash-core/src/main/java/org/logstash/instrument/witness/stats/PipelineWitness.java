@@ -16,6 +16,7 @@ final public class PipelineWitness implements SerializableWitness {
     private final ConfigWitness configWitness;
     private final PluginsWitness pluginsWitness;
     private final QueueWitness queueWitness;
+    private final Forgetter forgetter;
     private final String KEY;
 
     PipelineWitness(String pipelineName) {
@@ -25,6 +26,7 @@ final public class PipelineWitness implements SerializableWitness {
         this.configWitness = new ConfigWitness();
         this.pluginsWitness = new PluginsWitness();
         this.queueWitness = new QueueWitness();
+        this.forgetter = new Forgetter(this);
     }
 
     @Override
@@ -64,6 +66,11 @@ final public class PipelineWitness implements SerializableWitness {
         return pluginsWitness;
     }
 
+    public Forgetter forget() {
+        return forgetter;
+    }
+
+
     static class Serializer extends StdSerializer<PipelineWitness> {
 
         /**
@@ -93,7 +100,7 @@ final public class PipelineWitness implements SerializableWitness {
             gen.writeObjectFieldStart(witness.KEY);
             witness.event().genJson(gen, provider);
             witness.plugins().genJson(gen, provider);
-            witness.reload().genJson(gen,provider);
+            witness.reload().genJson(gen, provider);
             witness.queue().genJson(gen, provider);
             //TODO: implement for https://github.com/elastic/logstash/issues/7870 (need to support via Sinatra too)
             //witness.config().genJson(gen, provider);
@@ -101,5 +108,21 @@ final public class PipelineWitness implements SerializableWitness {
         }
 
 
+    }
+
+    static class Forgetter {
+        private final PipelineWitness witness;
+
+        Forgetter(PipelineWitness witness) {
+            this.witness = witness;
+        }
+
+        /**
+         * Forgets (removes) the plugins and events data for the given pipeline, but keeps everything else
+         */
+        void partial() {
+            witness.plugins().forget().all();
+            witness.event().forget().all();
+        }
     }
 }

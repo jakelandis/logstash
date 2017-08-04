@@ -19,7 +19,6 @@ def mhash(*path_elements)
   JSON.parse(path_elements.to_witness.as_json)
 end
 
-
 describe LogStash::Agent do
   # by default no tests uses the auto reload logic
   let(:agent_settings) { mock_settings("config.reload.automatic" => false) }
@@ -38,15 +37,12 @@ describe LogStash::Agent do
     TestSourceLoader.new([])
   end
 
-
-
   subject { described_class.new(agent_settings, source_loader) }
 
   before :each do
     # This MUST run first, before `subject` is invoked to ensure clean state
     clear_data_dir
 
-    StatsWitness.getInstance.resetWitness #TODO: DELETE THIS SHOULD NOT BE NEEDED!
     # TODO(ph) until we decouple the webserver from the agent
     # we just disable these calls
     allow(subject).to receive(:start_webserver).and_return(false)
@@ -224,17 +220,8 @@ describe LogStash::Agent do
         end
         expect(subject.converge_state_and_update.success?).to be_truthy
 
-
-        # TODO: is this acceptable behavior change?  https://github.com/elastic/logstash/issues/7788#issuecomment-320044201
-        # TODO: ....or should we support a remove plugin via the witness plugins ?
-        # Ensure that the value is not changing
-        value = mval(:stats, :pipelines, :main, :plugins, :filters, :test_filter, :events, :in)
-        10.times {
-          new_value = mval(:stats, :pipelines, :main, :plugins, :filters, :test_filter, :events, :in)
-          expect(value).to eq(new_value)
-          sleep(0.5)
-        }
-
+        # We do have to retry here, since stopping a pipeline is a blocking operation
+        expect { mval(:stats, :pipelines, :main, :plugins, :filters) }.to raise_error
       end
     end
 
@@ -260,14 +247,9 @@ describe LogStash::Agent do
 
         expect(subject.converge_state_and_update.success?).to be_truthy
 
-        # We do not have to retry here, since stopping a pipeline is a blocking operation
-        # Ensure that the value is not changing
-        value = mval(:stats, :pipelines, :main, :events, :in)
-        10.times {
-          new_value = mval(:stats, :pipelines, :main, :events, :in)
-          expect(value).to eq(new_value)
-          sleep(0.5)
-        }
+        # We do have to retry here, since stopping a pipeline is a blocking operation
+        expect { mval(:stats, :pipelines, :main, :plugins) }.to raise_error
+        expect { mval(:stats, :pipelines, :main, :events) }.to raise_error
       end
     end
   end

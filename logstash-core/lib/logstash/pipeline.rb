@@ -29,6 +29,7 @@ require "securerandom"
 java_import org.logstash.common.DeadLetterQueueFactory
 java_import org.logstash.common.SourceWithMetadata
 java_import org.logstash.common.io.DeadLetterQueueWriter
+java_import org.logstash.instrument.witness.stats.StatsWitness
 
 module LogStash; class BasePipeline
   include LogStash::Util::Loggable
@@ -770,7 +771,6 @@ module LogStash; class Pipeline < BasePipeline
     # this will simplify everything since the null metric would simply just do a noop
     collector = @metric.collector
 
-    #TODO: jake - reap the witnesses here
     unless collector.nil?
       # selectively reset metrics we don't wish to keep after reloading
       # these include metrics about the plugins and number of processed events
@@ -778,6 +778,7 @@ module LogStash; class Pipeline < BasePipeline
       collector.clear("stats/pipelines/#{pipeline_id}/plugins")
       collector.clear("stats/pipelines/#{pipeline_id}/events")
     end
+    StatsWitness.instance.pipeline(pipeline_id).forget.partial
   end
 
   # Sometimes we log stuff that will dump the pipeline which may contain
