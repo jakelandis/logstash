@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import org.logstash.Timestamp;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 import org.logstash.instrument.metrics.counter.LongCounter;
 import org.logstash.instrument.metrics.gauge.RubyTimeStampGauge;
@@ -19,6 +20,7 @@ final public class ReloadWitness implements SerializableWitness {
     private final ErrorWitness lastError;
     private final RubyTimeStampGauge lastSuccessTimestamp;
     private final RubyTimeStampGauge lastFailureTimestamp;
+    private final Snitch snitch;
 
     private final static String KEY = "reloads";
 
@@ -28,6 +30,7 @@ final public class ReloadWitness implements SerializableWitness {
         lastError = new ErrorWitness();
         lastSuccessTimestamp = new RubyTimeStampGauge("last_success_timestamp");
         lastFailureTimestamp = new RubyTimeStampGauge("last_failure_timestamp");
+        snitch = new Snitch(this);
     }
 
     @Override
@@ -49,6 +52,10 @@ final public class ReloadWitness implements SerializableWitness {
 
     public void failure() {
         failure.increment();
+    }
+
+    public Snitch snitch() {
+        return snitch;
     }
 
     public ErrorWitness error() {
@@ -97,5 +104,31 @@ final public class ReloadWitness implements SerializableWitness {
             MetricSerializer.Get.longSerializer(gen).serialize(witness.failure);
             gen.writeEndObject();
         }
+    }
+
+    static class Snitch{
+
+        private final ReloadWitness witness;
+        public Snitch(ReloadWitness witness) {
+            this.witness = witness;
+        }
+
+        public long success() {
+            return witness.success.getValue();
+        }
+
+        public long failure() {
+            return witness.failure.getValue();
+        }
+
+
+        public Timestamp lastSuccessTimestamp() {
+            return witness.lastSuccessTimestamp.getValue();
+        }
+
+        public Timestamp lastFailureTimestamp() {
+            return  witness.lastFailureTimestamp.getValue();
+        }
+
     }
 }

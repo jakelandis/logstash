@@ -17,7 +17,6 @@ final public class Witness implements SerializableWitness {
     private final EventsWitness eventsWitness;
     private final PipelinesWitness pipelinesWitness;
 
-
     private static Witness WITNESS = new Witness();
 
     public static Witness getInstance() {
@@ -29,7 +28,7 @@ final public class Witness implements SerializableWitness {
 
 
     /**
-     * Testing only
+     * Todo: delete ... this should not be needed if we are properly cleaning up on pipeline restart
      */
     public void resetWitness(){
         WITNESS = new Witness();
@@ -39,14 +38,12 @@ final public class Witness implements SerializableWitness {
         this.reloadWitness = new ReloadWitness();
         this.eventsWitness = new EventsWitness();
         this.pipelinesWitness = new PipelinesWitness();
-
     }
 
 
     public ReloadWitness reload() {
         return reloadWitness;
     }
-
 
     public EventsWitness event() {
         return eventsWitness;
@@ -102,7 +99,6 @@ final public class Witness implements SerializableWitness {
             witness.pipelinesWitness.genJson(gen, provider);
         }
     }
-
 
 
 }

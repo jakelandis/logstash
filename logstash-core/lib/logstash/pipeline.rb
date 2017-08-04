@@ -770,6 +770,7 @@ module LogStash; class Pipeline < BasePipeline
     # this will simplify everything since the null metric would simply just do a noop
     collector = @metric.collector
 
+    #TODO: jake - reap the witnesses here
     unless collector.nil?
       # selectively reset metrics we don't wish to keep after reloading
       # these include metrics about the plugins and number of processed events

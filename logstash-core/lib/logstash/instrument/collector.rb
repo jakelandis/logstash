@@ -37,6 +37,7 @@ module LogStash module Instrument
           LogStash::Instrument::MetricType.create(type, namespaces_path, key)
         end
 
+       # puts namespaces_path.to_s + ", " + key.to_s + ", " + type.to_s + ", " + metric_type_params.to_s
         metric.execute(*metric_type_params)
       rescue MetricStore::NamespacesExpectedError => e
         logger.error("Collector: Cannot record metric", :exception => e)
@@ -61,6 +62,12 @@ module LogStash module Instrument
     end
 
     def clear(keypath)
+      begin
+        1/0
+      rescue => e
+
+         puts e.backtrace
+      end
       @metric_store.prune(keypath)
     end
   end
