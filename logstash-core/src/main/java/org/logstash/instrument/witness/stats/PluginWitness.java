@@ -26,7 +26,7 @@ public class PluginWitness implements SerializableWitness {
         this.name = new TextGauge("name");
     }
 
-    public EventsWitness event() {
+    public EventsWitness events() {
         return eventsWitness;
     }
 
@@ -83,7 +83,7 @@ public class PluginWitness implements SerializableWitness {
 
         void innerSerialize(PluginWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             MetricSerializer.Get.stringSerializer(gen).serialize(witness.id);
-            witness.event().genJson(gen, provider);
+            witness.events().genJson(gen, provider);
             MetricSerializer.Get.stringSerializer(gen).serialize(witness.name);
             for (SerializableWitness customWitness : witness.customWitnesses.values()) {
                 customWitness.genJson(gen, provider);

@@ -26,14 +26,14 @@ public class StatsHttp {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("reloads")
     public ReloadWitness reloads() {
-        return StatsWitness.instance().reload();
+        return StatsWitness.instance().reloads();
     }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("events")
     public EventsWitness events() {
-        return StatsWitness.instance().event();
+        return StatsWitness.instance().events();
     }
 
     @GET

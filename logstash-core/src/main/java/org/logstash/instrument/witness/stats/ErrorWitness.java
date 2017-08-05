@@ -17,12 +17,14 @@ public class ErrorWitness implements SerializableWitness {
 
     private final TextGauge message;
     private final TextGauge backtrace;
+    private final Snitch snitch;
 
     private final String KEY = "last_error";
 
     public ErrorWitness() {
         message = new TextGauge("message");
         backtrace = new TextGauge("backtrace");
+        snitch = new Snitch(this);
     }
 
     public void message(String message) {
@@ -36,6 +38,10 @@ public class ErrorWitness implements SerializableWitness {
      */
     public void backtrace(String stackTrace) {
         this.backtrace.set(stackTrace);
+    }
+
+    public Snitch snitch(){
+        return this.snitch;
     }
 
     /**
@@ -97,5 +103,23 @@ public class ErrorWitness implements SerializableWitness {
 
             gen.writeEndObject();
         }
+    }
+
+    static class Snitch {
+        private final ErrorWitness witness;
+
+        public Snitch(ErrorWitness witness) {
+            this.witness = witness;
+        }
+
+
+        public String message() {
+            return witness.message.getValue();
+        }
+
+        public String backtrace() {
+            return witness.backtrace.getValue();
+        }
+
     }
 }

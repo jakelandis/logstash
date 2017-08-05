@@ -59,7 +59,7 @@ final public class ReloadWitness implements SerializableWitness {
     }
 
     public ErrorWitness error() {
-        return this.lastError;
+        return lastError;
     }
 
     public void lastSuccessTimestamp(JrubyTimestampExtLibrary.RubyTimestamp timestamp){

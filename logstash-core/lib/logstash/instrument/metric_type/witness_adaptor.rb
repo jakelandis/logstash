@@ -56,7 +56,7 @@ module LogStash
   end
 end
 
-# Namespaces are essentially a forward chain
+
 class Array
   def to_witness
     index = 0
@@ -78,9 +78,9 @@ class Array
         index += 1
       else #no arguments
         if current.eql? :reloads
-          witness = witness.reload
+          witness = witness.reloads
         elsif current.eql? :events
-          witness = witness.event
+          witness = witness.events
         elsif current.eql? :plugins
           witness = witness.plugins
         elsif current.eql? :config

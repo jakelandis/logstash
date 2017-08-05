@@ -34,11 +34,11 @@ final public class PipelineWitness implements SerializableWitness {
         new Serializer().innerSerialize(this, gen, provider);
     }
 
-    public ReloadWitness reload() {
+    public ReloadWitness reloads() {
         return reloadWitness;
     }
 
-    public EventsWitness event() {
+    public EventsWitness events() {
         return eventsWitness;
     }
 
@@ -50,15 +50,15 @@ final public class PipelineWitness implements SerializableWitness {
         return queueWitness;
     }
 
-    public PluginWitness input(String name) {
+    public PluginWitness inputs(String name) {
         return pluginsWitness.inputs(name);
     }
 
-    public PluginWitness output(String name) {
+    public PluginWitness outputs(String name) {
         return pluginsWitness.outputs(name);
     }
 
-    public PluginWitness filter(String name) {
+    public PluginWitness filters(String name) {
         return pluginsWitness.filters(name);
     }
 
@@ -98,9 +98,9 @@ final public class PipelineWitness implements SerializableWitness {
 
         void innerSerialize(PipelineWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             gen.writeObjectFieldStart(witness.KEY);
-            witness.event().genJson(gen, provider);
+            witness.events().genJson(gen, provider);
             witness.plugins().genJson(gen, provider);
-            witness.reload().genJson(gen, provider);
+            witness.reloads().genJson(gen, provider);
             witness.queue().genJson(gen, provider);
             //TODO: implement for https://github.com/elastic/logstash/issues/7870 (need to support via Sinatra too)
             //witness.config().genJson(gen, provider);
@@ -122,7 +122,7 @@ final public class PipelineWitness implements SerializableWitness {
          */
         void partial() {
             witness.plugins().forget().all();
-            witness.event().forget().all();
+            witness.events().forget().all();
         }
     }
 }

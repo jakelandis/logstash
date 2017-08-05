@@ -46,11 +46,11 @@ final public class StatsWitness implements SerializableWitness {
         return _instance;
     }
 
-    public ReloadWitness reload() {
+    public ReloadWitness reloads() {
         return reloadWitness;
     }
 
-    public EventsWitness event() {
+    public EventsWitness events() {
         return eventsWitness;
     }
 
@@ -101,8 +101,8 @@ final public class StatsWitness implements SerializableWitness {
         }
 
         void innerSerialize(StatsWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
-            witness.event().genJson(gen, provider);
-            witness.reload().genJson(gen, provider);
+            witness.events().genJson(gen, provider);
+            witness.reloads().genJson(gen, provider);
             witness.pipelinesWitness.genJson(gen, provider);
         }
     }

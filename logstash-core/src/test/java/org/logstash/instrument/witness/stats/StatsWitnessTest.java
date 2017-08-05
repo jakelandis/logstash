@@ -14,12 +14,12 @@ public class StatsWitnessTest {
     public void test() throws IOException {
         StatsWitness witness = StatsWitness.instance();
 
-        witness.reload().error().message("foo");
+        witness.reloads().error().message("foo");
         StackTraceElement[] a = new Throwable().getStackTrace();
 
-        witness.reload().error().backtrace(a);
-        StatsWitness.instance().reload().failure(3);
-        System.out.println(StatsWitness.instance().reload().snitch().failure());
+        witness.reloads().error().backtrace(a);
+        StatsWitness.instance().reloads().failure(3);
+        System.out.println(StatsWitness.instance().reloads().snitch().failure());
 //[:stats, :pipelines, :main, :events]duration_in_millis
 //        witness.pipeline("main").event().duration(100);
 //
