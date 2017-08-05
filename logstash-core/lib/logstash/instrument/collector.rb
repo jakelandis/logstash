@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/instrument/snapshot"
 require "logstash/instrument/metric_store"
+require "logstash/instrument/metric_type/witness_adaptor"
 require "logstash/util/loggable"
 require "concurrent/timer_task"
 require "observer"
@@ -32,23 +33,26 @@ module LogStash module Instrument
     # but we won't stop processing events, theses errors are not considered fatal.
     #
     def push(namespaces_path, key, type, *metric_type_params)
-      begin
-        metric = @metric_store.fetch_or_store(namespaces_path, key) do
-          LogStash::Instrument::MetricType.create(type, namespaces_path, key)
-        end
+      if namespaces_path.first.eql? :stats
+        StatsWitnessAdaptor.adapt(namespaces_path, key, metric_type_params[1])
+      else
+        begin
+          metric = @metric_store.fetch_or_store(namespaces_path, key) do
+            LogStash::Instrument::MetricType.create(type, namespaces_path, key)
+          end
 
-       # puts namespaces_path.to_s + ", " + key.to_s + ", " + type.to_s + ", " + metric_type_params.to_s
-        metric.execute(*metric_type_params)
-      rescue MetricStore::NamespacesExpectedError => e
-        logger.error("Collector: Cannot record metric", :exception => e)
-      rescue NameError => e
-        logger.error("Collector: Cannot create concrete class for this metric type",
-                     :type => type,
-                     :namespaces_path => namespaces_path,
-                     :key => key,
-                     :metrics_params => metric_type_params,
-                     :exception => e,
-                     :stacktrace => e.backtrace)
+          metric.execute(*metric_type_params)
+        rescue MetricStore::NamespacesExpectedError => e
+          logger.error("Collector: Cannot record metric", :exception => e)
+        rescue NameError => e
+          logger.error("Collector: Cannot create concrete class for this metric type",
+                       :type => type,
+                       :namespaces_path => namespaces_path,
+                       :key => key,
+                       :metrics_params => metric_type_params,
+                       :exception => e,
+                       :stacktrace => e.backtrace)
+        end
       end
     end
 

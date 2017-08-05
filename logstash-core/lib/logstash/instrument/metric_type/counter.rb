@@ -13,10 +13,8 @@ module LogStash module Instrument module MetricType
     end
 
     def execute(action, value = 1)
-     if (@namespaces.first.eql? :stats)
-
-     # puts @namespaces.to_s + ", " + @key.to_s + ", "+ action.to_s + " by " + value.to_s
-       StatsWitnessAdaptor.adapt(@namespaces, @key, value)
+      if @namespaces.first.eql? :stats
+        StatsWitnessAdaptor.adapt(@namespaces, @key, value)
       end
       send(action, value)
     end
