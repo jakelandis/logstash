@@ -11,6 +11,9 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Witness for errors.
+ */
 @JsonSerialize(using = ErrorWitness.Serializer.class)
 public class ErrorWitness implements SerializableWitness {
 
@@ -26,10 +29,6 @@ public class ErrorWitness implements SerializableWitness {
         snitch = new Snitch(this);
     }
 
-    public void message(String message) {
-        this.message.set(message);
-    }
-
     /**
      * Stacktrace as a {@link String}
      *
@@ -39,7 +38,21 @@ public class ErrorWitness implements SerializableWitness {
         this.backtrace.set(stackTrace);
     }
 
-    public Snitch snitch(){
+    /**
+     * The message of the error.
+     *
+     * @param message human readable error message.
+     */
+    public void message(String message) {
+        this.message.set(message);
+    }
+
+    /**
+     * Get a reference to associated snitch to get discrete metric values.
+     *
+     * @return the associate {@link Snitch}
+     */
+    public Snitch snitch() {
         return this.snitch;
     }
 
@@ -69,6 +82,9 @@ public class ErrorWitness implements SerializableWitness {
         new Serializer().innerSerialize(this, gen, provider);
     }
 
+    /**
+     * The Jackson serializer.
+     */
     public static class Serializer extends StdSerializer<ErrorWitness> {
 
         /**
@@ -103,21 +119,30 @@ public class ErrorWitness implements SerializableWitness {
         }
     }
 
+    /**
+     * The snitch for the errors. Used to retrieve discrete metric values.
+     */
     public static class Snitch {
         private final ErrorWitness witness;
 
-        public Snitch(ErrorWitness witness) {
+        Snitch(ErrorWitness witness) {
             this.witness = witness;
         }
 
-
+        /**
+         * Gets the error message
+         * @return the error message
+         */
         public String message() {
             return witness.message.getValue();
         }
 
+        /**
+         * Gets the error stack/back trace
+         * @return the backtrace as a String
+         */
         public String backtrace() {
             return witness.backtrace.getValue();
         }
-
     }
 }

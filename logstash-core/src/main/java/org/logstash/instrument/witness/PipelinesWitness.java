@@ -9,15 +9,20 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Witness for the set of pipelines.
+ */
 @JsonSerialize(using = PipelinesWitness.Serializer.class)
 final public class PipelinesWitness implements SerializableWitness {
-
 
     private final Map<String, PipelineWitness> pipelines;
 
     private final static String KEY = "pipelines";
 
-    PipelinesWitness() {
+    /**
+     * Constructor.
+     */
+    public PipelinesWitness() {
         this.pipelines = new ConcurrentHashMap<>();
     }
 
@@ -27,6 +32,11 @@ final public class PipelinesWitness implements SerializableWitness {
     }
 
 
+    /**
+     * Get a uniquely named pipeline witness.
+     * @param name The name of the pipeline.
+     * @return the {@link PipelineWitness} identified by the given name.
+     */
     public PipelineWitness pipeline(String name) {
         if (pipelines.containsKey(name)) {
             return pipelines.get(name);
@@ -37,7 +47,9 @@ final public class PipelinesWitness implements SerializableWitness {
         }
     }
 
-
+    /**
+     * The Jackson serializer.
+     */
     public static class Serializer extends StdSerializer<PipelinesWitness> {
 
         /**

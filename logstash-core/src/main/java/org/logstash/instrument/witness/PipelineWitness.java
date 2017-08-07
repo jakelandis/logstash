@@ -7,6 +7,9 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
 
+/**
+ * A single pipeline witness.
+ */
 @JsonSerialize(using = PipelineWitness.Serializer.class)
 final public class PipelineWitness implements SerializableWitness {
 
@@ -18,6 +21,11 @@ final public class PipelineWitness implements SerializableWitness {
     private final Forgetter forgetter;
     private final String KEY;
 
+    /**
+     * Constructor.
+     *
+     * @param pipelineName The uniquely identifying name of the pipeline.
+     */
     public PipelineWitness(String pipelineName) {
         this.KEY = pipelineName;
         this.reloadWitness = new ReloadWitness();
@@ -28,48 +36,95 @@ final public class PipelineWitness implements SerializableWitness {
         this.forgetter = new Forgetter(this);
     }
 
+    /**
+     * Get a reference to associated config witness
+     *
+     * @return the associated {@link ConfigWitness}
+     */
+    public ConfigWitness config() {
+        return configWitness;
+    }
+
+    /**
+     * Get a reference to associated events witness
+     *
+     * @return the associated {@link EventsWitness}
+     */
+    public EventsWitness events() {
+        return eventsWitness;
+    }
+
+    /**
+     * Gets the {@link PluginWitness} for the given id, creates the associated {@link PluginWitness} if needed
+     * @param id the id of the filter
+     * @return the associated {@link PluginWitness} (for method chaining)
+     */
+    public PluginWitness filters(String id) {
+        return pluginsWitness.filters(id);
+    }
+
+    /**
+     * Get a reference to associated Forgetter
+     *
+     * @return the associated {@link Forgetter}
+     */
+    public Forgetter forget() {
+        return forgetter;
+    }
+
+    /**
+     * Gets the {@link PluginWitness} for the given id, creates the associated {@link PluginWitness} if needed
+     * @param id the id of the input
+     * @return the associated {@link PluginWitness} (for method chaining)
+     */
+    public PluginWitness inputs(String id) {
+        return pluginsWitness.inputs(id);
+    }
+
+    /**
+     * Gets the {@link PluginWitness} for the given id, creates the associated {@link PluginWitness} if needed
+     * @param id the id of the output
+     * @return the associated {@link PluginWitness} (for method chaining)
+     */
+    public PluginWitness outputs(String id) {
+        return pluginsWitness.outputs(id);
+    }
+
+    /**
+     * Get a reference to associated plugins witness
+     *
+     * @return the associated {@link PluginsWitness}
+     */
+    public PluginsWitness plugins() {
+        return pluginsWitness;
+    }
+
+    /**
+     * Get a reference to associated reload witness
+     *
+     * @return the associated {@link ReloadWitness}
+     */
+    public ReloadWitness reloads() {
+        return reloadWitness;
+    }
+
+    /**
+     * Get a reference to associated queue witness
+     *
+     * @return the associated {@link QueueWitness}
+     */
+    public QueueWitness queue() {
+        return queueWitness;
+    }
+
     @Override
     public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
         new Serializer().innerSerialize(this, gen, provider);
     }
 
-    public ReloadWitness reloads() {
-        return reloadWitness;
-    }
-
-    public EventsWitness events() {
-        return eventsWitness;
-    }
-
-    public ConfigWitness config() {
-        return configWitness;
-    }
-
-    public QueueWitness queue() {
-        return queueWitness;
-    }
-
-    public PluginWitness inputs(String name) {
-        return pluginsWitness.inputs(name);
-    }
-
-    public PluginWitness outputs(String name) {
-        return pluginsWitness.outputs(name);
-    }
-
-    public PluginWitness filters(String name) {
-        return pluginsWitness.filters(name);
-    }
-
-    public PluginsWitness plugins() {
-        return pluginsWitness;
-    }
-
-    public Forgetter forget() {
-        return forgetter;
-    }
-
-
+    /**
+     * The Jackson serializer.
+     */
     public static class Serializer extends StdSerializer<PipelineWitness> {
 
         /**
@@ -101,14 +156,13 @@ final public class PipelineWitness implements SerializableWitness {
             witness.plugins().genJson(gen, provider);
             witness.reloads().genJson(gen, provider);
             witness.queue().genJson(gen, provider);
-            //TODO: implement for https://github.com/elastic/logstash/issues/7870 (need to support via Sinatra too)
-            //witness.config().genJson(gen, provider);
             gen.writeEndObject();
         }
-
-
     }
 
+    /**
+     * The Pipeline forgetter
+     */
     public static class Forgetter {
         private final PipelineWitness witness;
 

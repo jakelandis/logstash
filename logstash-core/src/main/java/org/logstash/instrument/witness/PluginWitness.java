@@ -10,44 +10,46 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Witness for a single plugin.
+ */
 @JsonSerialize(using = PluginWitness.Serializer.class)
 public class PluginWitness implements SerializableWitness {
-
 
     private final EventsWitness eventsWitness;
     private final TextGauge id;
     private final TextGauge name;
-    private final Map<Class<? extends SerializableWitness>, SerializableWitness > customWitnesses = new ConcurrentHashMap<>(1);
+    private final Map<Class<? extends SerializableWitness>, SerializableWitness> customWitnesses = new ConcurrentHashMap<>(1);
 
+    /**
+     * Constructor.
+     *
+     * @param id The unique identifier for this plugin.
+     */
     public PluginWitness(String id) {
         eventsWitness = new EventsWitness();
         this.id = new TextGauge("id", id);
         this.name = new TextGauge("name");
     }
 
+    /**
+     * Get a reference to the associated events witness.
+     *
+     * @return the associated {@link EventsWitness}
+     */
     public EventsWitness events() {
         return eventsWitness;
     }
 
-    public PluginWitness name(String name){
+    /**
+     * Sets the name of this plugin.
+     *
+     * @param name the name of this plugin.
+     * @return an instance of this witness (to allow method chaining)
+     */
+    public PluginWitness name(String name) {
         this.name.set(name);
         return this;
-    }
-
-
-    public <T extends SerializableWitness> void addCustom(T witness) {
-        customWitnesses.putIfAbsent(witness.getClass(), witness);
-    }
-
-    /**
-     *
-     * @param clazz
-     * @param <T>
-     * @return null if a custom {@link SerializableWitness} of the provided type has not been added, else the custom {@link SerializableWitness}
-     */
-    public <T extends SerializableWitness> T custom(Class<T> clazz) {
-        SerializableWitness w = customWitnesses.get(clazz);
-        return  w == null ? null : clazz.cast(w);
     }
 
     @Override
@@ -55,6 +57,9 @@ public class PluginWitness implements SerializableWitness {
         new Serializer().innerSerialize(this, gen, provider);
     }
 
+    /**
+     * The Jackson JSON serializer.
+     */
     public static class Serializer extends StdSerializer<PluginWitness> {
 
         /**

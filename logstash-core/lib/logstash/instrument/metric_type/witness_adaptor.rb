@@ -19,9 +19,9 @@ module LogStash
         elsif key.eql? :name
           witness.name(value)
         elsif key.eql? :successes
-          witness.success(value)
+          witness.successes(value)
         elsif key.eql? :failures
-          witness.failure(value)
+          witness.failures(value)
         elsif key.eql? :workers
           witness.workers(value)
         elsif key.eql? :batch_size

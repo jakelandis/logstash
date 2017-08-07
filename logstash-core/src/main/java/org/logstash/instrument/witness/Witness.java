@@ -14,6 +14,9 @@ import java.util.Arrays;
  * <p>Usage example to increment the events counter for the foo input in the main pipeline:
  * {@code Witness.instance().pipeline("main").inputs("foo").events().in(1);}
  * </p>
+ * <p>A Witness may be forgetful. Which means that those witnesses may expose a {@code forget()} method to reset underlying metrics back to it's initial state. </p>
+ * <p>A Witness may also be a snitch. Which means that those witnesses may expose a {@code snitch()} method to retrieve the underlying metric values without JSON serialization.</p>
+ * <p>All Witnesses are capable of serializing their underlying metrics as JSON.</p>
  */
 @JsonSerialize(using = Witness.Serializer.class)
 final public class Witness implements SerializableWitness {
@@ -47,6 +50,7 @@ final public class Witness implements SerializableWitness {
 
     /**
      * Obtain the singleton instance of the {@link Witness}
+     *
      * @return the singleton instance of the {@link Witness}
      * @throws IllegalStateException if attempted to be used before being set.
      */
@@ -57,16 +61,36 @@ final public class Witness implements SerializableWitness {
         return _instance;
     }
 
+    public EventsWitness events() {
+        return eventsWitness;
+    }
+
     /**
      * Obtain a reference to the associated reload witness.
+     *
      * @return The associated {@link ReloadWitness}
      */
     public ReloadWitness reloads() {
         return reloadWitness;
     }
 
-    public EventsWitness events() {
-        return eventsWitness;
+    /**
+     * Obtain a reference to the associated pipelines witness. Consumers may use {@link #pipeline(String)} as a shortcut to this method.
+     *
+     * @return The associated {@link PipelinesWitness}
+     */
+    public PipelinesWitness pipelines() {
+        return pipelinesWitness;
+    }
+
+    /**
+     * Shortcut method for {@link PipelinesWitness#pipeline(String)}
+     *
+     * @param name The name of the pipeline witness to retrieve.
+     * @return the associated {@link PipelineWitness} for the given name
+     */
+    public PipelineWitness pipeline(String name) {
+        return pipelinesWitness.pipeline(name);
     }
 
     @Override
@@ -74,22 +98,9 @@ final public class Witness implements SerializableWitness {
         new Serializer().innerSerialize(this, gen, provider);
     }
 
-    public PipelinesWitness pipelines() {
-        return pipelinesWitness;
-    }
-
     /**
-     * TODO
-     * Shortcut method for pipelines.pipeline(name)
-     *
-     * @param name
-     * @return
+     * The Jackson serializer.
      */
-    public PipelineWitness pipeline(String name) {
-        return pipelinesWitness.pipeline(name);
-
-    }
-
     static class Serializer extends StdSerializer<Witness> {
 
         /**

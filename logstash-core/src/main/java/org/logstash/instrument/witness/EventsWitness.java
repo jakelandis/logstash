@@ -8,6 +8,9 @@ import org.logstash.instrument.metrics.counter.LongCounter;
 
 import java.io.IOException;
 
+/**
+ * Witness for events.
+ */
 @JsonSerialize(using = EventsWitness.Serializer.class)
 final public class EventsWitness implements SerializableWitness {
 
@@ -21,8 +24,10 @@ final public class EventsWitness implements SerializableWitness {
     private final Forgetter forgetter;
     private boolean dirty; //here for passivity with legacy Ruby implementation
 
-
-   public EventsWitness() {
+    /**
+     * Constructor.
+     */
+    public EventsWitness() {
         filtered = new LongCounter("filtered");
         out = new LongCounter("out");
         in = new LongCounter("in");
@@ -33,62 +38,107 @@ final public class EventsWitness implements SerializableWitness {
         dirty = false;
     }
 
-
-    public Forgetter forget(){
-        return forgetter;
-    }
-
-    public void filtered() {
-        filtered.increment();
-        dirty = true;
-    }
-
-    public void out() {
-        out.increment();
-        dirty = true;
-    }
-
-    public void in(long count) {
-        in.increment(count);
-        dirty = true;
-    }
-
-    public void filtered(long count) {
-        filtered.increment(count);
-        dirty = true;
-    }
-
-    public void out(long count) {
-        out.increment(count);
-        dirty = true;
-    }
-
-    public void in() {
-        in.increment();
-        dirty = true;
-    }
-
-    public Snitch snitch(){
-        return snitch;
-    }
-
+    /**
+     * Add to the existing duration
+     *
+     * @param durationToAdd the amount to add to the existing duration.
+     */
     public void duration(long durationToAdd) {
         duration.increment(durationToAdd);
         dirty = true;
     }
 
+    /**
+     * increment the filtered count by 1
+     */
+    public void filtered() {
+        filtered.increment();
+        dirty = true;
+    }
+
+    /**
+     * increment the filtered count
+     *
+     * @param count the count to increment by
+     */
+    public void filtered(long count) {
+        filtered.increment(count);
+        dirty = true;
+    }
+
+    /**
+     * Get a reference to associated forgetter.
+     *
+     * @return the associate {@link Forgetter}
+     */
+    public Forgetter forget() {
+        return forgetter;
+    }
+
+
+    /**
+     * increment the in count by 1
+     */
+    public void in() {
+        in.increment();
+        dirty = true;
+    }
+
+    /**
+     * increment the in count
+     *
+     * @param count the number to increment by
+     */
+    public void in(long count) {
+        in.increment(count);
+        dirty = true;
+    }
+
+    /**
+     * increment the out count by 1
+     */
+    public void out() {
+        out.increment();
+        dirty = true;
+    }
+
+    /**
+     * increment the count
+     *
+     * @param count the number by which to increment by
+     */
+    public void out(long count) {
+        out.increment(count);
+        dirty = true;
+    }
+
+    /**
+     * Get a reference to associated snitch to get discrete metric values.
+     *
+     * @return the associate {@link Snitch}
+     */
+    public Snitch snitch() {
+        return snitch;
+    }
+
+    /**
+     * Add to the existing queue push duration
+     *
+     * @param durationToAdd the duration to add
+     */
+    public void queuePushDuration(long durationToAdd) {
+        queuePushDuration.increment(durationToAdd);
+        dirty = true;
+    }
 
     @Override
     public void genJson(final JsonGenerator gen, SerializerProvider provider) throws IOException {
         new Serializer().innerSerialize(this, gen, provider);
     }
 
-    public void queuePushDuration(long durationToAdd) {
-        queuePushDuration.increment(durationToAdd);
-        dirty = true;
-    }
-
-
+    /**
+     * The Jackson serializer.
+     */
     public static class Serializer extends StdSerializer<EventsWitness> {
 
         /**
@@ -109,7 +159,7 @@ final public class EventsWitness implements SerializableWitness {
 
         @Override
         public void serialize(EventsWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
-            if(witness.dirty) {
+            if (witness.dirty) {
                 gen.writeStartObject();
                 innerSerialize(witness, gen, provider);
                 gen.writeEndObject();
@@ -117,7 +167,7 @@ final public class EventsWitness implements SerializableWitness {
         }
 
         void innerSerialize(EventsWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
-            if(witness.dirty) {
+            if (witness.dirty) {
                 gen.writeObjectFieldStart(witness.KEY);
                 MetricSerializer.Get.longSerializer(gen).serialize(witness.duration);
                 MetricSerializer.Get.longSerializer(gen).serialize(witness.in);
@@ -129,7 +179,10 @@ final public class EventsWitness implements SerializableWitness {
         }
     }
 
-    public static class Snitch{
+    /**
+     * The snitch for the {@link EventsWitness}. Allows to read discrete metrics values.
+     */
+    public static class Snitch {
 
         private final EventsWitness witness;
 
@@ -137,38 +190,66 @@ final public class EventsWitness implements SerializableWitness {
             this.witness = witness;
         }
 
+        /**
+         * Gets the duration of the events.
+         * @return the events duration.
+         */
+        public long duration() {
+            return witness.duration.getValue();
+        }
+
+        /**
+         * Gets the filtered events count.
+         *
+         * @return the count of the filtered events.
+         */
         public long filtered() {
             return witness.filtered.getValue();
 
         }
 
-        public long out() {
-            return witness.out.getValue();
-        }
-
+        /**
+         * Gets the in events count.
+         *
+         * @return the count of the events in.
+         */
         public long in() {
             return witness.in.getValue();
         }
 
-        public long duration() {
-           return witness.duration.getValue();
+        /**
+         * Gets the out events count.
+         *
+         * @return the count of the events out.
+         */
+        public long out() {
+            return witness.out.getValue();
         }
 
+        /**
+         * Gets the duration of the queue push
+         * @return the queue push duration.
+         */
         public long queuePushDuration() {
             return witness.queuePushDuration.getValue();
         }
 
-
     }
 
-    public static class Forgetter{
+    /**
+     * The forgetter for events.
+     */
+    public static class Forgetter {
         private final EventsWitness witness;
 
         Forgetter(EventsWitness witness) {
             this.witness = witness;
         }
 
-        public void all(){
+        /**
+         * Forgets all of the events metrics.
+         */
+        public void all() {
             witness.filtered.reset();
             witness.out.reset();
             witness.in.reset();

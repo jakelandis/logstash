@@ -8,8 +8,10 @@ import org.logstash.instrument.metrics.gauge.LongGauge;
 
 import java.io.IOException;
 
+/**
+ * The witness for configuration.
+ */
 final public class ConfigWitness implements SerializableWitness {
-
 
     private final BooleanGauge deadLetterQueueEnabled;
     private final BooleanGauge configReloadAutomatic;
@@ -45,7 +47,6 @@ final public class ConfigWitness implements SerializableWitness {
     @Override
     public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
         new Serializer().innerSerialize(this, gen, provider);
-
     }
 
     public void workers(long workers) {
@@ -60,6 +61,9 @@ final public class ConfigWitness implements SerializableWitness {
         configReloadInterval.set(interval);
     }
 
+    /**
+     * The Jackson serializer.
+     */
     static class Serializer extends StdSerializer<ConfigWitness> {
 
         /**

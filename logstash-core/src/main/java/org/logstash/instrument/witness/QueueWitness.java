@@ -8,14 +8,29 @@ import org.logstash.instrument.metrics.gauge.TextGauge;
 
 import java.io.IOException;
 
+/**
+ * Witness for the queue.
+ */
 @JsonSerialize(using = QueueWitness.Serializer.class)
 final public class QueueWitness implements SerializableWitness {
 
     private final TextGauge type;
     private final static String KEY = "queue";
 
+    /**
+     * Constructor.
+     */
     public QueueWitness() {
         type = new TextGauge("type");
+    }
+
+    /**
+     * Sets the type of the queue.
+     *
+     * @param type The type of the queue.
+     */
+    public void type(String type) {
+        this.type.set(type);
     }
 
     @Override
@@ -23,13 +38,10 @@ final public class QueueWitness implements SerializableWitness {
         new Serializer().innerSerialize(this, gen, provider);
     }
 
-    public void type(String type) {
-        this.type.set(type);
-    }
-
-
+    /**
+     * The Jackson serializer.
+     */
     public static class Serializer extends StdSerializer<QueueWitness> {
-
         /**
          * Default constructor - required for Jackson
          */

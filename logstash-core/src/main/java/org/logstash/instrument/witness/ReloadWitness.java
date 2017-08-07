@@ -11,6 +11,9 @@ import org.logstash.instrument.metrics.gauge.RubyTimeStampGauge;
 
 import java.io.IOException;
 
+/**
+ * A witness to record reloads.
+ */
 @JsonSerialize(using = ReloadWitness.Serializer.class)
 final public class ReloadWitness implements SerializableWitness {
 
@@ -23,6 +26,9 @@ final public class ReloadWitness implements SerializableWitness {
 
     private final static String KEY = "reloads";
 
+    /**
+     * Constructor.
+     */
     public ReloadWitness() {
         success = new LongCounter("successes");
         failure = new LongCounter("failures");
@@ -32,43 +38,84 @@ final public class ReloadWitness implements SerializableWitness {
         snitch = new Snitch(this);
     }
 
+    /**
+     * Obtain a reference to the associated error witness.
+     *
+     * @return the associated {@link ErrorWitness}
+     */
+    public ErrorWitness error() {
+        return lastError;
+    }
+
+    /**
+     * Record a single failure
+     */
+    public void failure() {
+        failure.increment();
+    }
+
+    /**
+     * Record a failure
+     *
+     * @param count the number of failures
+     */
+    public void failures(long count) {
+        failure.increment(count);
+    }
+
+    /**
+     * Record a single success
+     */
+    public void success() {
+        success.increment();
+    }
+
+    /**
+     * Record a success
+     *
+     * @param count the number of successes
+     */
+    public void successes(long count) {
+        success.increment(count);
+    }
+
+    /**
+     * Get a reference to associated snitch to get discrete metric values.
+     *
+     * @return the associate {@link Snitch}
+     */
+    public Snitch snitch() {
+        return snitch;
+    }
+
+    /**
+     * Set the last success timestamp.
+     *
+     * @param timestamp the {@link JrubyTimestampExtLibrary.RubyTimestamp} to set
+     * @deprecated
+     */
+    public void lastSuccessTimestamp(JrubyTimestampExtLibrary.RubyTimestamp timestamp) {
+        lastSuccessTimestamp.set(timestamp);
+    }
+
+    /**
+     * Set the last failure timestamp.
+     *
+     * @param timestamp the {@link JrubyTimestampExtLibrary.RubyTimestamp} to set
+     * @deprecated
+     */
+    public void lastFailureTimestamp(JrubyTimestampExtLibrary.RubyTimestamp timestamp) {
+        lastFailureTimestamp.set(timestamp);
+    }
+
     @Override
     public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
         new Serializer().innerSerialize(this, gen, provider);
     }
 
-    public void success(long count) {
-        success.increment(count);
-    }
-
-    public void failure(long count) {
-        failure.increment(count);
-    }
-
-    public void success() {
-        success.increment();
-    }
-
-    public void failure() {
-        failure.increment();
-    }
-
-    public Snitch snitch() {
-        return snitch;
-    }
-
-    public ErrorWitness error() {
-        return lastError;
-    }
-
-    public void lastSuccessTimestamp(JrubyTimestampExtLibrary.RubyTimestamp timestamp){
-        lastSuccessTimestamp.set(timestamp);
-    }
-
-    public void lastFailureTimestamp(JrubyTimestampExtLibrary.RubyTimestamp timestamp){
-        lastFailureTimestamp.set(timestamp);
-    }
-
+    /**
+     * The Jackson serializer.
+     */
     public static class Serializer extends StdSerializer<ReloadWitness> {
 
         /**
@@ -105,28 +152,53 @@ final public class ReloadWitness implements SerializableWitness {
         }
     }
 
-    public static class Snitch{
+    /**
+     * The Reload snitch. Provides a means to get discrete metric values.
+     */
+    public static class Snitch {
 
         private final ReloadWitness witness;
-        public Snitch(ReloadWitness witness) {
+
+        Snitch(ReloadWitness witness) {
             this.witness = witness;
         }
 
-        public long success() {
+        /**
+         * Get the number of successful reloads
+         *
+         * @return the count of successful reloads
+         */
+        public long successes() {
             return witness.success.getValue();
         }
 
-        public long failure() {
+        /**
+         * Get the number of failed reloads
+         *
+         * @return the count of failed reloads
+         */
+        public long failures() {
             return witness.failure.getValue();
         }
 
-
+        /**
+         * Gets the timestamp for the last success reload
+         *
+         * @return {@link Timestamp} of the last successful reload
+         * @deprecated
+         */
         public Timestamp lastSuccessTimestamp() {
             return witness.lastSuccessTimestamp.getValue();
         }
 
+        /**
+         * Gets the timestamp for the last failed reload
+         *
+         * @return {@link Timestamp} of the last failed reload
+         * @deprecated
+         */
         public Timestamp lastFailureTimestamp() {
-            return  witness.lastFailureTimestamp.getValue();
+            return witness.lastFailureTimestamp.getValue();
         }
 
     }

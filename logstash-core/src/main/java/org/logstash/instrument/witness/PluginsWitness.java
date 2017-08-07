@@ -8,6 +8,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A Witness for the set of plugins.
+ */
 public class PluginsWitness implements SerializableWitness {
 
     private final Map<String, PluginWitness> inputs;
@@ -16,7 +19,9 @@ public class PluginsWitness implements SerializableWitness {
     private final Forgetter forgetter;
     private final static String KEY = "plugins";
 
-
+    /**
+     * Constructor.
+     */
     public PluginsWitness() {
 
         this.inputs = new HashMap<>();
@@ -25,28 +30,48 @@ public class PluginsWitness implements SerializableWitness {
         this.forgetter = new Forgetter(this);
     }
 
-    @Override
-    public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
-        new Serializer().innerSerialize(this, gen, provider);
-    }
-
+    /**
+     * Gets the {@link PluginWitness} for the given id, creates the associated {@link PluginWitness} if needed
+     * @param id the id of the input
+     * @return the associated {@link PluginWitness} (for method chaining)
+     */
     public PluginWitness inputs(String id) {
         return getPlugin(inputs, id);
     }
 
+    /**
+     * Gets the {@link PluginWitness} for the given id, creates the associated {@link PluginWitness} if needed
+     * @param id the id of the output
+     * @return the associated {@link PluginWitness} (for method chaining)
+     */
     public PluginWitness outputs(String id) {
         return getPlugin(outputs, id);
     }
 
+    /**
+     * Gets the {@link PluginWitness} for the given id, creates the associated {@link PluginWitness} if needed
+     * @param id the id of the filter
+     * @return the associated {@link PluginWitness} (for method chaining)
+     */
     public PluginWitness filters(String id) {
         return getPlugin(filters, id);
     }
 
-    public Forgetter forget(){
+    /**
+     * Gets the {@link Forgetter} to help reset underlying metrics
+     * @return The associated {@link Forgetter}
+     */
+    public Forgetter forget() {
         return forgetter;
     }
 
-    private PluginWitness getPlugin(Map<String, PluginWitness> plugin, String id){
+    /**
+     * Gets or creates the {@link PluginWitness}
+     * @param plugin the map of the plugin type.
+     * @param id the id of the plugin
+     * @return existing or new {@link PluginWitness}
+     */
+    private PluginWitness getPlugin(Map<String, PluginWitness> plugin, String id) {
         if (plugin.containsKey(id)) {
             return plugin.get(id);
         } else {
@@ -56,7 +81,14 @@ public class PluginsWitness implements SerializableWitness {
         }
     }
 
+    @Override
+    public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
+        new Serializer().innerSerialize(this, gen, provider);
+    }
 
+    /**
+     * The Jackson serializer.
+     */
     public static class Serializer extends StdSerializer<PluginsWitness> {
 
         /**
@@ -104,7 +136,10 @@ public class PluginsWitness implements SerializableWitness {
         }
     }
 
-    public static class Forgetter{
+    /**
+     * The forgetter for the Plugins witness.
+     */
+    public static class Forgetter {
 
         private final PluginsWitness witness;
 
@@ -112,7 +147,10 @@ public class PluginsWitness implements SerializableWitness {
             this.witness = witness;
         }
 
-       public void all(){
+        /**
+         * Reset inputs, outputs, and filters.
+         */
+        public void all() {
             witness.inputs.clear();
             witness.outputs.clear();
             witness.filters.clear();
