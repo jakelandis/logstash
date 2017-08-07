@@ -15,6 +15,7 @@ import java.io.IOException;
 final public class QueueWitness implements SerializableWitness {
 
     private final TextGauge type;
+    private final Snitch snitch;
     private final static String KEY = "queue";
 
     /**
@@ -22,6 +23,15 @@ final public class QueueWitness implements SerializableWitness {
      */
     public QueueWitness() {
         type = new TextGauge("type");
+        snitch = new Snitch(this);
+    }
+    /**
+     * Get a reference to associated snitch to get discrete metric values.
+     *
+     * @return the associate {@link Snitch}
+     */
+    public Snitch snitch() {
+        return snitch;
     }
 
     /**
@@ -70,5 +80,26 @@ final public class QueueWitness implements SerializableWitness {
             MetricSerializer.Get.stringSerializer(gen).serialize(witness.type);
             gen.writeEndObject();
         }
+    }
+
+    /**
+     * Snitch for queue. Provides discrete metric values.
+     */
+    public static class Snitch{
+
+        private final QueueWitness witness;
+
+        Snitch(QueueWitness witness) {
+            this.witness = witness;
+        }
+
+        /**
+         * Gets the type of queue
+         * @return the queue type.
+         */
+        public String type(){
+            return witness.type.getValue();
+        }
+
     }
 }
