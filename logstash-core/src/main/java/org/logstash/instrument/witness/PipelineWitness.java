@@ -1,10 +1,9 @@
-package org.logstash.instrument.witness.stats;
+package org.logstash.instrument.witness;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import org.logstash.instrument.witness.SerializableWitness;
 
 import java.io.IOException;
 
@@ -19,7 +18,7 @@ final public class PipelineWitness implements SerializableWitness {
     private final Forgetter forgetter;
     private final String KEY;
 
-    PipelineWitness(String pipelineName) {
+    public PipelineWitness(String pipelineName) {
         this.KEY = pipelineName;
         this.reloadWitness = new ReloadWitness();
         this.eventsWitness = new EventsWitness();
@@ -71,7 +70,7 @@ final public class PipelineWitness implements SerializableWitness {
     }
 
 
-    static class Serializer extends StdSerializer<PipelineWitness> {
+    public static class Serializer extends StdSerializer<PipelineWitness> {
 
         /**
          * Default constructor - required for Jackson
@@ -110,7 +109,7 @@ final public class PipelineWitness implements SerializableWitness {
 
     }
 
-    static class Forgetter {
+    public static class Forgetter {
         private final PipelineWitness witness;
 
         Forgetter(PipelineWitness witness) {

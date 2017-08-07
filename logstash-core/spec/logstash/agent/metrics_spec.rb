@@ -6,7 +6,7 @@ require_relative "../../support/matchers"
 require_relative "../../support/mocks_classes"
 require "spec_helper"
 
-java_import org.logstash.instrument.witness.stats.StatsWitness
+java_import org.logstash.instrument.witness.Witness
 
 # Just make the tests a bit shorter to write and
 # assert, I will keep theses methods here for easier understanding.

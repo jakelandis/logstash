@@ -1,11 +1,10 @@
-package org.logstash.instrument.witness.stats;
+package org.logstash.instrument.witness;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.logstash.instrument.metrics.gauge.BooleanGauge;
 import org.logstash.instrument.metrics.gauge.LongGauge;
-import org.logstash.instrument.witness.SerializableWitness;
 
 import java.io.IOException;
 
@@ -22,7 +21,7 @@ final public class ConfigWitness implements SerializableWitness {
     private final String KEY = "config";
 
 
-    ConfigWitness() {
+    public ConfigWitness() {
         deadLetterQueueEnabled = new BooleanGauge("dead_letter_queue_enabled");
         configReloadAutomatic = new BooleanGauge("config_reload_automatic");
         batchSize = new LongGauge("batch_size");

@@ -3,23 +3,27 @@ package org.logstash.instrument.witness.stats;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.junit.Test;
+import org.logstash.instrument.witness.EventsWitness;
+import org.logstash.instrument.witness.Witness;
 import org.logstash.instrument.witness.SerializableWitness;
 
 import java.io.IOException;
 
 
-public class StatsWitnessTest {
+public class WitnessTest {
 
     @Test
     public void test() throws IOException {
-        StatsWitness witness = StatsWitness.instance();
+        Witness witness = Witness.instance();
 
         witness.reloads().error().message("foo");
         StackTraceElement[] a = new Throwable().getStackTrace();
 
+        Witness.instance().pipeline("main").inputs("foo").events().in();
+
         witness.reloads().error().backtrace(a);
-        StatsWitness.instance().reloads().failure(3);
-        System.out.println(StatsWitness.instance().reloads().snitch().failure());
+        Witness.instance().reloads().failure(3);
+        System.out.println(Witness.instance().reloads().snitch().failure());
 //[:stats, :pipelines, :main, :events]duration_in_millis
 //        witness.pipeline("main").event().duration(100);
 //

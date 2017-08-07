@@ -1,4 +1,4 @@
-package org.logstash.instrument.witness.stats;
+package org.logstash.instrument.witness;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -8,7 +8,6 @@ import org.logstash.Timestamp;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 import org.logstash.instrument.metrics.counter.LongCounter;
 import org.logstash.instrument.metrics.gauge.RubyTimeStampGauge;
-import org.logstash.instrument.witness.SerializableWitness;
 
 import java.io.IOException;
 
@@ -24,7 +23,7 @@ final public class ReloadWitness implements SerializableWitness {
 
     private final static String KEY = "reloads";
 
-    ReloadWitness() {
+    public ReloadWitness() {
         success = new LongCounter("successes");
         failure = new LongCounter("failures");
         lastError = new ErrorWitness();
@@ -70,7 +69,7 @@ final public class ReloadWitness implements SerializableWitness {
         lastFailureTimestamp.set(timestamp);
     }
 
-    static class Serializer extends StdSerializer<ReloadWitness> {
+    public static class Serializer extends StdSerializer<ReloadWitness> {
 
         /**
          * Default constructor - required for Jackson
@@ -106,7 +105,7 @@ final public class ReloadWitness implements SerializableWitness {
         }
     }
 
-    static class Snitch{
+    public static class Snitch{
 
         private final ReloadWitness witness;
         public Snitch(ReloadWitness witness) {

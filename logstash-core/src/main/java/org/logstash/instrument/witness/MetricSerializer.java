@@ -1,4 +1,4 @@
-package org.logstash.instrument.witness.stats;
+package org.logstash.instrument.witness;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import org.logstash.instrument.metrics.Metric;

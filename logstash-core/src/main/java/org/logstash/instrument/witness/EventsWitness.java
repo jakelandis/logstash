@@ -1,11 +1,10 @@
-package org.logstash.instrument.witness.stats;
+package org.logstash.instrument.witness;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.logstash.instrument.metrics.counter.LongCounter;
-import org.logstash.instrument.witness.SerializableWitness;
 
 import java.io.IOException;
 
@@ -23,7 +22,7 @@ final public class EventsWitness implements SerializableWitness {
     private boolean dirty; //here for passivity with legacy Ruby implementation
 
 
-    public EventsWitness() {
+   public EventsWitness() {
         filtered = new LongCounter("filtered");
         out = new LongCounter("out");
         in = new LongCounter("in");
@@ -90,7 +89,7 @@ final public class EventsWitness implements SerializableWitness {
     }
 
 
-    static class Serializer extends StdSerializer<EventsWitness> {
+    public static class Serializer extends StdSerializer<EventsWitness> {
 
         /**
          * Default constructor - required for Jackson
@@ -130,7 +129,7 @@ final public class EventsWitness implements SerializableWitness {
         }
     }
 
-    static class Snitch{
+    public static class Snitch{
 
         private final EventsWitness witness;
 
@@ -162,7 +161,7 @@ final public class EventsWitness implements SerializableWitness {
 
     }
 
-    static class Forgetter{
+    public static class Forgetter{
         private final EventsWitness witness;
 
         Forgetter(EventsWitness witness) {

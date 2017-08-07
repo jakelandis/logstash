@@ -1,9 +1,8 @@
-package org.logstash.instrument.witness.stats;
+package org.logstash.instrument.witness;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import org.logstash.instrument.witness.SerializableWitness;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -58,7 +57,7 @@ public class PluginsWitness implements SerializableWitness {
     }
 
 
-    static class Serializer extends StdSerializer<PluginsWitness> {
+    public static class Serializer extends StdSerializer<PluginsWitness> {
 
         /**
          * Default constructor - required for Jackson
@@ -105,7 +104,7 @@ public class PluginsWitness implements SerializableWitness {
         }
     }
 
-    static class Forgetter{
+    public static class Forgetter{
 
         private final PluginsWitness witness;
 

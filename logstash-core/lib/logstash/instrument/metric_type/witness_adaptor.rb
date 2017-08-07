@@ -1,8 +1,8 @@
-java_import org.logstash.instrument.witness.stats.StatsWitness
+java_import org.logstash.instrument.witness.Witness
 
 module LogStash
   module Instrument
-    class StatsWitnessAdaptor
+    class WitnessAdaptor
 
       def self.adapt(namespaces, key, value)
         witness = namespaces.to_witness
@@ -60,7 +60,7 @@ end
 class Array
   def to_witness
     index = 0
-    witness = StatsWitness.instance
+    witness = Witness.instance
     while index <= self.size-1
       current = self[index]
       # one argument

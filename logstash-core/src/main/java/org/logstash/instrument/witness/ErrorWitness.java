@@ -1,11 +1,10 @@
-package org.logstash.instrument.witness.stats;
+package org.logstash.instrument.witness;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.logstash.instrument.metrics.gauge.TextGauge;
-import org.logstash.instrument.witness.SerializableWitness;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -57,7 +56,6 @@ public class ErrorWitness implements SerializableWitness {
 
             t.printStackTrace(printStream);
             String backtrace = new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8);
-            System.out.println(backtrace);
             this.backtrace.set(backtrace);
 
         } catch (IOException e) {
@@ -71,7 +69,7 @@ public class ErrorWitness implements SerializableWitness {
         new Serializer().innerSerialize(this, gen, provider);
     }
 
-    static class Serializer extends StdSerializer<ErrorWitness> {
+    public static class Serializer extends StdSerializer<ErrorWitness> {
 
         /**
          * Default constructor - required for Jackson
@@ -105,7 +103,7 @@ public class ErrorWitness implements SerializableWitness {
         }
     }
 
-    static class Snitch {
+    public static class Snitch {
         private final ErrorWitness witness;
 
         public Snitch(ErrorWitness witness) {

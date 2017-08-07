@@ -29,7 +29,7 @@ require "securerandom"
 java_import org.logstash.common.DeadLetterQueueFactory
 java_import org.logstash.common.SourceWithMetadata
 java_import org.logstash.common.io.DeadLetterQueueWriter
-java_import org.logstash.instrument.witness.stats.StatsWitness
+java_import org.logstash.instrument.witness.Witness
 
 module LogStash; class BasePipeline
   include LogStash::Util::Loggable
@@ -778,7 +778,7 @@ module LogStash; class Pipeline < BasePipeline
       collector.clear("stats/pipelines/#{pipeline_id}/plugins")
       collector.clear("stats/pipelines/#{pipeline_id}/events")
     end
-    StatsWitness.instance.pipeline(pipeline_id).forget.partial
+    Witness.instance.pipeline(pipeline_id).forget.partial
   end
 
   # Sometimes we log stuff that will dump the pipeline which may contain

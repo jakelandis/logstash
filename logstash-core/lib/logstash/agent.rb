@@ -19,7 +19,7 @@ require "uri"
 require "socket"
 require "securerandom"
 
-java_import org.logstash.instrument.witness.stats.StatsWitness
+java_import org.logstash.instrument.witness.Witness
 
 LogStash::Environment.load_locale!
 
@@ -36,7 +36,7 @@ class LogStash::Agent
   #   :auto_reload [Boolean] - enable reloading of pipelines
   #   :reload_interval [Integer] - reload pipelines every X seconds
   def initialize(settings = LogStash::SETTINGS, source_loader = nil)
-    StatsWitness.setInstance(StatsWitness.new)
+    Witness.setInstance(Witness.new)
     @logger = self.class.logger
     @settings = settings
     @auto_reload = setting("config.reload.automatic")

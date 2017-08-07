@@ -34,7 +34,7 @@ module LogStash module Instrument
     #
     def push(namespaces_path, key, type, *metric_type_params)
       if namespaces_path.first.eql? :stats
-        StatsWitnessAdaptor.adapt(namespaces_path, key, metric_type_params[1])
+        WitnessAdaptor.adapt(namespaces_path, key, metric_type_params[1])
       else
         begin
           metric = @metric_store.fetch_or_store(namespaces_path, key) do

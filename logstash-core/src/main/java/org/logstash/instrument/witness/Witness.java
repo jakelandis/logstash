@@ -1,51 +1,66 @@
-package org.logstash.instrument.witness.stats;
+package org.logstash.instrument.witness;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import org.logstash.instrument.witness.SerializableWitness;
 
 import java.io.IOException;
 import java.util.Arrays;
 
-
-@JsonSerialize(using = StatsWitness.Serializer.class)
-final public class StatsWitness implements SerializableWitness {
+/**
+ * <p>Primary entry point for the Witness subsystem. The Witness subsystem is an abstraction for the {@link org.logstash.instrument.metrics.Metric}'s  that watches/witnesses what
+ * is happening inside Logstash. </p>
+ * <p>Usage example to increment the events counter for the foo input in the main pipeline:
+ * {@code Witness.instance().pipeline("main").inputs("foo").events().in(1);}
+ * </p>
+ */
+@JsonSerialize(using = Witness.Serializer.class)
+final public class Witness implements SerializableWitness {
 
     private final ReloadWitness reloadWitness;
     private final EventsWitness eventsWitness;
     private final PipelinesWitness pipelinesWitness;
 
-    private static StatsWitness _instance;
+    private static Witness _instance;
 
     /**
+     * Constructor. Consumers should use {@link #instance()} method to obtain an instance of this class.
      * <p>THIS IS ONLY TO BE USED BY THE RUBY AGENT</p>
      */
-    public StatsWitness() {
+    public Witness() {
         this.reloadWitness = new ReloadWitness();
         this.eventsWitness = new EventsWitness();
         this.pipelinesWitness = new PipelinesWitness();
     }
 
     /**
-     * This is a dirty hack since the {@link StatsWitness} needs to mirror the Ruby agent's lifecycle, but needs to used during the Ruby object construction. Exposing this allows
+     * This is a dirty hack since the {@link Witness} needs to mirror the Ruby agent's lifecycle, but needs to used during the Ruby agent object construction. Exposing this allows
      * Ruby to create the instance for use in it's constructor, then set it here for all to use as a singleton.
      * <p>THIS IS ONLY TO BE USED BY THE RUBY AGENT</p>
      *
-     * @param __instance The instance of the {@link StatsWitness} to use as the singleton instance that mirror's the agent's lifecycle.
+     * @param __instance The instance of the {@link Witness} to use as the singleton instance that mirror's the agent's lifecycle.
      */
-    public static void setInstance(StatsWitness __instance) {
+    public static void setInstance(Witness __instance) {
         _instance = __instance;
     }
 
-    public static StatsWitness instance() {
+    /**
+     * Obtain the singleton instance of the {@link Witness}
+     * @return the singleton instance of the {@link Witness}
+     * @throws IllegalStateException if attempted to be used before being set.
+     */
+    public static Witness instance() {
         if (_instance == null) {
             throw new IllegalStateException("The stats witness instance must be set before it used. Called from: " + Arrays.toString(new Throwable().getStackTrace()));
         }
         return _instance;
     }
 
+    /**
+     * Obtain a reference to the associated reload witness.
+     * @return The associated {@link ReloadWitness}
+     */
     public ReloadWitness reloads() {
         return reloadWitness;
     }
@@ -75,13 +90,13 @@ final public class StatsWitness implements SerializableWitness {
 
     }
 
-    static class Serializer extends StdSerializer<StatsWitness> {
+    static class Serializer extends StdSerializer<Witness> {
 
         /**
          * Default constructor - required for Jackson
          */
         public Serializer() {
-            this(StatsWitness.class);
+            this(Witness.class);
         }
 
         /**
@@ -89,18 +104,18 @@ final public class StatsWitness implements SerializableWitness {
          *
          * @param t the type to serialize
          */
-        protected Serializer(Class<StatsWitness> t) {
+        protected Serializer(Class<Witness> t) {
             super(t);
         }
 
         @Override
-        public void serialize(StatsWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        public void serialize(Witness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             gen.writeStartObject();
             innerSerialize(witness, gen, provider);
             gen.writeEndObject();
         }
 
-        void innerSerialize(StatsWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        void innerSerialize(Witness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             witness.events().genJson(gen, provider);
             witness.reloads().genJson(gen, provider);
             witness.pipelinesWitness.genJson(gen, provider);

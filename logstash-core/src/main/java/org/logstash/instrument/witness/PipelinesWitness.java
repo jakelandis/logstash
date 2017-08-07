@@ -1,10 +1,9 @@
-package org.logstash.instrument.witness.stats;
+package org.logstash.instrument.witness;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import org.logstash.instrument.witness.SerializableWitness;
 
 import java.io.IOException;
 import java.util.Map;
@@ -18,7 +17,7 @@ final public class PipelinesWitness implements SerializableWitness {
 
     private final static String KEY = "pipelines";
 
-    public PipelinesWitness() {
+    PipelinesWitness() {
         this.pipelines = new ConcurrentHashMap<>();
     }
 
@@ -39,7 +38,7 @@ final public class PipelinesWitness implements SerializableWitness {
     }
 
 
-    static class Serializer extends StdSerializer<PipelinesWitness> {
+    public static class Serializer extends StdSerializer<PipelinesWitness> {
 
         /**
          * Default constructor - required for Jackson
