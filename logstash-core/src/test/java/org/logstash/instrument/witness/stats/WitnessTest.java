@@ -21,7 +21,7 @@ public class WitnessTest {
 
         Witness.instance().pipeline("main").inputs("foo").events().in();
 
-        witness.reloads().error().backtrace(a);
+        witness.reloads().error().backtrace(new RuntimeException());
         Witness.instance().reloads().failures(3);
         System.out.println(Witness.instance().reloads().snitch().failures());
 //[:stats, :pipelines, :main, :events]duration_in_millis

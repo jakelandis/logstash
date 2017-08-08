@@ -26,14 +26,8 @@ final public class PipelinesWitness implements SerializableWitness {
         this.pipelines = new ConcurrentHashMap<>();
     }
 
-    @Override
-    public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
-        new Serializer().innerSerialize(this, gen, provider);
-    }
-
-
     /**
-     * Get a uniquely named pipeline witness.
+     * Get a uniquely named pipeline witness. If one does not exist, it will be created.
      * @param name The name of the pipeline.
      * @return the {@link PipelineWitness} identified by the given name.
      */
@@ -45,6 +39,11 @@ final public class PipelinesWitness implements SerializableWitness {
             pipelines.put(name, pipeline);
             return pipeline;
         }
+    }
+
+    @Override
+    public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
+        new Serializer().innerSerialize(this, gen, provider);
     }
 
     /**

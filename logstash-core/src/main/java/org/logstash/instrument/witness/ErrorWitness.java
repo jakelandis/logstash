@@ -57,17 +57,16 @@ public class ErrorWitness implements SerializableWitness {
     }
 
     /**
-     * Stacktrace for Java. For example: {@link Throwable#getStackTrace()}
+     * Stacktrace for Java.
      *
-     * @param stackTrace The Java stacktrace to output
+     * @param throwable The Java {@link Throwable} that contains the stacktrace to output
      */
-    public void backtrace(StackTraceElement[] stackTrace) {
-        Throwable t = new Throwable();
-        t.setStackTrace(stackTrace);
+    public void backtrace(Throwable throwable) {
+
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
              PrintStream printStream = new PrintStream(byteArrayOutputStream)) {
 
-            t.printStackTrace(printStream);
+            throwable.printStackTrace(printStream);
             String backtrace = new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8);
             this.backtrace.set(backtrace);
 
