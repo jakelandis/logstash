@@ -2,6 +2,7 @@ package org.logstash.instrument.witness;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
@@ -11,6 +12,7 @@ import java.util.Map;
 /**
  * A Witness for the set of plugins.
  */
+@JsonSerialize(using = PluginsWitness.Serializer.class)
 public class PluginsWitness implements SerializableWitness {
 
     private final Map<String, PluginWitness> inputs;
@@ -155,6 +157,5 @@ public class PluginsWitness implements SerializableWitness {
             witness.outputs.clear();
             witness.filters.clear();
         }
-
     }
 }

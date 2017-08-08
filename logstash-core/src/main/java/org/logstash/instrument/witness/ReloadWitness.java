@@ -142,7 +142,7 @@ final public class ReloadWitness implements SerializableWitness {
         }
 
         void innerSerialize(ReloadWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
-            gen.writeObjectFieldStart(witness.KEY);
+            gen.writeObjectFieldStart(ReloadWitness.KEY);
             witness.lastError.genJson(gen, provider);
             MetricSerializer.Get.longSerializer(gen).serialize(witness.success);
             MetricSerializer.Get.timestampSerializer(gen).serialize(witness.lastSuccessTimestamp);

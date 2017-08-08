@@ -7,8 +7,6 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.logstash.instrument.metrics.gauge.TextGauge;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Witness for a single plugin.
@@ -20,8 +18,6 @@ public class PluginWitness implements SerializableWitness {
     private final TextGauge id;
     private final TextGauge name;
     private final Snitch snitch;
-    private final Map<Class<? extends SerializableWitness>, SerializableWitness> customWitnesses = new ConcurrentHashMap<>(1);
-
     /**
      * Constructor.
      *
@@ -100,9 +96,6 @@ public class PluginWitness implements SerializableWitness {
             MetricSerializer.Get.stringSerializer(gen).serialize(witness.id);
             witness.events().genJson(gen, provider);
             MetricSerializer.Get.stringSerializer(gen).serialize(witness.name);
-            for (SerializableWitness customWitness : witness.customWitnesses.values()) {
-                customWitness.genJson(gen, provider);
-            }
         }
     }
 
