@@ -132,6 +132,4 @@ final public class Witness implements SerializableWitness {
             witness.pipelinesWitness.genJson(gen, provider);
         }
     }
-
-
 }

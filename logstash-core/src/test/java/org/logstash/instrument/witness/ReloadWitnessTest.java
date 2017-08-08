@@ -48,4 +48,10 @@ public class ReloadWitnessTest {
         witness.failures(99);
         assertThat(witness.snitch().failures()).isEqualTo(100);
     }
+
+    @Test
+    public void testError(){
+        witness.error().message("foo");
+        assertThat(witness.error().snitch().message()).isEqualTo("foo");
+    }
 }
