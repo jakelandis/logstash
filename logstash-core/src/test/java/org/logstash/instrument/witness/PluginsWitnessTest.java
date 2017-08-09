@@ -30,7 +30,7 @@ public class PluginsWitnessTest {
         witness.codecs("1").events().in(96);
         assertThat(witness.codecs("1").events().snitch().in()).isEqualTo(96);
 
-        witness.forget().all();
+        witness.forgetAll();
 
         assertThat(witness.inputs("1").events().snitch().in()).isEqualTo(0);
         assertThat(witness.filters("1").events().snitch().filtered()).isEqualTo(0);
@@ -55,7 +55,7 @@ public class PluginsWitnessTest {
         witness.inputs("foo");
         String json = witness.asJson();
         assertThat(json).isEqualTo("{\"plugins\":{\"inputs\":[{\"id\":\"foo\"}],\"filters\":[],\"outputs\":[]}}");
-        witness.forget().all();
+        witness.forgetAll();
         json = witness.asJson();
         assertThat(json).isEqualTo("{\"plugins\":{\"inputs\":[],\"filters\":[],\"outputs\":[]}}");
     }
@@ -65,7 +65,7 @@ public class PluginsWitnessTest {
         witness.filters("foo");
         String json = witness.asJson();
         assertThat(json).isEqualTo("{\"plugins\":{\"inputs\":[],\"filters\":[{\"id\":\"foo\"}],\"outputs\":[]}}");
-        witness.forget().all();
+        witness.forgetAll();
         json = witness.asJson();
         assertThat(json).isEqualTo("{\"plugins\":{\"inputs\":[],\"filters\":[],\"outputs\":[]}}");
     }
@@ -75,7 +75,7 @@ public class PluginsWitnessTest {
         witness.outputs("foo");
         String json = witness.asJson();
         assertThat(json).isEqualTo("{\"plugins\":{\"inputs\":[],\"filters\":[],\"outputs\":[{\"id\":\"foo\"}]}}");
-        witness.forget().all();
+        witness.forgetAll();
         json = witness.asJson();
         assertThat(json).isEqualTo("{\"plugins\":{\"inputs\":[],\"filters\":[],\"outputs\":[]}}");
     }
@@ -86,7 +86,7 @@ public class PluginsWitnessTest {
         String json = witness.asJson();
         //codecs are not currently serialized.
         assertThat(json).isEqualTo("{\"plugins\":{\"inputs\":[],\"filters\":[],\"outputs\":[]}}");
-        witness.forget().all();
+        witness.forgetAll();
         json = witness.asJson();
         assertThat(json).isEqualTo("{\"plugins\":{\"inputs\":[],\"filters\":[],\"outputs\":[]}}");
     }

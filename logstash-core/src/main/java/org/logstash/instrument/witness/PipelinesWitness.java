@@ -28,17 +28,12 @@ final public class PipelinesWitness implements SerializableWitness {
 
     /**
      * Get a uniquely named pipeline witness. If one does not exist, it will be created.
+     *
      * @param name The name of the pipeline.
      * @return the {@link PipelineWitness} identified by the given name.
      */
     public PipelineWitness pipeline(String name) {
-        if (pipelines.containsKey(name)) {
-            return pipelines.get(name);
-        } else {
-            PipelineWitness pipeline = new PipelineWitness(name);
-            pipelines.put(name, pipeline);
-            return pipeline;
-        }
+        return pipelines.computeIfAbsent(name, k -> new PipelineWitness(k));
     }
 
     @Override

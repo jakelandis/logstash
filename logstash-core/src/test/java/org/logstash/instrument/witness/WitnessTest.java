@@ -64,7 +64,7 @@ public class WitnessTest {
         witness.events().in(99);
         String json = witness.asJson();
         assertThat(json).contains("{\"events\":{\"in\":99}");
-        witness.events().forget().all();
+        witness.events().forgetAll();
         json = witness.asJson();
         assertThat(json).doesNotContain("events");
     }
@@ -80,13 +80,15 @@ public class WitnessTest {
         assertThat(json).contains("\"foo\":{\"events\":{\"in\":98");
         //plugin events
         assertThat(json).contains("plugins\":{\"inputs\":[{\"id\":\"bar\",\"events\":{\"in\":99");
-        //partial forget
-        witness.pipeline("foo").forget().partial();
+        //forget events
+        witness.pipeline("foo").forgetEvents();
         json = witness.asJson();
+        assertThat(json).doesNotContain("98");
+        //forget plugins
+        witness.pipeline("foo").forgetPlugins();
+        json = witness.asJson();
+        assertThat(json).doesNotContain("99");
         //pipelines still there
         assertThat(json).contains("\"pipelines\":{\"foo\"");
-        //pipeline and plugin events are gone
-        assertThat(json).doesNotContain("99");
-        assertThat(json).doesNotContain("98");
     }
 }

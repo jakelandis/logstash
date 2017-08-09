@@ -773,7 +773,8 @@ module LogStash; class Pipeline < BasePipeline
       collector.clear("stats/pipelines/#{pipeline_id}/plugins")
       collector.clear("stats/pipelines/#{pipeline_id}/events")
     end
-    Witness.instance.pipeline(pipeline_id).forget.partial
+    Witness.instance.pipeline(pipeline_id).forget_plugins
+    Witness.instance.pipeline(pipeline_id).forget_events
   end
 
   # Sometimes we log stuff that will dump the pipeline which may contain

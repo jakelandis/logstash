@@ -18,7 +18,6 @@ final public class PipelineWitness implements SerializableWitness {
     private final ConfigWitness configWitness;
     private final PluginsWitness pluginsWitness;
     private final QueueWitness queueWitness;
-    private final Forgetter forgetter;
     private final String KEY;
 
     /**
@@ -33,7 +32,6 @@ final public class PipelineWitness implements SerializableWitness {
         this.configWitness = new ConfigWitness();
         this.pluginsWitness = new PluginsWitness();
         this.queueWitness = new QueueWitness();
-        this.forgetter = new Forgetter(this);
     }
 
     /**
@@ -64,12 +62,17 @@ final public class PipelineWitness implements SerializableWitness {
     }
 
     /**
-     * Get a reference to associated Forgetter
-     *
-     * @return the associated {@link Forgetter}
+     * Forgets all events for this witness.
      */
-    public Forgetter forget() {
-        return forgetter;
+    public void forgetEvents() {
+        events().forgetAll();
+    }
+
+    /**
+     * Forgets all plugins for this witness.
+     */
+    public void forgetPlugins() {
+        plugins().forgetAll();
     }
 
     /**
@@ -157,25 +160,6 @@ final public class PipelineWitness implements SerializableWitness {
             witness.reloads().genJson(gen, provider);
             witness.queue().genJson(gen, provider);
             gen.writeEndObject();
-        }
-    }
-
-    /**
-     * The Pipeline forgetter
-     */
-    public static class Forgetter {
-        private final PipelineWitness witness;
-
-        Forgetter(PipelineWitness witness) {
-            this.witness = witness;
-        }
-
-        /**
-         * Forgets (removes) the plugins and events data for the given pipeline, but keeps everything else
-         */
-        void partial() {
-            witness.plugins().forget().all();
-            witness.events().forget().all();
         }
     }
 }

@@ -47,7 +47,7 @@ public class EventsWitnessTest {
         assertThat(witness.snitch().out()).isEqualTo(55);
         assertThat(witness.snitch().queuePushDuration()).isEqualTo(44);
 
-        witness.forget().all();
+        witness.forgetAll();
 
         assertThat(witness.snitch().duration()).isEqualTo(0);
         assertThat(witness.snitch().in()).isEqualTo(0);
@@ -100,7 +100,7 @@ public class EventsWitnessTest {
         witness.duration(999);
         String json = witness.asJson();
         assertThat(json).contains("999");
-        witness.forget().all();
+        witness.forgetAll();
         json = witness.asJson();
         assertThat(json).doesNotContain("999");
     }
@@ -110,7 +110,7 @@ public class EventsWitnessTest {
         witness.in(888);
         String json = witness.asJson();
         assertThat(json).contains("888");
-        witness.forget().all();
+        witness.forgetAll();
         json = witness.asJson();
         assertThat(json).doesNotContain("888");
     }
@@ -120,7 +120,7 @@ public class EventsWitnessTest {
         witness.filtered(777);
         String json = witness.asJson();
         assertThat(json).contains("777");
-        witness.forget().all();
+        witness.forgetAll();
         json = witness.asJson();
         assertThat(json).doesNotContain("777");
     }
@@ -130,7 +130,7 @@ public class EventsWitnessTest {
         witness.out(666);
         String json = witness.asJson();
         assertThat(json).contains("666");
-        witness.forget().all();
+        witness.forgetAll();
         json = witness.asJson();
         assertThat(json).doesNotContain("666");
     }
@@ -140,7 +140,7 @@ public class EventsWitnessTest {
         witness.queuePushDuration(555);
         String json = witness.asJson();
         assertThat(json).contains("555");
-        witness.forget().all();
+        witness.forgetAll();
         json = witness.asJson();
         assertThat(json).doesNotContain("555");
     }

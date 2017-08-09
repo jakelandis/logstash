@@ -21,7 +21,6 @@ final public class EventsWitness implements SerializableWitness {
     private LongCounter queuePushDuration;
     final String KEY = "events";
     private final Snitch snitch;
-    private final Forgetter forgetter;
     private boolean dirty; //here for passivity with legacy Ruby implementation
 
     /**
@@ -34,7 +33,6 @@ final public class EventsWitness implements SerializableWitness {
         duration = new LongCounter("duration_in_millis");
         queuePushDuration = new LongCounter("queue_push_duration_in_millis");
         snitch = new Snitch(this);
-        forgetter = new Forgetter(this);
         dirty = false;
     }
 
@@ -67,12 +65,15 @@ final public class EventsWitness implements SerializableWitness {
     }
 
     /**
-     * Get a reference to associated forgetter.
-     *
-     * @return the associate {@link Forgetter}
+     * Forgets all information related to this witness.
      */
-    public Forgetter forget() {
-        return forgetter;
+    public void forgetAll() {
+        filtered.reset();
+        out.reset();
+        in.reset();
+        duration.reset();
+        queuePushDuration.reset();
+        dirty = false;
     }
 
 
@@ -242,28 +243,4 @@ final public class EventsWitness implements SerializableWitness {
         }
 
     }
-
-    /**
-     * The forgetter for events.
-     */
-    public static class Forgetter {
-        private final EventsWitness witness;
-
-        Forgetter(EventsWitness witness) {
-            this.witness = witness;
-        }
-
-        /**
-         * Forgets all of the events metrics.
-         */
-        public void all() {
-            witness.filtered.reset();
-            witness.out.reset();
-            witness.in.reset();
-            witness.duration.reset();
-            witness.queuePushDuration.reset();
-            witness.dirty = false;
-        }
-    }
-
 }

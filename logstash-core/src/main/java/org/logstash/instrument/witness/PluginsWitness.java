@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A Witness for the set of plugins.
@@ -19,7 +20,6 @@ public class PluginsWitness implements SerializableWitness {
     private final Map<String, PluginWitness> outputs;
     private final Map<String, PluginWitness> filters;
     private final Map<String, PluginWitness> codecs;
-    private final Forgetter forgetter;
     private final static String KEY = "plugins";
 
     /**
@@ -27,15 +27,15 @@ public class PluginsWitness implements SerializableWitness {
      */
     public PluginsWitness() {
 
-        this.inputs = new HashMap<>();
-        this.outputs = new HashMap<>();
-        this.filters = new HashMap<>();
-        this.codecs = new HashMap<>();
-        this.forgetter = new Forgetter(this);
+        this.inputs = new ConcurrentHashMap<>();
+        this.outputs = new ConcurrentHashMap<>();
+        this.filters = new ConcurrentHashMap<>();
+        this.codecs = new ConcurrentHashMap<>();
     }
 
     /**
      * Gets the {@link PluginWitness} for the given id, creates the associated {@link PluginWitness} if needed
+     *
      * @param id the id of the input
      * @return the associated {@link PluginWitness} (for method chaining)
      */
@@ -45,6 +45,7 @@ public class PluginsWitness implements SerializableWitness {
 
     /**
      * Gets the {@link PluginWitness} for the given id, creates the associated {@link PluginWitness} if needed
+     *
      * @param id the id of the output
      * @return the associated {@link PluginWitness} (for method chaining)
      */
@@ -54,6 +55,7 @@ public class PluginsWitness implements SerializableWitness {
 
     /**
      * Gets the {@link PluginWitness} for the given id, creates the associated {@link PluginWitness} if needed
+     *
      * @param id the id of the filter
      * @return the associated {@link PluginWitness} (for method chaining)
      */
@@ -63,6 +65,7 @@ public class PluginsWitness implements SerializableWitness {
 
     /**
      * Gets the {@link PluginWitness} for the given id, creates the associated {@link PluginWitness} if needed
+     *
      * @param id the id of the codec
      * @return the associated {@link PluginWitness} (for method chaining)
      */
@@ -71,27 +74,24 @@ public class PluginsWitness implements SerializableWitness {
     }
 
     /**
-     * Gets the {@link Forgetter} to help reset underlying metrics
-     * @return The associated {@link Forgetter}
+     * Forgets all information related to the the plugins.
      */
-    public Forgetter forget() {
-        return forgetter;
+    public void forgetAll() {
+        inputs.clear();
+        outputs.clear();
+        filters.clear();
+        codecs.clear();
     }
 
     /**
      * Gets or creates the {@link PluginWitness}
+     *
      * @param plugin the map of the plugin type.
-     * @param id the id of the plugin
+     * @param id     the id of the plugin
      * @return existing or new {@link PluginWitness}
      */
     private PluginWitness getPlugin(Map<String, PluginWitness> plugin, String id) {
-        if (plugin.containsKey(id)) {
-            return plugin.get(id);
-        } else {
-            PluginWitness pluginWitness = new PluginWitness(id);
-            plugin.put(id, pluginWitness);
-            return pluginWitness;
-        }
+        return plugin.computeIfAbsent(id, k -> new PluginWitness(k) );
     }
 
     @Override
@@ -147,28 +147,6 @@ public class PluginsWitness implements SerializableWitness {
             }
             gen.writeEndArray();
 
-        }
-    }
-
-    /**
-     * The forgetter for the Plugins witness.
-     */
-    public static class Forgetter {
-
-        private final PluginsWitness witness;
-
-        Forgetter(PluginsWitness witness) {
-            this.witness = witness;
-        }
-
-        /**
-         * Reset inputs, outputs, filters, and codecs.
-         */
-        public void all() {
-            witness.inputs.clear();
-            witness.outputs.clear();
-            witness.filters.clear();
-            witness.codecs.clear();
         }
     }
 }

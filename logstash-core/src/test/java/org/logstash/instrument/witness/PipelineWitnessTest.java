@@ -50,7 +50,8 @@ public class PipelineWitnessTest {
 
         witness.queue().type("memory");
 
-        witness.forget().partial();
+        witness.forgetPlugins();
+        witness.forgetEvents();
 
         assertThat(witness.inputs("123").events().snitch().in())
                 .isEqualTo(witness.filters("456").events().snitch().in())
@@ -81,7 +82,7 @@ public class PipelineWitnessTest {
         witness.events().in(99);
         String json = witness.asJson();
         assertThat(json).contains("99");
-        witness.forget().partial();
+        witness.forgetEvents();
         json = witness.asJson();
         //events are forgotten
         assertThat(json).doesNotContain("99");
@@ -94,7 +95,7 @@ public class PipelineWitnessTest {
         witness.outputs("ccc");
         String json = witness.asJson();
         assertThat(json).contains("aaa").contains("bbb").contains("ccc");
-        witness.forget().partial();
+        witness.forgetPlugins();
         json = witness.asJson();
         //plugins are forgotten
         assertThat(json).doesNotContain("aaa").doesNotContain("bbb").doesNotContain("ccc");
@@ -105,21 +106,12 @@ public class PipelineWitnessTest {
         witness.reloads().successes(98);
         String json = witness.asJson();
         assertThat(json).contains("98");
-        witness.forget().partial();
-        json = witness.asJson();
-        //reloads should not be forgotten
-        assertThat(json).contains("98");
     }
-
 
     @Test
     public void testSerializeQueue() throws Exception{
         witness.queue().type("quantum");
         String json = witness.asJson();
-        assertThat(json).contains("quantum");
-        witness.forget().partial();
-        json = witness.asJson();
-        //queue's are not forgotten
         assertThat(json).contains("quantum");
     }
 

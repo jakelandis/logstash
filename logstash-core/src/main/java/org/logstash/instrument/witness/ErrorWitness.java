@@ -130,6 +130,7 @@ public class ErrorWitness implements SerializableWitness {
 
         /**
          * Gets the error message
+         *
          * @return the error message
          */
         public String message() {
@@ -138,6 +139,7 @@ public class ErrorWitness implements SerializableWitness {
 
         /**
          * Gets the error stack/back trace
+         *
          * @return the backtrace as a String
          */
         public String backtrace() {
