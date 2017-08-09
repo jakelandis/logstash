@@ -2,6 +2,7 @@ package org.logstash.instrument.witness;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.logstash.instrument.metrics.gauge.BooleanGauge;
 import org.logstash.instrument.metrics.gauge.LongGauge;
@@ -11,6 +12,7 @@ import java.io.IOException;
 /**
  * The witness for configuration.
  */
+@JsonSerialize(using = ConfigWitness.Serializer.class)
 final public class ConfigWitness implements SerializableWitness {
 
     private final BooleanGauge deadLetterQueueEnabled;
@@ -138,7 +140,6 @@ final public class ConfigWitness implements SerializableWitness {
             MetricSerializer.Get.longSerializer(gen).serialize(witness.workers);
             MetricSerializer.Get.longSerializer(gen).serialize(witness.batchDelay);
             MetricSerializer.Get.longSerializer(gen).serialize(witness.configReloadInterval);
-
             MetricSerializer.Get.booleanSerializer(gen).serialize(witness.configReloadAutomatic);
             MetricSerializer.Get.booleanSerializer(gen).serialize(witness.deadLetterQueueEnabled);
             gen.writeEndObject();

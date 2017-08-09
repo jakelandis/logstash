@@ -63,18 +63,6 @@ public interface MetricSerializer<T extends Metric<?>>{
                 }
             };
         }
-        /**
-         * Proper way to serialize a {@link String} type metric to JSON that should emit a {@code null} JSON value if missing
-         * @param gen The {@link JsonGenerator} used to generate JSON
-         * @return the {@link MetricSerializer} which is the function used to serialize the metric
-         */
-        static MetricSerializer<Metric<String>> nullStringSerializer(JsonGenerator gen){
-            return m -> {
-                if (m != null) {
-                    gen.writeStringField(m.getName(), m.getValue());
-                }
-            };
-        }
 
         /**
          * Proper way to serialize a {@link RubyTimeStampGauge} type metric to JSON that should emit a {@code null} JSON value if missing

@@ -132,6 +132,11 @@ final public class EventsWitness implements SerializableWitness {
     }
 
     @Override
+    public String asJson() throws IOException {
+        return dirty ? SerializableWitness.super.asJson() : "";
+    }
+
+    @Override
     public void genJson(final JsonGenerator gen, SerializerProvider provider) throws IOException {
         new Serializer().innerSerialize(this, gen, provider);
     }
@@ -192,6 +197,7 @@ final public class EventsWitness implements SerializableWitness {
 
         /**
          * Gets the duration of the events.
+         *
          * @return the events duration.
          */
         public long duration() {
@@ -228,6 +234,7 @@ final public class EventsWitness implements SerializableWitness {
 
         /**
          * Gets the duration of the queue push
+         *
          * @return the queue push duration.
          */
         public long queuePushDuration() {
