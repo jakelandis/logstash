@@ -64,7 +64,7 @@ class Array
     while index <= self.size-1
       current = self[index]
       # one argument
-      if [:pipelines, :inputs, :outputs, :filters].include? current
+      if [:pipelines, :inputs, :outputs, :filters, :codecs].include? current
         arg = self[index+1]
         if current.eql? :pipelines
           witness = witness.pipelines.pipeline(arg)
@@ -74,6 +74,8 @@ class Array
           witness = witness.outputs(arg)
         elsif current.eql? :filters
           witness = witness.filters(arg)
+        elsif current.eql? :codecs
+          witness = witness.codecs(arg)
         end
         index += 1
       else #no arguments

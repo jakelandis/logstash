@@ -18,6 +18,7 @@ public class PluginsWitness implements SerializableWitness {
     private final Map<String, PluginWitness> inputs;
     private final Map<String, PluginWitness> outputs;
     private final Map<String, PluginWitness> filters;
+    private final Map<String, PluginWitness> codecs;
     private final Forgetter forgetter;
     private final static String KEY = "plugins";
 
@@ -29,6 +30,7 @@ public class PluginsWitness implements SerializableWitness {
         this.inputs = new HashMap<>();
         this.outputs = new HashMap<>();
         this.filters = new HashMap<>();
+        this.codecs = new HashMap<>();
         this.forgetter = new Forgetter(this);
     }
 
@@ -57,6 +59,15 @@ public class PluginsWitness implements SerializableWitness {
      */
     public PluginWitness filters(String id) {
         return getPlugin(filters, id);
+    }
+
+    /**
+     * Gets the {@link PluginWitness} for the given id, creates the associated {@link PluginWitness} if needed
+     * @param id the id of the codec
+     * @return the associated {@link PluginWitness} (for method chaining)
+     */
+    public PluginWitness codecs(String id) {
+        return getPlugin(codecs, id);
     }
 
     /**
@@ -122,6 +133,7 @@ public class PluginsWitness implements SerializableWitness {
             serializePlugins("inputs", witness.inputs, gen, provider);
             serializePlugins("filters", witness.filters, gen, provider);
             serializePlugins("outputs", witness.outputs, gen, provider);
+            //codec is not serialized
 
             gen.writeEndObject();
         }
@@ -150,12 +162,13 @@ public class PluginsWitness implements SerializableWitness {
         }
 
         /**
-         * Reset inputs, outputs, and filters.
+         * Reset inputs, outputs, filters, and codecs.
          */
         public void all() {
             witness.inputs.clear();
             witness.outputs.clear();
             witness.filters.clear();
+            witness.codecs.clear();
         }
     }
 }

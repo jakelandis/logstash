@@ -139,6 +139,7 @@ module LogStash; class BasePipeline
     elsif plugin_type == "filter"
       FilterDelegator.new(@logger, klass, type_scoped_metric, execution_context, args)
     else # input
+      #todo : jakelandis - are codecs intended to flow through here?
       input_plugin = klass.new(args)
       scoped_metric = type_scoped_metric.namespace(id.to_sym)
       scoped_metric.gauge(:name, input_plugin.config_name)

@@ -67,7 +67,7 @@ public class ErrorWitness implements SerializableWitness {
              PrintStream printStream = new PrintStream(byteArrayOutputStream)) {
 
             throwable.printStackTrace(printStream);
-            String backtrace = new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8);
+            String backtrace = byteArrayOutputStream.toString("UTF-8");
             this.backtrace.set(backtrace);
 
         } catch (IOException e) {

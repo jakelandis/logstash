@@ -27,12 +27,15 @@ public class PluginsWitnessTest {
         assertThat(witness.filters("1").events().snitch().in()).isEqualTo(98);
         witness.outputs("1").events().in(97);
         assertThat(witness.outputs("1").events().snitch().in()).isEqualTo(97);
+        witness.codecs("1").events().in(96);
+        assertThat(witness.codecs("1").events().snitch().in()).isEqualTo(96);
 
         witness.forget().all();
 
         assertThat(witness.inputs("1").events().snitch().in()).isEqualTo(0);
         assertThat(witness.filters("1").events().snitch().filtered()).isEqualTo(0);
         assertThat(witness.outputs("1").events().snitch().in()).isEqualTo(0);
+        assertThat(witness.codecs("1").events().snitch().in()).isEqualTo(0);
     }
 
     @Test
@@ -72,6 +75,17 @@ public class PluginsWitnessTest {
         witness.outputs("foo");
         String json = witness.asJson();
         assertThat(json).isEqualTo("{\"plugins\":{\"inputs\":[],\"filters\":[],\"outputs\":[{\"id\":\"foo\"}]}}");
+        witness.forget().all();
+        json = witness.asJson();
+        assertThat(json).isEqualTo("{\"plugins\":{\"inputs\":[],\"filters\":[],\"outputs\":[]}}");
+    }
+
+    @Test
+    public void testSerializeCodecs() throws Exception{
+        witness.codecs("foo");
+        String json = witness.asJson();
+        //codecs are not currently serialized.
+        assertThat(json).isEqualTo("{\"plugins\":{\"inputs\":[],\"filters\":[],\"outputs\":[]}}");
         witness.forget().all();
         json = witness.asJson();
         assertThat(json).isEqualTo("{\"plugins\":{\"inputs\":[],\"filters\":[],\"outputs\":[]}}");
