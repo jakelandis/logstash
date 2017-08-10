@@ -1,7 +1,7 @@
 # encoding: utf-8
-require "logstash/instrument/collector"
 require "logstash/util/loggable"
 
+#TODO jake delete !!
 module LogStash
   module Api
     class Service
@@ -19,15 +19,15 @@ module LogStash
       end
 
       def snapshot
-        agent.metric.collector.snapshot_metric
+       # agent.metric.collector.snapshot_metric
       end
 
       def get_shallow(*path)
-        snapshot.metric_store.get_shallow(*path)
+       # snapshot.metric_store.get_shallow(*path)
       end
 
       def extract_metrics(path, *keys)
-        snapshot.metric_store.extract_metrics(path, *keys)
+        #snapshot.metric_store.extract_metrics(path, *keys)
       end
     end
   end

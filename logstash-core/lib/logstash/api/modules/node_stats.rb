@@ -33,15 +33,15 @@ module LogStash
 
         private
         def os_payload
-          @stats.os
+        #  @stats.os
         end
 
         def events_payload
-         # JSON.parse(Witness.instance.events.as_json)["events"]
+          JSON.parse(Witness.instance.events.as_json)["events"]
         end
 
         def jvm_payload
-          @stats.jvm
+       #   @stats.jvm
         end
 
         def reloads_payload
@@ -49,11 +49,11 @@ module LogStash
         end
 
         def process_payload
-          @stats.process
+         # @stats.process
         end
 
         def mem_payload
-          @stats.memory
+          #@stats.memory
         end
 
         def pipeline_payload(val = nil)

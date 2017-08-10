@@ -4,6 +4,7 @@ require "logstash/instrument/periodic_poller/os"
 require "logstash/instrument/periodic_poller/jvm"
 require "logstash/instrument/periodic_poller/pq"
 
+#TODO !!! jake find a suitable replacement for this .... this is essentially orphaned at the moment
 module LogStash module Instrument
   # Each PeriodPoller manager his own thread to do the poller
   # of the stats, this class encapsulate the starting and stopping of the poller

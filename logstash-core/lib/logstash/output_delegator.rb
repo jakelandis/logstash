@@ -1,5 +1,4 @@
 require "logstash/output_delegator_strategy_registry"
-
 require "logstash/output_delegator_strategies/shared"
 require "logstash/output_delegator_strategies/single"
 require "logstash/output_delegator_strategies/legacy"
@@ -19,7 +18,7 @@ module LogStash class OutputDelegator
     @witness_plugin_events = witness_plugin.events
     @strategy = strategy_registry.
                   class_for(self.concurrency).
-                  new(@logger, @output_class, @namespaced_metric, execution_context, plugin_args)
+                  new(@logger, @output_class, execution_context, plugin_args)
   end
 
   def config_name

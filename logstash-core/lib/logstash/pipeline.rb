@@ -12,11 +12,6 @@ require "logstash/inputs/base"
 require "logstash/outputs/base"
 require "logstash/shutdown_watcher"
 require "logstash/pipeline_reporter"
-require "logstash/instrument/metric"
-require "logstash/instrument/namespaced_metric"
-require "logstash/instrument/null_metric"
-require "logstash/instrument/namespaced_null_metric"
-require "logstash/instrument/collector"
 require "logstash/instrument/wrapped_write_client"
 require "logstash/util/dead_letter_queue_manager"
 require "logstash/output_delegator"
@@ -37,7 +32,7 @@ module LogStash; class BasePipeline
   attr_reader :settings, :config_str, :config_hash, :inputs, :filters, :outputs, :pipeline_id, :lir, :execution_context, :ephemeral_id
   attr_reader :pipeline_config
 
-  def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
+  def initialize(pipeline_config, agent = nil)
     @logger = self.logger
 
     @ephemeral_id = SecureRandom.uuid

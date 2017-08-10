@@ -2,7 +2,6 @@
 require "logstash/namespace"
 require "logstash/logging"
 require "logstash/config/mixin"
-require "logstash/instrument/null_metric"
 require "logstash/util/dead_letter_queue_manager"
 require "concurrent"
 require "securerandom"
@@ -108,21 +107,6 @@ class LogStash::Plugin
 
   def debug_info
     [self.class.to_s, original_params]
-  end
-
-  def metric=(new_metric)
-    @metric = new_metric
-  end
-
-  def metric
-    # We can disable metric per plugin if we want in the configuration
-    # we will use the NullMetric in this case.
-    @metric_plugin ||= if @enable_metric
-                         # Fallback when testing plugin and no metric collector are correctly configured.
-                         @metric.nil? ? LogStash::Instrument::NamespacedNullMetric.new : @metric
-                       else
-                         LogStash::Instrument::NamespacedNullMetric.new(@metric, :null)
-                       end
   end
 
   # return the configured name of this plugin

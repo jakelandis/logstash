@@ -2,11 +2,6 @@
 require "logstash/environment"
 require "logstash/errors"
 require "logstash/config/cpu_core_strategy"
-require "logstash/instrument/collector"
-require "logstash/instrument/metric"
-require "logstash/instrument/periodic_pollers"
-require "logstash/instrument/collector"
-require "logstash/instrument/metric"
 require "logstash/pipeline"
 require "logstash/webserver"
 require "logstash/event_dispatcher"
@@ -64,11 +59,6 @@ class LogStash::Agent
 
     # Normalize time interval to seconds
     @reload_interval = setting("config.reload.interval") / 1_000_000_000.0
-
-    @collect_metric = setting("metric.collect")
-
-    # Create the collectors and configured it with the library
-    configure_metrics_collectors
 
     @state_resolver = LogStash::StateResolver.new
 
@@ -186,7 +176,6 @@ class LogStash::Agent
   end
 
   def shutdown
-    stop_collecting_metrics
     stop_webserver
     transition_to_stopped
     converge_result = shutdown_pipelines
@@ -399,28 +388,6 @@ class LogStash::Agent
 
   def stop_webserver
     @webserver.stop if @webserver
-  end
-
-  def configure_metrics_collectors
-    @collector = LogStash::Instrument::Collector.new
-
-    @metric = if collect_metrics?
-      @logger.debug("Agent: Configuring metric collection")
-      LogStash::Instrument::Metric.new(@collector)
-    else
-      LogStash::Instrument::NullMetric.new(@collector)
-    end
-
-    @periodic_pollers = LogStash::Instrument::PeriodicPollers.new(@metric, settings.get("queue.type"), self)
-    @periodic_pollers.start
-  end
-
-  def stop_collecting_metrics
-    @periodic_pollers.stop
-  end
-
-  def collect_metrics?
-    @collect_metric
   end
 
   def shutdown_pipelines
