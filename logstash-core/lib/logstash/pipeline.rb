@@ -785,6 +785,6 @@ module LogStash; class Pipeline < BasePipeline
   end
 
   def wrapped_write_client(plugin)
-    LogStash::Instrument::WrappedWriteClient.new(@input_queue_client, self, plugin)
+    LogStash::Instrument::WrappedWriteClient.new(@input_queue_client, self, plugin, @logger)
   end
 end; end

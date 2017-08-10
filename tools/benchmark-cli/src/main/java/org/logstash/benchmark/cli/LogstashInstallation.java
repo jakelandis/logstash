@@ -134,7 +134,7 @@ public interface LogstashInstallation {
             LsBenchFileUtil.ensureExecutable(lsbin.toFile());
             final File output = Files.createTempFile(null, null).toFile();
             final Process process =
-                pbuilder.command(lsbin.toString(), "-w", "4", "-f", cfg.toString()).redirectOutput(
+                pbuilder.command(lsbin.toString(), "-w", "2", "-f", cfg.toString()).redirectOutput(
                     ProcessBuilder.Redirect.to(output)
                 ).start();
             if (data != null) {
