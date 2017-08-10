@@ -6,9 +6,6 @@ module LogStash
   # Lets take the example of dynamic source, where the pipeline config and settings are located and
   # managed outside of the machine.
   class StateResolver
-    def initialize(metric)
-      @metric = metric
-    end
 
     def resolve(pipelines, pipeline_configs)
       actions = []
@@ -17,10 +14,10 @@ module LogStash
         pipeline = pipelines[pipeline_config.pipeline_id]
 
         if pipeline.nil?
-          actions << LogStash::PipelineAction::Create.new(pipeline_config, @metric)
+          actions << LogStash::PipelineAction::Create.new(pipeline_config)
         else
           if pipeline_config != pipeline.pipeline_config
-            actions << LogStash::PipelineAction::Reload.new(pipeline_config, @metric)
+            actions << LogStash::PipelineAction::Reload.new(pipeline_config)
           end
         end
       end

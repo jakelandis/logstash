@@ -154,21 +154,24 @@ module LogStash; module Util
             # start_clock is now called at empty batch creation and an empty batch could
             # stay empty all the way down to the close_batch call.
             time_taken = java.lang.System.current_time_millis - @inflight_clocks[Thread.current]
-            @event_metric_time.increment(time_taken)
-            @pipeline_metric_time.increment(time_taken)
+            #TODO !! jake
+            # @event_metric_time.increment(time_taken)
+            # @pipeline_metric_time.increment(time_taken)
           end
           @inflight_clocks.delete(Thread.current)
         end
       end
 
       def add_filtered_metrics(batch)
-        @event_metric_filtered.increment(batch.filtered_size)
-        @pipeline_metric_filtered.increment(batch.filtered_size)
+        #TODO !! jake
+        # @event_metric_filtered.increment(batch.filtered_size)
+        # @pipeline_metric_filtered.increment(batch.filtered_size)
       end
 
       def add_output_metrics(batch)
-        @event_metric_out.increment(batch.filtered_size)
-        @pipeline_metric_out.increment(batch.filtered_size)
+        #TODO !! jake
+        # @event_metric_out.increment(batch.filtered_size)
+        # @pipeline_metric_out.increment(batch.filtered_size)
       end
     end
 

@@ -1,21 +1,25 @@
 # encoding: utf-8
+
+java_import org.logstash.instrument.witness.Witness
+
 module LogStash module Instrument
   class WrappedWriteClient
-    def initialize(write_client, pipeline, metric, plugin)
+    def initialize(write_client, pipeline, plugin)
       @write_client = write_client
 
-      pipeline_id = pipeline.pipeline_id.to_s.to_sym
-      plugin_type = "#{plugin.class.plugin_type}s".to_sym
+      @pipeline_id = pipeline.pipeline_id.to_s
+      plugin_type = plugin.class.plugin_type
 
-      @events_metrics = metric.namespace([:stats, :events])
-      @pipeline_metrics = metric.namespace([:stats, :pipelines, pipeline_id, :events])
-      @plugin_events_metrics = metric.namespace([:stats, :pipelines, pipeline_id, :plugins, plugin_type, plugin.id.to_sym, :events])
-      @events_metrics_counter = @events_metrics.counter(:in)
-      @events_metrics_time = @events_metrics.counter(:queue_push_duration_in_millis)
-      @pipeline_metrics_counter = @pipeline_metrics.counter(:in)
-      @pipeline_metrics_time = @pipeline_metrics.counter(:queue_push_duration_in_millis)
-      @plugin_events_metrics_counter = @plugin_events_metrics.counter(:out)
-      @plugin_events_metrics_time = @plugin_events_metrics.counter(:queue_push_duration_in_millis)
+      if plugin_type.eql? "input"
+        @witness_plugin = Witness.instance.pipeline(@pipeline_id).inputs(plugin.id.to_s)
+      elsif plugin_type.eql? "filter"
+        @witness_plugin = Witness.instance.pipeline(@pipeline_id).filters(plugin.id.to_s)
+      elsif plugin_type.eql? "output"
+        @witness_plugin = Witness.instance.pipeline(@pipeline_id).outputs(plugin.id.to_s)
+      elsif plugin_type.eql? "codec"
+        @witness_plugin = Witness.instance.pipeline(@pipeline_id).codecs(plugin.id.to_s)
+      end
+
       define_initial_metrics_values
     end
 
@@ -44,25 +48,26 @@ module LogStash module Instrument
     private
 
     def increment_counters(size)
-      @events_metrics_counter.increment(size)
-      @pipeline_metrics_counter.increment(size)
-      @plugin_events_metrics_counter.increment(size)
+      Witness.instance.events.in(size)
+      Witness.instance.pipeline(@pipeline_id).events.in(size)
+      @witness_plugin.events().out(size)
     end
 
     def report_execution_time(start_time)
       execution_time = java.lang.System.current_time_millis - start_time
-      @events_metrics_time.increment(execution_time)
-      @pipeline_metrics_time.increment(execution_time)
-      @plugin_events_metrics_time.increment(execution_time)
-    end
+      Witness.instance.events.queue_push_duration(execution_time)
+      Witness.instance.pipeline(@pipeline_id).events.queue_push_duration(execution_time)
+      @witness_plugin.events().queue_push_duration(execution_time)
+     end
 
     def define_initial_metrics_values
-      @events_metrics_counter.increment(0)
-      @pipeline_metrics_counter.increment(0)
-      @plugin_events_metrics_counter.increment(0)
-      @events_metrics_time.increment(0)
-      @pipeline_metrics_time.increment(0)
-      @plugin_events_metrics_time.increment(0)
+      Witness.instance.events.in(0)
+      Witness.instance.pipeline(@pipeline_id).events.in(0)
+      @witness_plugin.events().out(0)
+      Witness.instance.events.queue_push_duration(0)
+      Witness.instance.pipeline(@pipeline_id).events.queue_push_duration(0)
+      @witness_plugin.events().queue_push_duration(0)
     end
+
   end
 end end

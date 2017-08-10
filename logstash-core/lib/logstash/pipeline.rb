@@ -133,28 +133,24 @@ module LogStash; class BasePipeline
 
     raise ConfigurationError, "Two plugins have the id '#{id}', please fix this conflict" if @plugins_by_id[id]
     @plugins_by_id[id] = true
-
-    # use NullMetric if called in the BasePipeline context otherwise use the @metric value
-    metric = @metric || Instrument::NullMetric.new
-
-    pipeline_scoped_metric = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :plugins])
-    # Scope plugins of type 'input' to 'inputs'
-    type_scoped_metric = pipeline_scoped_metric.namespace("#{plugin_type}s".to_sym)
+    witness_plugins = Witness.instance.pipeline(pipeline_id.to_s).plugins
 
     klass = Plugin.lookup(plugin_type, name)
 
     execution_context = ExecutionContext.new(self, @agent, id, klass.config_name, @dlq_writer)
 
     if plugin_type == "output"
-      OutputDelegator.new(@logger, klass, type_scoped_metric, execution_context, OutputDelegatorStrategyRegistry.instance, args)
+      OutputDelegator.new(@logger, klass, witness_plugins.outputs(id), execution_context, OutputDelegatorStrategyRegistry.instance, args)
     elsif plugin_type == "filter"
-      FilterDelegator.new(@logger, klass, type_scoped_metric, execution_context, args)
+      FilterDelegator.new(@logger, klass, witness_plugins.filters(id), execution_context, args)
     else # input
       #todo : jakelandis - are codecs intended to flow through here?
       input_plugin = klass.new(args)
-      scoped_metric = type_scoped_metric.namespace(id.to_sym)
-      scoped_metric.gauge(:name, input_plugin.config_name)
-      input_plugin.metric = scoped_metric
+      if plugin_type.eql? "input"
+        witness_plugins.inputs(id).name(input_plugin.config_name)
+      elsif plugin_type.eql? "codecs"
+        witness_plugins.codecs(id).name(input_plugin.config_name)
+      end
       input_plugin.execution_context = execution_context
       input_plugin
     end
@@ -192,22 +188,14 @@ module LogStash; class Pipeline < BasePipeline
     :started_at,
     :thread,
     :settings,
-    :metric,
     :filter_queue_client,
     :input_queue_client,
     :queue
 
   MAX_INFLIGHT_WARN_THRESHOLD = 10_000
 
-  def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
+  def initialize(pipeline_config, agent = nil)
     @settings = pipeline_config.settings
-    # This needs to be configured before we call super which will evaluate the code to make
-    # sure the metric instance is correctly send to the plugins to make the namespace scoping work
-    @metric = if namespaced_metric
-      settings.get("metric.collect") ? namespaced_metric : Instrument::NullMetric.new(namespaced_metric.collector)
-    else
-      Instrument::NullMetric.new
-    end
 
     @ephemeral_id = SecureRandom.uuid
     @settings = settings
@@ -228,10 +216,11 @@ module LogStash; class Pipeline < BasePipeline
     @signal_queue = java.util.concurrent.LinkedBlockingQueue.new
     # Note that @inflight_batches as a central mechanism for tracking inflight
     # batches will fail if we have multiple read clients here.
-    @filter_queue_client.set_events_metric(metric.namespace([:stats, :events]))
-    @filter_queue_client.set_pipeline_metric(
-        metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :events])
-    )
+    #TODO !! jake
+    # @filter_queue_client.set_events_metric(metric.namespace([:stats, :events]))
+    # @filter_queue_client.set_pipeline_metric(
+    #     metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :events])
+    # )
     @drain_queue =  @settings.get_value("queue.drain")
 
 
@@ -415,14 +404,16 @@ module LogStash; class Pipeline < BasePipeline
 
       max_inflight = batch_size * pipeline_workers
 
-      config_metric = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :config])
-      config_metric.gauge(:workers, pipeline_workers)
-      config_metric.gauge(:batch_size, batch_size)
-      config_metric.gauge(:batch_delay, batch_delay)
-      config_metric.gauge(:config_reload_automatic, @settings.get("config.reload.automatic"))
-      config_metric.gauge(:config_reload_interval, @settings.get("config.reload.interval"))
-      config_metric.gauge(:dead_letter_queue_enabled, dlq_enabled?)
-      config_metric.gauge(:dead_letter_queue_path, @dlq_writer.get_path.to_absolute_path.to_s) if dlq_enabled?
+      witness_config = Witness.instance.pipeline(pipeline_id.to_s).config
+
+      witness_config.workers(pipeline_workers)
+      witness_config.batch_size(batch_size)
+      witness_config.batch_delay(batch_delay)
+      witness_config.config_reload_automatic(@settings.get("config.reload.automatic"))
+      witness_config.config_reload_interval(@settings.get("config.reload.interval"))
+      witness_config.dead_letter_queue_enabled(dlq_enabled?)
+      #TODO!!! jake
+      witness_config.dead_letter_queue_path(@dlq_writer.get_path.to_absolute_path.to_s) if dlq_enabled?
 
 
       @logger.info("Starting pipeline", default_logging_keys(
@@ -731,48 +722,40 @@ module LogStash; class Pipeline < BasePipeline
   end
 
   def collect_dlq_stats
-    if dlq_enabled?
-      dlq_metric = @metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :dlq])
-      dlq_metric.gauge(:queue_size_in_bytes, @dlq_writer.get_current_queue_size)
-    end
+    #TODO !!! jake
+    # if dlq_enabled?
+    #   dlq_metric = @metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :dlq])
+    #   dlq_metric.gauge(:queue_size_in_bytes, @dlq_writer.get_current_queue_size)
+    # end
   end
 
   def collect_stats
-    pipeline_metric = @metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :queue])
-    pipeline_metric.gauge(:type, settings.get("queue.type"))
+
+    Witness.instance.pipeline(pipeline_id.to_s).queue.type(settings.get("queue.type"))
+
     if @queue.is_a?(LogStash::Util::WrappedAckedQueue) && @queue.queue.is_a?(LogStash::AckedQueue)
       queue = @queue.queue
       dir_path = queue.dir_path
       file_store = Files.get_file_store(Paths.get(dir_path))
 
-      pipeline_metric.namespace([:capacity]).tap do |n|
-        n.gauge(:page_capacity_in_bytes, queue.page_capacity)
-        n.gauge(:max_queue_size_in_bytes, queue.max_size_in_bytes)
-        n.gauge(:max_unread_events, queue.max_unread_events)
-        n.gauge(:queue_size_in_bytes, queue.persisted_size_in_bytes)
-      end
-      pipeline_metric.namespace([:data]).tap do |n|
-        n.gauge(:free_space_in_bytes, file_store.get_unallocated_space)
-        n.gauge(:storage_type, file_store.type)
-        n.gauge(:path, dir_path)
-      end
-
-      pipeline_metric.gauge(:events, queue.unread_count)
+      #TODO !!!! jake
+      # pipeline_metric.namespace([:capacity]).tap do |n|
+      #   n.gauge(:page_capacity_in_bytes, queue.page_capacity)
+      #   n.gauge(:max_queue_size_in_bytes, queue.max_size_in_bytes)
+      #   n.gauge(:max_unread_events, queue.max_unread_events)
+      #   n.gauge(:queue_size_in_bytes, queue.persisted_size_in_bytes)
+      # end
+      # pipeline_metric.namespace([:data]).tap do |n|
+      #   n.gauge(:free_space_in_bytes, file_store.get_unallocated_space)
+      #   n.gauge(:storage_type, file_store.type)
+      #   n.gauge(:path, dir_path)
+      # end
+      #
+      # pipeline_metric.gauge(:events, queue.unread_count)
     end
   end
 
   def clear_pipeline_metrics
-    # TODO(ph): I think the metric should also proxy that call correctly to the collector
-    # this will simplify everything since the null metric would simply just do a noop
-    collector = @metric.collector
-
-    unless collector.nil?
-      # selectively reset metrics we don't wish to keep after reloading
-      # these include metrics about the plugins and number of processed events
-      # we want to keep other metrics like reload counts and error messages
-      collector.clear("stats/pipelines/#{pipeline_id}/plugins")
-      collector.clear("stats/pipelines/#{pipeline_id}/events")
-    end
     Witness.instance.pipeline(pipeline_id).forget_plugins
     Witness.instance.pipeline(pipeline_id).forget_events
   end
@@ -810,6 +793,6 @@ module LogStash; class Pipeline < BasePipeline
   end
 
   def wrapped_write_client(plugin)
-    LogStash::Instrument::WrappedWriteClient.new(@input_queue_client, self, metric, plugin)
+    LogStash::Instrument::WrappedWriteClient.new(@input_queue_client, self, plugin)
   end
 end; end
