@@ -216,11 +216,8 @@ module LogStash; class Pipeline < BasePipeline
     @signal_queue = java.util.concurrent.LinkedBlockingQueue.new
     # Note that @inflight_batches as a central mechanism for tracking inflight
     # batches will fail if we have multiple read clients here.
-    #TODO !! jake
-    # @filter_queue_client.set_events_metric(metric.namespace([:stats, :events]))
-    # @filter_queue_client.set_pipeline_metric(
-    #     metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :events])
-    # )
+    @filter_queue_client.set_events_metric(Witness.instance.events)
+    @filter_queue_client.set_pipeline_metric(Witness.instance.pipeline(pipeline_id.to_s).events)
     @drain_queue =  @settings.get_value("queue.drain")
 
 
