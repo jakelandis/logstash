@@ -177,8 +177,8 @@ final public class EventsWitness implements SerializableWitness {
                 gen.writeObjectFieldStart(witness.KEY);
                 MetricSerializer.Get.longSerializer(gen).serialize(witness.duration);
                 MetricSerializer.Get.longSerializer(gen).serialize(witness.in);
-                MetricSerializer.Get.longSerializer(gen).serialize(witness.filtered);
                 MetricSerializer.Get.longSerializer(gen).serialize(witness.out);
+                MetricSerializer.Get.longSerializer(gen).serialize(witness.filtered);
                 MetricSerializer.Get.longSerializer(gen).serialize(witness.queuePushDuration);
                 gen.writeEndObject();
             }

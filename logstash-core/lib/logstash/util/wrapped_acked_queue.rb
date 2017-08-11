@@ -126,6 +126,11 @@ module LogStash; module Util
         @wait_for = wait_for
       end
 
+      def set_events_metric(event_witness)
+        @witness_event = event_witness
+        define_initial_metrics_values(event_witness)
+      end
+
       def set_pipeline_metric(event_witness)
         @witness_pipeline_event = event_witness
         define_initial_metrics_values(event_witness)
@@ -135,12 +140,6 @@ module LogStash; module Util
         event_witness.duration(0)
         event_witness.filtered(0)
         event_witness.out(0)
-      end
-
-      def define_initial_metrics_values(namespaced_metric)
-        namespaced_metric.report_time(:duration_in_millis, 0)
-        namespaced_metric.increment(:filtered, 0)
-        namespaced_metric.increment(:out, 0)
       end
 
       def inflight_batches
