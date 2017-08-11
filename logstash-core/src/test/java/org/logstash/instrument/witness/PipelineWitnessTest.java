@@ -73,8 +73,8 @@ public class PipelineWitnessTest {
     @Test
     public void testSerializeEmpty() throws Exception {
         String json = witness.asJson();
-        assertThat(json).isEqualTo("{\"default\":{\"plugins\":{\"inputs\":[],\"filters\":[],\"outputs\":[]},\"reloads\":{\"last_error\":{},\"last_success_timestamp\":null," +
-                "\"last_failure_timestamp\":null},\"queue\":{}}}");
+        assertThat(json).isEqualTo("{\"default\":{\"plugins\":{\"inputs\":[],\"filters\":[],\"outputs\":[]},\"reloads\":{\"last_error\":null,\"successes\":0," +
+                "\"last_success_timestamp\":null,\"last_failure_timestamp\":null,\"failures\":0},\"queue\":{}}}");
     }
 
     @Test

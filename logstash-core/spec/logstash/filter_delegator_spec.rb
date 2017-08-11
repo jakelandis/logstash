@@ -1,17 +1,13 @@
 # encoding: utf-8
 require "spec_helper"
 require "logstash/filter_delegator"
-require "logstash/instrument/null_metric"
 require "logstash/event"
 require "logstash/execution_context"
 require "support/shared_contexts"
 
-describe LogStash::FilterDelegator do
+java_import org.logstash.instrument.witness.Witness
 
-  class MockGauge
-    def increment(_)
-    end
-  end
+describe LogStash::FilterDelegator do
 
   include_context "execution_context"
   
@@ -20,20 +16,9 @@ describe LogStash::FilterDelegator do
   let(:config) do
     { "host" => "127.0.0.1", "id" => filter_id }
   end
-  let(:collector) { [] }
-  let(:counter_in) { MockGauge.new }
-  let(:counter_out) { MockGauge.new }
-  let(:counter_time) { MockGauge.new }
-  let(:metric) { LogStash::Instrument::NamespacedNullMetric.new(collector, :null) }
-  let(:events) { [LogStash::Event.new, LogStash::Event.new] }
 
-  before :each do
-    allow(pipeline).to receive(:id).and_return(pipeline_id)
-    allow(metric).to receive(:namespace).with(anything).and_return(metric)
-    allow(metric).to receive(:counter).with(:in).and_return(counter_in)
-    allow(metric).to receive(:counter).with(:out).and_return(counter_out)
-    allow(metric).to receive(:counter).with(:duration_in_millis).and_return(counter_time)
-  end
+  let(:witness) { Witness.new.pipeline(pipeline_id).filters(filter_id)}
+  let(:events) { [LogStash::Event.new, LogStash::Event.new] }
 
   let(:plugin_klass) do
     Class.new(LogStash::Filters::Base) do
@@ -43,11 +28,11 @@ describe LogStash::FilterDelegator do
     end
   end
 
-  subject { described_class.new(logger, plugin_klass, metric, execution_context, config) }
+  subject { described_class.new(logger, plugin_klass, witness, execution_context, config) }
 
   it "create a plugin with the passed options" do
     expect(plugin_klass).to receive(:new).with(config).and_return(plugin_klass.new(config))
-    described_class.new(logger, plugin_klass, metric, execution_context, config)
+    described_class.new(logger, plugin_klass, witness, execution_context, config)
   end
 
   context "when the plugin support flush" do
@@ -71,32 +56,24 @@ describe LogStash::FilterDelegator do
 
     context "when the flush return events" do
       it "increments the out" do
-        subject.multi_filter([LogStash::Event.new])
-        expect(counter_out).to receive(:increment).with(1)
-        subject.flush({})
+        expect { subject.multi_filter([LogStash::Event.new]) }.to_not change { witness.events.snitch.out }
+        expect { subject.flush({})}.to change { witness.events.snitch.out }.by(1)
       end
     end
 
     context "when the flush doesn't return anything" do
       it "doesnt increment the out" do
-        expect(metric).not_to receive(:increment)
-        subject.flush({})
+        expect { subject.flush({})}.to_not change { witness.events.snitch.out }
       end
     end
 
     context "when the filter buffer events" do
-      before do
-        allow(metric).to receive(:increment).with(anything, anything)
-      end
-
       it "has incremented :in" do
-        expect(counter_in).to receive(:increment).with(events.size)
-        subject.multi_filter(events)
+        expect { subject.multi_filter(events) }.to change { witness.events.snitch.in }.by(events.size)
       end
 
       it "has not incremented :out" do
-        expect(counter_out).not_to receive(:increment).with(anything)
-        subject.multi_filter(events)
+        expect { subject.multi_filter(events) }.to_not change {witness.events.snitch.out}
       end
     end
 
@@ -116,15 +93,9 @@ describe LogStash::FilterDelegator do
         end
       end
 
-      before do
-        allow(metric).to receive(:increment).with(anything, anything)
-      end
-
       it "increments the in/out of the metric" do
-        expect(counter_in).to receive(:increment).with(events.size)
-        expect(counter_out).to receive(:increment).with(events.size * 2)
-
-        subject.multi_filter(events)
+        expect { subject.multi_filter(events) }.to change {witness.events.snitch.in}.by(events.size).and \
+                                                   change {witness.events.snitch.out}.by (events.size * 2)
       end
     end
   end
@@ -141,25 +112,20 @@ describe LogStash::FilterDelegator do
       end
     end
 
-    before do
-      allow(metric).to receive(:increment).with(anything, anything)
-    end
-
     it "doesnt define a flush method" do
       expect(subject.respond_to?(:flush)).to be_falsey
     end
 
     it "increments the in/out of the metric" do
-      expect(counter_in).to receive(:increment).with(events.size)
-      expect(counter_out).to receive(:increment).with(events.size)
+          expect { subject.multi_filter(events) }.to change {witness.events.snitch.in}.by(events.size).and \
+                                                     change {witness.events.snitch.out}.by (events.size)
 
-      subject.multi_filter(events)
     end
   end
 
   context "#config_name" do
     it "proxy the config_name to the class method" do
-      expect(subject.config_name).to eq("super_plugin")
+      expect(subject.config_name).to eq("super_plugin") 
     end
   end
 
