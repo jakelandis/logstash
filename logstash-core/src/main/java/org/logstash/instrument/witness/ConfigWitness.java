@@ -1,12 +1,19 @@
 package org.logstash.instrument.witness;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.logstash.instrument.metrics.gauge.BooleanGauge;
 import org.logstash.instrument.metrics.gauge.LongGauge;
+
+import java.io.IOException;
 
 /**
  * The witness for configuration.
  */
-final public class ConfigWitness {
+@JsonSerialize(using = ConfigWitness.Serializer.class)
+final public class ConfigWitness implements SerializableWitness {
 
     private final BooleanGauge deadLetterQueueEnabled;
     private final BooleanGauge configReloadAutomatic;
@@ -15,6 +22,7 @@ final public class ConfigWitness {
     private final LongGauge batchDelay;
     private final LongGauge configReloadInterval;
     private final Snitch snitch;
+    private final String KEY = "config";
 
     /**
      * Constructor.
@@ -92,6 +100,52 @@ final public class ConfigWitness {
         return this.snitch;
     }
 
+    @Override
+    public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
+        new Serializer().innerSerialize(this, gen, provider);
+    }
+
+    /**
+     * The Jackson serializer.
+     */
+    static class Serializer extends StdSerializer<ConfigWitness> {
+
+        /**
+         * Default constructor - required for Jackson
+         */
+        public Serializer() {
+            this(ConfigWitness.class);
+        }
+
+        /**
+         * Constructor
+         *
+         * @param t the type to serialize
+         */
+        protected Serializer(Class<ConfigWitness> t) {
+            super(t);
+        }
+
+        @Override
+        public void serialize(ConfigWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            gen.writeStartObject();
+            innerSerialize(witness, gen, provider);
+            gen.writeEndObject();
+        }
+
+        void innerSerialize(ConfigWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            gen.writeObjectFieldStart(witness.KEY);
+
+            MetricSerializer.Get.longSerializer(gen).serialize(witness.batchSize);
+            MetricSerializer.Get.longSerializer(gen).serialize(witness.workers);
+            MetricSerializer.Get.longSerializer(gen).serialize(witness.batchDelay);
+            MetricSerializer.Get.longSerializer(gen).serialize(witness.configReloadInterval);
+            MetricSerializer.Get.booleanSerializer(gen).serialize(witness.configReloadAutomatic);
+            MetricSerializer.Get.booleanSerializer(gen).serialize(witness.deadLetterQueueEnabled);
+            gen.writeEndObject();
+        }
+    }
+
     /**
      * The snitch for the errors. Used to retrieve discrete metric values.
      */
@@ -152,5 +206,8 @@ final public class ConfigWitness {
             return witness.workers.getValue();
         }
 
+
     }
+
+
 }

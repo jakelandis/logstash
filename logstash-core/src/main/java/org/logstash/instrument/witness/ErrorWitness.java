@@ -1,5 +1,9 @@
 package org.logstash.instrument.witness;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.logstash.instrument.metrics.gauge.TextGauge;
 
 import java.io.ByteArrayOutputStream;
@@ -10,11 +14,15 @@ import java.nio.charset.StandardCharsets;
 /**
  * Witness for errors.
  */
-public class ErrorWitness {
+@JsonSerialize(using = ErrorWitness.Serializer.class)
+public class ErrorWitness implements SerializableWitness {
 
     private final TextGauge message;
     private final TextGauge backtrace;
     private final Snitch snitch;
+    private final String KEY = "last_error";
+
+    private boolean dirty; //here for passivity with legacy Ruby implementation
 
     public ErrorWitness() {
         message = new TextGauge("message");
@@ -29,6 +37,7 @@ public class ErrorWitness {
      */
     public void backtrace(String stackTrace) {
         this.backtrace.set(stackTrace);
+        dirty = true;
     }
 
     /**
@@ -38,6 +47,7 @@ public class ErrorWitness {
      */
     public void message(String message) {
         this.message.set(message);
+        dirty = true;
     }
 
     /**
@@ -66,6 +76,51 @@ public class ErrorWitness {
         } catch (IOException e) {
             //A checked exception due to a the close on a ByteArrayOutputStream is simply annoying since it is an empty method.  This will never be called.
             throw new IllegalStateException("Unknown error", e);
+        }
+    }
+
+    @Override
+    public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
+        new Serializer().innerSerialize(this, gen, provider);
+    }
+
+    /**
+     * The Jackson serializer.
+     */
+    public static class Serializer extends StdSerializer<ErrorWitness> {
+
+        /**
+         * Default constructor - required for Jackson
+         */
+        public Serializer() {
+            this(ErrorWitness.class);
+        }
+
+        /**
+         * Constructor
+         *
+         * @param t the type to serialize
+         */
+        protected Serializer(Class<ErrorWitness> t) {
+            super(t);
+        }
+
+        @Override
+        public void serialize(ErrorWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            gen.writeStartObject();
+            innerSerialize(witness, gen, provider);
+            gen.writeEndObject();
+        }
+
+        void innerSerialize(ErrorWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            if (witness.dirty) {
+                gen.writeObjectFieldStart(witness.KEY);
+                MetricSerializer.Get.stringSerializer(gen).serialize(witness.message);
+                MetricSerializer.Get.stringSerializer(gen).serialize(witness.backtrace);
+                gen.writeEndObject();
+            } else {
+                gen.writeStringField(witness.KEY, null);
+            }
         }
     }
 
