@@ -125,7 +125,7 @@ describe LogStash::FilterDelegator do
 
   context "#config_name" do
     it "proxy the config_name to the class method" do
-      expect(subject.config_name).to eq("super_plugin") 
+      expect(subject.config_name).to eq("super_plugin")
     end
   end
 
