@@ -746,7 +746,6 @@ describe LogStash::Pipeline do
       EOS
     end
     let(:dummyoutput) { ::LogStash::Outputs::DummyOutput.new({ "id" => dummy_output_id }) }
-    let(:metric_store) { subject.metric.collector.snapshot_metric.metric_store }
     let(:pipeline_thread) do
       # subject has to be called for the first time outside the thread because it will create a race condition
       # with the subject.ready? call since subject is lazily initialized

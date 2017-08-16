@@ -329,7 +329,6 @@ describe LogStash::Agent do
 
     let(:agent_args) do
       {
-        "metric.collect" => true,
         "path.config" => config_file
       }
     end
@@ -392,9 +391,9 @@ describe LogStash::Agent do
       end
 
       it "increases the successful reload count" do
-        value = Witness.instance.pipeline("main").reloads.snitch.success
+        value = Witness.instance.pipeline("main").reloads.snitch.successes
         expect(value).to eq(1)
-        instance_value = Witness.instance.reloads.snitch.success
+        instance_value = Witness.instance.reloads.snitch.successes
         expect(instance_value).to eq(1)
       end
 
@@ -421,7 +420,7 @@ describe LogStash::Agent do
       before(:each) { subject.converge_state_and_update }
 
       it "does not increase the successful reload count" do
-        value = Witness.instance.pipeline("main").reloads.snitch.success
+        value = Witness.instance.pipeline("main").reloads.snitch.successes
         expect(value).to eq(0)
       end
 
@@ -443,7 +442,7 @@ describe LogStash::Agent do
       end
 
       it "increases the failed reload count" do
-        value = Witness.instance.pipeline("main").reloads.snitch.failure
+        value = Witness.instance.pipeline("main").reloads.snitch.failures
         expect(value).to be > 0
       end
     end
@@ -454,7 +453,6 @@ describe LogStash::Agent do
         {
           "config.reload.automatic" => false,
           "pipeline.batch.size" => 1,
-          "metric.collect" => true,
           "path.config" => config_file
         }
       end
@@ -471,13 +469,13 @@ describe LogStash::Agent do
 
       it "does not increase the successful reload count" do
         expect { subject.converge_state_and_update }.to_not change {
-          Witness.instance.pipeline("main").reloads.snitch.success
+          Witness.instance.pipeline("main").reloads.snitch.successes
         }
       end
 
       it "increases the failures reload count" do
         expect { subject.converge_state_and_update }.to change {
-          Witness.instance.pipeline("main").reloads.snitch.failure
+          Witness.instance.pipeline("main").reloads.snitch.failures
         }.by(1)
       end
     end
