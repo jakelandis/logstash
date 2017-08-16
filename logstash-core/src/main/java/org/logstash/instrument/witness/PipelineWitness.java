@@ -19,6 +19,7 @@ final public class PipelineWitness implements SerializableWitness {
     private final PluginsWitness pluginsWitness;
     private final QueueWitness queueWitness;
     private final String KEY;
+    private static final Serializer SERIALIZER = new Serializer();
 
     /**
      * Constructor.
@@ -54,6 +55,7 @@ final public class PipelineWitness implements SerializableWitness {
 
     /**
      * Gets the {@link PluginWitness} for the given id, creates the associated {@link PluginWitness} if needed
+     *
      * @param id the id of the filter
      * @return the associated {@link PluginWitness} (for method chaining)
      */
@@ -77,6 +79,7 @@ final public class PipelineWitness implements SerializableWitness {
 
     /**
      * Gets the {@link PluginWitness} for the given id, creates the associated {@link PluginWitness} if needed
+     *
      * @param id the id of the input
      * @return the associated {@link PluginWitness} (for method chaining)
      */
@@ -86,6 +89,7 @@ final public class PipelineWitness implements SerializableWitness {
 
     /**
      * Gets the {@link PluginWitness} for the given id, creates the associated {@link PluginWitness} if needed
+     *
      * @param id the id of the output
      * @return the associated {@link PluginWitness} (for method chaining)
      */
@@ -122,7 +126,7 @@ final public class PipelineWitness implements SerializableWitness {
 
     @Override
     public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
-        new Serializer().innerSerialize(this, gen, provider);
+        SERIALIZER.innerSerialize(this, gen, provider);
     }
 
     /**

@@ -17,6 +17,7 @@ final public class QueueWitness implements SerializableWitness {
     private final TextGauge type;
     private final Snitch snitch;
     private final static String KEY = "queue";
+    private static final Serializer SERIALIZER = new Serializer();
 
     /**
      * Constructor.
@@ -25,6 +26,7 @@ final public class QueueWitness implements SerializableWitness {
         type = new TextGauge("type");
         snitch = new Snitch(this);
     }
+
     /**
      * Get a reference to associated snitch to get discrete metric values.
      *
@@ -45,7 +47,7 @@ final public class QueueWitness implements SerializableWitness {
 
     @Override
     public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
-        new Serializer().innerSerialize(this, gen, provider);
+        SERIALIZER.innerSerialize(this, gen, provider);
     }
 
     /**
@@ -76,7 +78,7 @@ final public class QueueWitness implements SerializableWitness {
         }
 
         void innerSerialize(QueueWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
-            gen.writeObjectFieldStart(witness.KEY);
+            gen.writeObjectFieldStart(KEY);
             MetricSerializer.Get.stringSerializer(gen).serialize(witness.type);
             gen.writeEndObject();
         }
@@ -85,7 +87,7 @@ final public class QueueWitness implements SerializableWitness {
     /**
      * Snitch for queue. Provides discrete metric values.
      */
-    public static class Snitch{
+    public static class Snitch {
 
         private final QueueWitness witness;
 
@@ -95,9 +97,10 @@ final public class QueueWitness implements SerializableWitness {
 
         /**
          * Gets the type of queue
+         *
          * @return the queue type.
          */
-        public String type(){
+        public String type() {
             return witness.type.getValue();
         }
 

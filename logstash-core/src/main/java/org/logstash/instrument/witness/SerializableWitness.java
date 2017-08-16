@@ -16,7 +16,8 @@ public interface SerializableWitness {
 
     /**
      * Generates the corresponding JSON for the witness.
-     * @param gen The {@link JsonGenerator} used to generate the JSON
+     *
+     * @param gen      The {@link JsonGenerator} used to generate the JSON
      * @param provider The {@link SerializerProvider} that may be used to assist with the JSON generation.
      * @throws IOException if any errors occur in JSON generation
      */
@@ -24,6 +25,7 @@ public interface SerializableWitness {
 
     /**
      * Helper method to return the Witness as a JSON string.
+     *
      * @return A {@link String} whose content is the JSON representation for the witness.
      * @throws IOException if any errors occur in JSON generation
      */

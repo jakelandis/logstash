@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import org.logstash.instrument.metrics.Metric;
 import org.logstash.instrument.metrics.gauge.TextGauge;
 
 import java.io.IOException;
@@ -18,6 +19,8 @@ public class PluginWitness implements SerializableWitness {
     private final TextGauge id;
     private final TextGauge name;
     private final Snitch snitch;
+    private static final Serializer SERIALIZER = new Serializer();
+
     /**
      * Constructor.
      *
@@ -61,7 +64,7 @@ public class PluginWitness implements SerializableWitness {
 
     @Override
     public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
-        new Serializer().innerSerialize(this, gen, provider);
+        SERIALIZER.innerSerialize(this, gen, provider);
     }
 
     /**
@@ -93,16 +96,17 @@ public class PluginWitness implements SerializableWitness {
         }
 
         void innerSerialize(PluginWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
-            MetricSerializer.Get.stringSerializer(gen).serialize(witness.id);
+            MetricSerializer<Metric<String>> stringSerializer = MetricSerializer.Get.stringSerializer(gen);
+            stringSerializer.serialize(witness.id);
             witness.events().genJson(gen, provider);
-            MetricSerializer.Get.stringSerializer(gen).serialize(witness.name);
+            stringSerializer.serialize(witness.name);
         }
     }
 
     /**
      * Snitch for a plugin. Provides discrete metric values.
      */
-    public static class Snitch{
+    public static class Snitch {
 
         private final PluginWitness witness;
 
@@ -112,17 +116,19 @@ public class PluginWitness implements SerializableWitness {
 
         /**
          * Gets the id for this plugin.
+         *
          * @return the id
          */
-        public String id(){
+        public String id() {
             return witness.id.getValue();
         }
 
         /**
          * Gets the name of this plugin
+         *
          * @return the name
          */
-        public String name(){
+        public String name() {
             return witness.name.getValue();
         }
 

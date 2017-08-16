@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import org.logstash.instrument.metrics.Metric;
 import org.logstash.instrument.metrics.gauge.TextGauge;
 
 import java.io.ByteArrayOutputStream;
@@ -20,7 +21,8 @@ public class ErrorWitness implements SerializableWitness {
     private final TextGauge message;
     private final TextGauge backtrace;
     private final Snitch snitch;
-    private final String KEY = "last_error";
+    private final static String KEY = "last_error";
+    private static final Serializer SERIALIZER = new Serializer();
 
     private boolean dirty; //here for passivity with legacy Ruby implementation
 
@@ -81,7 +83,7 @@ public class ErrorWitness implements SerializableWitness {
 
     @Override
     public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
-        new Serializer().innerSerialize(this, gen, provider);
+        SERIALIZER.innerSerialize(this, gen, provider);
     }
 
     /**
@@ -114,12 +116,13 @@ public class ErrorWitness implements SerializableWitness {
 
         void innerSerialize(ErrorWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             if (witness.dirty) {
-                gen.writeObjectFieldStart(witness.KEY);
-                MetricSerializer.Get.stringSerializer(gen).serialize(witness.message);
-                MetricSerializer.Get.stringSerializer(gen).serialize(witness.backtrace);
+                gen.writeObjectFieldStart(KEY);
+                MetricSerializer<Metric<String>> stringSerializer = MetricSerializer.Get.stringSerializer(gen);
+                stringSerializer.serialize(witness.message);
+                stringSerializer.serialize(witness.backtrace);
                 gen.writeEndObject();
             } else {
-                gen.writeStringField(witness.KEY, null);
+                gen.writeStringField(KEY, null);
             }
         }
     }

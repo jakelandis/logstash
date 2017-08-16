@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.logstash.Timestamp;
 import org.logstash.ext.JrubyTimestampExtLibrary;
+import org.logstash.instrument.metrics.Metric;
 import org.logstash.instrument.metrics.counter.LongCounter;
 import org.logstash.instrument.metrics.gauge.RubyTimeStampGauge;
 
@@ -23,6 +24,7 @@ final public class ReloadWitness implements SerializableWitness {
     private final RubyTimeStampGauge lastSuccessTimestamp;
     private final RubyTimeStampGauge lastFailureTimestamp;
     private final Snitch snitch;
+    private static final Serializer SERIALIZER = new Serializer();
 
     private final static String KEY = "reloads";
 
@@ -115,7 +117,7 @@ final public class ReloadWitness implements SerializableWitness {
 
     @Override
     public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
-        new Serializer().innerSerialize(this, gen, provider);
+        SERIALIZER.innerSerialize(this, gen, provider);
     }
 
     /**
@@ -149,10 +151,12 @@ final public class ReloadWitness implements SerializableWitness {
         void innerSerialize(ReloadWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             gen.writeObjectFieldStart(ReloadWitness.KEY);
             witness.lastError.genJson(gen, provider);
-            MetricSerializer.Get.longSerializer(gen).serialize(witness.success);
-            MetricSerializer.Get.timestampSerializer(gen).serialize(witness.lastSuccessTimestamp);
-            MetricSerializer.Get.timestampSerializer(gen).serialize(witness.lastFailureTimestamp);
-            MetricSerializer.Get.longSerializer(gen).serialize(witness.failure);
+            MetricSerializer<Metric<Long>> longSerializer = MetricSerializer.Get.longSerializer(gen);
+            MetricSerializer<RubyTimeStampGauge> timestampSerializer = MetricSerializer.Get.timestampSerializer(gen);
+            longSerializer.serialize(witness.success);
+            timestampSerializer.serialize(witness.lastSuccessTimestamp);
+            timestampSerializer.serialize(witness.lastFailureTimestamp);
+            longSerializer.serialize(witness.failure);
             gen.writeEndObject();
         }
     }

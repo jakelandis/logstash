@@ -26,6 +26,7 @@ final public class Witness implements SerializableWitness {
     private final PipelinesWitness pipelinesWitness;
 
     private static Witness _instance;
+    private static final Serializer SERIALIZER = new Serializer();
 
     /**
      * Constructor. Consumers should use {@link #instance()} method to obtain an instance of this class.
@@ -95,7 +96,7 @@ final public class Witness implements SerializableWitness {
 
     @Override
     public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
-        new Serializer().innerSerialize(this, gen, provider);
+        SERIALIZER.innerSerialize(this, gen, provider);
     }
 
     /**

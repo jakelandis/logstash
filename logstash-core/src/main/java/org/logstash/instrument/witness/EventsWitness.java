@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import org.logstash.instrument.metrics.Metric;
 import org.logstash.instrument.metrics.counter.LongCounter;
 
 import java.io.IOException;
@@ -19,7 +20,8 @@ final public class EventsWitness implements SerializableWitness {
     private LongCounter in;
     private LongCounter duration;
     private LongCounter queuePushDuration;
-    final String KEY = "events";
+    private final static String KEY = "events";
+    private static final Serializer SERIALIZER = new Serializer();
     private final Snitch snitch;
     private boolean dirty; //here for passivity with legacy Ruby implementation
 
@@ -139,7 +141,7 @@ final public class EventsWitness implements SerializableWitness {
 
     @Override
     public void genJson(final JsonGenerator gen, SerializerProvider provider) throws IOException {
-        new Serializer().innerSerialize(this, gen, provider);
+        SERIALIZER.innerSerialize(this, gen, provider);
     }
 
     /**
@@ -174,12 +176,13 @@ final public class EventsWitness implements SerializableWitness {
 
         void innerSerialize(EventsWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             if (witness.dirty) {
-                gen.writeObjectFieldStart(witness.KEY);
-                MetricSerializer.Get.longSerializer(gen).serialize(witness.duration);
-                MetricSerializer.Get.longSerializer(gen).serialize(witness.in);
-                MetricSerializer.Get.longSerializer(gen).serialize(witness.out);
-                MetricSerializer.Get.longSerializer(gen).serialize(witness.filtered);
-                MetricSerializer.Get.longSerializer(gen).serialize(witness.queuePushDuration);
+                gen.writeObjectFieldStart(KEY);
+                MetricSerializer<Metric<Long>> longSerializer = MetricSerializer.Get.longSerializer(gen);
+                longSerializer.serialize(witness.duration);
+                longSerializer.serialize(witness.in);
+                longSerializer.serialize(witness.out);
+                longSerializer.serialize(witness.filtered);
+                longSerializer.serialize(witness.queuePushDuration);
                 gen.writeEndObject();
             }
         }
