@@ -9,10 +9,11 @@ require "ostruct"
 require "digest"
 
 describe LogStash::StateResolver do
-  subject { described_class.new(metric) }
+  subject { described_class.new }
 
   before do
     clear_data_dir
+    Witness.setInstance(Witness.new)
   end
 
   after do
