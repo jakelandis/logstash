@@ -205,5 +205,13 @@ final public class ReloadWitness implements SerializableWitness {
             return witness.lastFailureTimestamp.getValue();
         }
 
+        /**
+         * Gets the {@link ErrorWitness} assocaited with this Reload
+         * @return the ErrorWitness
+         */
+        public ErrorWitness error(){
+            return witness.lastError;
+        }
+
     }
 }
