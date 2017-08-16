@@ -21,6 +21,7 @@ public class PluginsWitness implements SerializableWitness {
     private final Map<String, PluginWitness> filters;
     private final Map<String, PluginWitness> codecs;
     private final static String KEY = "plugins";
+    private static final Serializer SERIALIZER = new Serializer();
 
     /**
      * Constructor.
@@ -91,12 +92,12 @@ public class PluginsWitness implements SerializableWitness {
      * @return existing or new {@link PluginWitness}
      */
     private PluginWitness getPlugin(Map<String, PluginWitness> plugin, String id) {
-        return plugin.computeIfAbsent(id, k -> new PluginWitness(k) );
+        return plugin.computeIfAbsent(id, k -> new PluginWitness(k));
     }
 
     @Override
     public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
-        new Serializer().innerSerialize(this, gen, provider);
+        SERIALIZER.innerSerialize(this, gen, provider);
     }
 
     /**

@@ -18,6 +18,7 @@ final public class PipelinesWitness implements SerializableWitness {
     private final Map<String, PipelineWitness> pipelines;
 
     private final static String KEY = "pipelines";
+    private static final Serializer SERIALIZER = new Serializer();
 
     /**
      * Constructor.
@@ -38,7 +39,7 @@ final public class PipelinesWitness implements SerializableWitness {
 
     @Override
     public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
-        new Serializer().innerSerialize(this, gen, provider);
+        SERIALIZER.innerSerialize(this, gen, provider);
     }
 
     /**
