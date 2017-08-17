@@ -2,12 +2,17 @@ package org.logstash.instrument.witness;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.logstash.instrument.metrics.Metric;
 import org.logstash.instrument.metrics.gauge.LongGauge;
 
 import java.io.IOException;
 
+/**
+ * Witness for the Dead Letter Queue
+ */
+@JsonSerialize(using = DeadLetterQueueWitness.Serializer.class)
 public class DeadLetterQueueWitness implements SerializableWitness {
 
     private static String KEY = "dead_letter_queue";
@@ -96,11 +101,10 @@ public class DeadLetterQueueWitness implements SerializableWitness {
         /**
          * Gets the queue size in bytes
          *
-         * @return the queue size in bytes
+         * @return the queue size in bytes. May be {@code null}
          */
-        public long queueSizeInBytes() {
+        public Long queueSizeInBytes() {
             return witness.queueSizeInBytes.getValue();
         }
-
     }
 }

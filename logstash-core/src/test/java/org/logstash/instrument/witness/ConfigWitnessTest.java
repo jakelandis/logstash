@@ -21,18 +21,21 @@ public class ConfigWitnessTest {
 
     @Test
     public void testBatchDelay() {
+        assertThat(witness.snitch().batchDelay()).isNull();
         witness.batchDelay(99);
         assertThat(witness.snitch().batchDelay()).isEqualTo(99);
     }
 
     @Test
     public void testBatchSize() {
+        assertThat(witness.snitch().batchSize()).isNull();
         witness.batchSize(98);
         assertThat(witness.snitch().batchSize()).isEqualTo(98);
     }
 
     @Test
     public void testConfigReloadAutomatic() {
+        assertThat(witness.snitch().configReloadAutomatic()).isFalse();
         witness.configReloadAutomatic(true);
         assertThat(witness.snitch().configReloadAutomatic()).isTrue();
         witness.configReloadAutomatic(false);
@@ -41,12 +44,14 @@ public class ConfigWitnessTest {
 
     @Test
     public void testConfigReloadInterval() {
+        assertThat(witness.snitch().configReloadInterval()).isNull();
         witness.configReloadInterval(97);
         assertThat(witness.snitch().configReloadInterval()).isEqualTo(97);
     }
 
     @Test
     public void testDeadLetterQueueEnabled() {
+        assertThat(witness.snitch().deadLetterQueueEnabled()).isFalse();
         witness.deadLetterQueueEnabled(true);
         assertThat(witness.snitch().deadLetterQueueEnabled()).isTrue();
         witness.deadLetterQueueEnabled(false);
@@ -62,6 +67,7 @@ public class ConfigWitnessTest {
 
     @Test
     public void testWorkers() {
+        assertThat(witness.snitch().workers()).isNull();
         witness.workers(96);
         assertThat(witness.snitch().workers()).isEqualTo(96);
     }

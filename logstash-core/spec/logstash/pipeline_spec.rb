@@ -839,25 +839,25 @@ describe LogStash::Pipeline do
 
         it 'should show not count any dlq stats' do
           collect_stats
-          expect(snitch.queue_size_in_bytes).eql(0)
+          expect(snitch.queue_size_in_bytes).to be_nil
         end
 
       end
-      #
-      # context 'when dlq is enabled' do
-      #   let (:dead_letter_queue_enabled) { true }
-      #   let (:dead_letter_queue_path) { Stud::Temporary.directory }
-      #   let (:pipeline_dlq_path) { "#{dead_letter_queue_path}/#{pipeline_id}"}
-      #
-      #   let (:collect_stats) { subject.collect_dlq_stats }
-      #   let (:collected_stats) { collected_metric[:stats][:pipelines][:main][:dlq]}
-      #
-      #   it 'should show dlq stats' do
-      #     collect_stats
-      #     # A newly created dead letter queue with no entries will have a size of 1 (the version 'header')
-      #     expect(collected_stats[:queue_size_in_bytes].value).to eq(1)
-      #   end
-      # end
+
+      context 'when dlq is enabled' do
+        let (:dead_letter_queue_enabled) { true }
+        let (:dead_letter_queue_path) { Stud::Temporary.directory }
+        let (:pipeline_dlq_path) { "#{dead_letter_queue_path}/#{pipeline_id}"}
+
+        let (:collect_stats) { subject.collect_dlq_stats }
+        let (:snitch) { Witness.instance.pipeline("main").dlq.snitch}
+
+        it 'should show dlq stats' do
+          collect_stats
+          # A newly created dead letter queue with no entries will have a size of 1 (the version 'header')
+          expect(snitch.queue_size_in_bytes).to eql(1)
+        end
+      end
     end
   end
 

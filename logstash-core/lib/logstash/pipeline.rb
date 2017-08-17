@@ -714,7 +714,7 @@ module LogStash; class Pipeline < BasePipeline
 
   def collect_dlq_stats
     if dlq_enabled?
-      Witness.instance.pipeline("pipeline_id.to_s").dlq.queue_size_in_bytes(@dlq_writer.get_current_queue_size)
+      Witness.instance.pipeline(pipeline_id.to_s).dlq.queue_size_in_bytes(@dlq_writer.get_current_queue_size)
     end
   end
 

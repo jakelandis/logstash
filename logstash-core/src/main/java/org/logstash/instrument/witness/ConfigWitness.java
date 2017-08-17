@@ -180,9 +180,9 @@ final public class ConfigWitness implements SerializableWitness {
         /**
          * Gets the configured batch delay
          *
-         * @return the batch delay
+         * @return the batch delay. May be {@code null}
          */
-        public long batchDelay() {
+        public Long batchDelay() {
             return witness.batchDelay.getValue();
         }
 
@@ -190,9 +190,9 @@ final public class ConfigWitness implements SerializableWitness {
         /**
          * Gets the configured batch size
          *
-         * @return the batch size
+         * @return the batch size. May be {@code null}
          */
-        public long batchSize() {
+        public Long batchSize() {
             return witness.batchSize.getValue();
         }
 
@@ -202,15 +202,16 @@ final public class ConfigWitness implements SerializableWitness {
          * @return true if configured for automatic, false otherwise
          */
         public boolean configReloadAutomatic() {
-            return witness.configReloadAutomatic.getValue();
+            Boolean reload = witness.configReloadAutomatic.getValue();
+            return reload == null ? false : reload;
         }
 
         /**
          * Gets the configured reload interval
          *
-         * @return the configured reload interval
+         * @return the configured reload interval. May be {@code null}
          */
-        public long configReloadInterval() {
+        public Long configReloadInterval() {
             return witness.configReloadInterval.getValue();
         }
 
@@ -236,9 +237,9 @@ final public class ConfigWitness implements SerializableWitness {
         /**
          * Gets the number of configured workers
          *
-         * @return the configured number of workers.
+         * @return the configured number of workers. May be {@code null}
          */
-        public long workers() {
+        public Long workers() {
             return witness.workers.getValue();
         }
     }
