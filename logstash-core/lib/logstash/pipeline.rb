@@ -404,8 +404,8 @@ module LogStash; class Pipeline < BasePipeline
       witness_config.config_reload_automatic(@settings.get("config.reload.automatic"))
       witness_config.config_reload_interval(@settings.get("config.reload.interval"))
       witness_config.dead_letter_queue_enabled(dlq_enabled?)
-      #TODO!!! jake
-      witness_config.dead_letter_queue_path(@dlq_writer.get_path.to_absolute_path.to_s) if dlq_enabled?
+      #TODO!!! jake fixme, add a test
+      #witness_config.dead_letter_queue_path(@dlq_writer.get_path.to_absolute_path.to_s) if dlq_enabled?
 
 
       @logger.info("Starting pipeline", default_logging_keys(
