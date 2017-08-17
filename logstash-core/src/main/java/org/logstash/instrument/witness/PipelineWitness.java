@@ -142,7 +142,7 @@ final public class PipelineWitness implements SerializableWitness {
     /**
      * The Jackson serializer.
      */
-    public static class Serializer extends StdSerializer<PipelineWitness> {
+    static class Serializer extends StdSerializer<PipelineWitness> {
 
         /**
          * Default constructor - required for Jackson

@@ -169,10 +169,10 @@ final public class ConfigWitness implements SerializableWitness {
     /**
      * The snitch for the errors. Used to retrieve discrete metric values.
      */
-    public static class Snitch {
+    public class Snitch {
         private final ConfigWitness witness;
 
-        Snitch(ConfigWitness witness) {
+        private Snitch(ConfigWitness witness) {
             this.witness = witness;
         }
 

@@ -55,7 +55,7 @@ public class DeadLetterQueueWitness implements SerializableWitness {
     /**
      * The Jackson serializer.
      */
-    public static class Serializer extends StdSerializer<DeadLetterQueueWitness> {
+    static class Serializer extends StdSerializer<DeadLetterQueueWitness> {
 
         /**
          * Default constructor - required for Jackson
@@ -89,12 +89,12 @@ public class DeadLetterQueueWitness implements SerializableWitness {
     }
 
     /**
-     * The snitch for the errors. Used to retrieve discrete metric values.
+     * The snitch for the dead letter queue. Used to retrieve discrete metric values.
      */
-    public static class Snitch {
+    public class Snitch {
         private final DeadLetterQueueWitness witness;
 
-        Snitch(DeadLetterQueueWitness witness) {
+        private Snitch(DeadLetterQueueWitness witness) {
             this.witness = witness;
         }
 

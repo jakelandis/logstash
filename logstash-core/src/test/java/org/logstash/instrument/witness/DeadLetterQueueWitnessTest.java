@@ -39,9 +39,9 @@ public class DeadLetterQueueWitnessTest {
     }
 
     @Test
-    public void testSerializeQueueSizeInBytes() throws Exception {
-        witness.queueSizeInBytes(99);
+    public void testSerializeQueueSize() throws Exception {
+        witness.queueSizeInBytes(98);
         String json = witness.asJson();
-        assertThat(json).isEqualTo("{\"dead_letter_queue\":{\"queue_size_in_bytes\":99}}");
+        assertThat(json).isEqualTo("{\"dead_letter_queue\":{\"queue_size_in_bytes\":98}}");
     }
 }

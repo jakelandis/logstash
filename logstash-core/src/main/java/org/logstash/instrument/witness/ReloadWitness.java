@@ -118,7 +118,7 @@ final public class ReloadWitness implements SerializableWitness {
     /**
      * The Jackson serializer.
      */
-    public static class Serializer extends StdSerializer<ReloadWitness> {
+    static class Serializer extends StdSerializer<ReloadWitness> {
 
         /**
          * Default constructor - required for Jackson
@@ -203,14 +203,6 @@ final public class ReloadWitness implements SerializableWitness {
          */
         public Timestamp lastFailureTimestamp() {
             return witness.lastFailureTimestamp.getValue();
-        }
-
-        /**
-         * Gets the {@link ErrorWitness} assocaited with this Reload
-         * @return the ErrorWitness
-         */
-        public ErrorWitness error(){
-            return witness.lastError;
         }
 
     }
