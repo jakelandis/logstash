@@ -720,27 +720,27 @@ module LogStash; class Pipeline < BasePipeline
 
   def collect_stats
 
-    Witness.instance.pipeline(pipeline_id.to_s).queue.type(settings.get("queue.type"))
+    queue_witness = Witness.instance.pipeline(pipeline_id.to_s).queue
+    queue_witness.type(settings.get("queue.type"))
 
     if @queue.is_a?(LogStash::Util::WrappedAckedQueue) && @queue.queue.is_a?(LogStash::AckedQueue)
       queue = @queue.queue
       dir_path = queue.dir_path
       file_store = Files.get_file_store(Paths.get(dir_path))
 
-      #TODO !!!! jake
-      # pipeline_metric.namespace([:capacity]).tap do |n|
-      #   n.gauge(:page_capacity_in_bytes, queue.page_capacity)
-      #   n.gauge(:max_queue_size_in_bytes, queue.max_size_in_bytes)
-      #   n.gauge(:max_unread_events, queue.max_unread_events)
-      #   n.gauge(:queue_size_in_bytes, queue.persisted_size_in_bytes)
-      # end
-      # pipeline_metric.namespace([:data]).tap do |n|
-      #   n.gauge(:free_space_in_bytes, file_store.get_unallocated_space)
-      #   n.gauge(:storage_type, file_store.type)
-      #   n.gauge(:path, dir_path)
-      # end
-      #
-      # pipeline_metric.gauge(:events, queue.unread_count)
+      #capacity
+      queue_witness.capacity.page_capacity_in_bytes(queue.page_capacity)
+      queue_witness.capacity.max_queue_size_in_bytes(queue.max_size_in_bytes)
+      queue_witness.capacity.max_unread_events(queue.max_unread_events)
+      queue_witness.capacity.queue_size_in_bytes(queue.persisted_size_in_bytes)
+
+      #data
+      queue_witness.data.free_space_in_bytes(file_store.get_unallocated_space)
+      queue_witness.data.storage_type(file_store.type)
+      queue_witness.data.path(dir_path)
+
+      #events
+      queue_witness.events(queue.unread_count)
     end
   end
 

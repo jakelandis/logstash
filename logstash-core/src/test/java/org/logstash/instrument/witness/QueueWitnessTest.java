@@ -26,6 +26,13 @@ public class QueueWitnessTest {
     }
 
     @Test
+    public void testEvents() {
+        assertThat(witness.snitch().events()).isNull();
+        witness.events(101);
+        assertThat(witness.snitch().events()).isEqualTo(101);
+    }
+
+    @Test
     public void testQueueSizeInBytes(){
         witness.capacity().queueSizeInBytes(99);
         assertThat(witness.capacity().snitch().queueSizeInBytes()).isEqualTo(99);
@@ -90,8 +97,8 @@ public class QueueWitnessTest {
     public void testSerializePersistedType() throws Exception {
         witness.type("persisted");
         String json = witness.asJson();
-        assertThat(json).isEqualTo("{\"queue\":{\"type\":\"persisted\",\"capacity\":{\"queue_size_in_bytes\":0,\"page_capacity_in_bytes\":0,\"max_queue_size_in_bytes\":0," +
-                "\"max_unread_events\":0},\"data\":{\"path\":null,\"free_space_in_bytes\":0,\"storage_type\":null}}}");
+        assertThat(json).isEqualTo("{\"queue\":{\"type\":\"persisted\",\"events\":0,\"capacity\":{\"queue_size_in_bytes\":0,\"page_capacity_in_bytes\":0," +
+                "\"max_queue_size_in_bytes\":0,\"max_unread_events\":0},\"data\":{\"path\":null,\"free_space_in_bytes\":0,\"storage_type\":null}}}");
     }
 
     @Test
@@ -99,8 +106,8 @@ public class QueueWitnessTest {
         witness.type("persisted");
         witness.capacity().queueSizeInBytes(88);
         String json = witness.asJson();
-        assertThat(json).isEqualTo("{\"queue\":{\"type\":\"persisted\",\"capacity\":{\"queue_size_in_bytes\":88,\"page_capacity_in_bytes\":0,\"max_queue_size_in_bytes\":0," +
-                "\"max_unread_events\":0},\"data\":{\"path\":null,\"free_space_in_bytes\":0,\"storage_type\":null}}}");
+        assertThat(json).isEqualTo("{\"queue\":{\"type\":\"persisted\",\"events\":0,\"capacity\":{\"queue_size_in_bytes\":88,\"page_capacity_in_bytes\":0," +
+                "\"max_queue_size_in_bytes\":0,\"max_unread_events\":0},\"data\":{\"path\":null,\"free_space_in_bytes\":0,\"storage_type\":null}}}");
     }
 
     @Test
@@ -108,8 +115,8 @@ public class QueueWitnessTest {
         witness.type("persisted");
         witness.capacity().pageCapacityInBytes(87);
         String json = witness.asJson();
-        assertThat(json).isEqualTo("{\"queue\":{\"type\":\"persisted\",\"capacity\":{\"queue_size_in_bytes\":0,\"page_capacity_in_bytes\":87,\"max_queue_size_in_bytes\":0," +
-                "\"max_unread_events\":0},\"data\":{\"path\":null,\"free_space_in_bytes\":0,\"storage_type\":null}}}");
+        assertThat(json).isEqualTo("{\"queue\":{\"type\":\"persisted\",\"events\":0,\"capacity\":{\"queue_size_in_bytes\":0,\"page_capacity_in_bytes\":87," +
+                "\"max_queue_size_in_bytes\":0,\"max_unread_events\":0},\"data\":{\"path\":null,\"free_space_in_bytes\":0,\"storage_type\":null}}}");
     }
 
     @Test
@@ -117,8 +124,8 @@ public class QueueWitnessTest {
         witness.type("persisted");
         witness.capacity().maxUnreadEvents(86);
         String json = witness.asJson();
-        assertThat(json).isEqualTo("{\"queue\":{\"type\":\"persisted\",\"capacity\":{\"queue_size_in_bytes\":0,\"page_capacity_in_bytes\":0,\"max_queue_size_in_bytes\":0," +
-                "\"max_unread_events\":86},\"data\":{\"path\":null,\"free_space_in_bytes\":0,\"storage_type\":null}}}");
+        assertThat(json).isEqualTo("{\"queue\":{\"type\":\"persisted\",\"events\":0,\"capacity\":{\"queue_size_in_bytes\":0,\"page_capacity_in_bytes\":0," +
+                "\"max_queue_size_in_bytes\":0,\"max_unread_events\":86},\"data\":{\"path\":null,\"free_space_in_bytes\":0,\"storage_type\":null}}}");
     }
 
     @Test
@@ -126,8 +133,8 @@ public class QueueWitnessTest {
         witness.type("persisted");
         witness.capacity().maxUnreadEvents(85);
         String json = witness.asJson();
-        assertThat(json).isEqualTo("{\"queue\":{\"type\":\"persisted\",\"capacity\":{\"queue_size_in_bytes\":0,\"page_capacity_in_bytes\":0,\"max_queue_size_in_bytes\":0," +
-                "\"max_unread_events\":85},\"data\":{\"path\":null,\"free_space_in_bytes\":0,\"storage_type\":null}}}");
+        assertThat(json).isEqualTo("{\"queue\":{\"type\":\"persisted\",\"events\":0,\"capacity\":{\"queue_size_in_bytes\":0,\"page_capacity_in_bytes\":0," +
+                "\"max_queue_size_in_bytes\":0,\"max_unread_events\":85},\"data\":{\"path\":null,\"free_space_in_bytes\":0,\"storage_type\":null}}}");
     }
 
     @Test
@@ -135,8 +142,8 @@ public class QueueWitnessTest {
         witness.type("persisted");
         witness.data().path("/var/ls/q2");
         String json = witness.asJson();
-        assertThat(json).isEqualTo("{\"queue\":{\"type\":\"persisted\",\"capacity\":{\"queue_size_in_bytes\":0,\"page_capacity_in_bytes\":0,\"max_queue_size_in_bytes\":0," +
-                "\"max_unread_events\":0},\"data\":{\"path\":\"/var/ls/q2\",\"free_space_in_bytes\":0,\"storage_type\":null}}}");
+        assertThat(json).isEqualTo("{\"queue\":{\"type\":\"persisted\",\"events\":0,\"capacity\":{\"queue_size_in_bytes\":0,\"page_capacity_in_bytes\":0," +
+                "\"max_queue_size_in_bytes\":0,\"max_unread_events\":0},\"data\":{\"path\":\"/var/ls/q2\",\"free_space_in_bytes\":0,\"storage_type\":null}}}");
     }
 
     @Test
@@ -144,8 +151,8 @@ public class QueueWitnessTest {
         witness.type("persisted");
         witness.data().freeSpaceInBytes(66);
         String json = witness.asJson();
-        assertThat(json).isEqualTo("{\"queue\":{\"type\":\"persisted\",\"capacity\":{\"queue_size_in_bytes\":0,\"page_capacity_in_bytes\":0,\"max_queue_size_in_bytes\":0," +
-                "\"max_unread_events\":0},\"data\":{\"path\":null,\"free_space_in_bytes\":66,\"storage_type\":null}}}");
+        assertThat(json).isEqualTo("{\"queue\":{\"type\":\"persisted\",\"events\":0,\"capacity\":{\"queue_size_in_bytes\":0,\"page_capacity_in_bytes\":0," +
+                "\"max_queue_size_in_bytes\":0,\"max_unread_events\":0},\"data\":{\"path\":null,\"free_space_in_bytes\":66,\"storage_type\":null}}}");
     }
 
     @Test
@@ -153,7 +160,16 @@ public class QueueWitnessTest {
         witness.type("persisted");
         witness.data().storageType("xfs");
         String json = witness.asJson();
-        assertThat(json).isEqualTo("{\"queue\":{\"type\":\"persisted\",\"capacity\":{\"queue_size_in_bytes\":0,\"page_capacity_in_bytes\":0,\"max_queue_size_in_bytes\":0," +
-                "\"max_unread_events\":0},\"data\":{\"path\":null,\"free_space_in_bytes\":0,\"storage_type\":\"xfs\"}}}");
+        assertThat(json).isEqualTo("{\"queue\":{\"type\":\"persisted\",\"events\":0,\"capacity\":{\"queue_size_in_bytes\":0,\"page_capacity_in_bytes\":0," +
+                "\"max_queue_size_in_bytes\":0,\"max_unread_events\":0},\"data\":{\"path\":null,\"free_space_in_bytes\":0,\"storage_type\":\"xfs\"}}}");
+    }
+
+    @Test
+    public void testSerializeEvents() throws Exception{
+        witness.type("persisted");
+        witness.events(102);
+        String json = witness.asJson();
+        assertThat(json).isEqualTo("{\"queue\":{\"type\":\"persisted\",\"events\":102,\"capacity\":{\"queue_size_in_bytes\":0,\"page_capacity_in_bytes\":0," +
+                "\"max_queue_size_in_bytes\":0,\"max_unread_events\":0},\"data\":{\"path\":null,\"free_space_in_bytes\":0,\"storage_type\":null}}}");
     }
 }

@@ -17,6 +17,7 @@ import java.io.IOException;
 final public class QueueWitness implements SerializableWitness {
 
     private final TextGauge type;
+    private final LongGauge events; // note this is NOT an EventsWitness
     private final Snitch snitch;
     private final CapacityWitness capacity;
     private final DataWitness data;
@@ -28,9 +29,19 @@ final public class QueueWitness implements SerializableWitness {
      */
     public QueueWitness() {
         type = new TextGauge("type");
+        events = new LongGauge("events");
         snitch = new Snitch(this);
         capacity = new CapacityWitness();
         data = new DataWitness();
+    }
+
+    /**
+     * The number of events currently in the queue.
+     *
+     * @param count the count of events currently in the queue
+     */
+    public void events(long count) {
+        events.set(count);
     }
 
     /**
@@ -314,6 +325,7 @@ final public class QueueWitness implements SerializableWitness {
             MetricSerializer<Metric<String>> stringSerializer = MetricSerializer.Get.stringSerializer(gen);
             stringSerializer.serialize(witness.type);
             if ("persisted".equals(witness.type.getValue())) {
+                longSerializer.serialize(witness.events);
                 //capacity
                 gen.writeObjectFieldStart(CapacityWitness.KEY);
                 longSerializer.serialize(witness.capacity.queueSizeInBytes);
@@ -346,11 +358,20 @@ final public class QueueWitness implements SerializableWitness {
         /**
          * Gets the type of queue
          *
-         * @return the queue type.
+         * @return the queue type. May be {@code null}
          */
         public String type() {
             return witness.type.getValue();
         }
 
+
+        /**
+         * Gets the number of events currently in the queue
+         *
+         * @return the count of events in the queue. {@code null}
+         */
+        public Long events() {
+            return witness.events.getValue();
+        }
     }
 }
