@@ -831,18 +831,18 @@ describe LogStash::Pipeline do
         end
       end
 
-      #TODO !!! jake !!
-      # context 'when dlq is disabled' do
-      #   let (:collect_stats) { subject.collect_dlq_stats}
-      #   let (:collected_stats) { collected_metric[:stats][:pipelines][:main][:dlq]}
-      #   let (:available_stats) {[:path, :queue_size_in_bytes]}
-      #
-      #   it 'should show not show any dlq stats' do
-      #     collect_stats
-      #     expect(collected_stats).to be_nil
-      #   end
-      #
-      # end
+
+      context 'when dlq is disabled' do
+        let (:collect_stats) { subject.collect_dlq_stats}
+        let (:snitch) { Witness.instance.pipeline("main").dlq.snitch}
+
+
+        it 'should show not count any dlq stats' do
+          collect_stats
+          expect(snitch.queue_size_in_bytes).eql(0)
+        end
+
+      end
       #
       # context 'when dlq is enabled' do
       #   let (:dead_letter_queue_enabled) { true }

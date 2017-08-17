@@ -404,8 +404,7 @@ module LogStash; class Pipeline < BasePipeline
       witness_config.config_reload_automatic(@settings.get("config.reload.automatic"))
       witness_config.config_reload_interval(@settings.get("config.reload.interval"))
       witness_config.dead_letter_queue_enabled(dlq_enabled?)
-      #TODO!!! jake fixme, add a test
-      #witness_config.dead_letter_queue_path(@dlq_writer.get_path.to_absolute_path.to_s) if dlq_enabled?
+      witness_config.dead_letter_queue_path(@dlq_writer.get_path.to_absolute_path.to_s) if dlq_enabled?
 
 
       @logger.info("Starting pipeline", default_logging_keys(
@@ -714,11 +713,9 @@ module LogStash; class Pipeline < BasePipeline
   end
 
   def collect_dlq_stats
-    #TODO !!! jake
-    # if dlq_enabled?
-    #   dlq_metric = @metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :dlq])
-    #   dlq_metric.gauge(:queue_size_in_bytes, @dlq_writer.get_current_queue_size)
-    # end
+    if dlq_enabled?
+      Witness.instance.pipeline("pipeline_id.to_s").dlq.queue_size_in_bytes(@dlq_writer.get_current_queue_size)
+    end
   end
 
   def collect_stats

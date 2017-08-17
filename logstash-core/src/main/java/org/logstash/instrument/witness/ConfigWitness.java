@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.logstash.instrument.metrics.Metric;
 import org.logstash.instrument.metrics.gauge.BooleanGauge;
 import org.logstash.instrument.metrics.gauge.LongGauge;
+import org.logstash.instrument.metrics.gauge.TextGauge;
 
 import java.io.IOException;
 
@@ -22,6 +23,7 @@ final public class ConfigWitness implements SerializableWitness {
     private final LongGauge workers;
     private final LongGauge batchDelay;
     private final LongGauge configReloadInterval;
+    private final TextGauge deadLetterQueuePath;
     private final Snitch snitch;
     private final static String KEY = "config";
     private static final Serializer SERIALIZER = new Serializer();
@@ -37,6 +39,7 @@ final public class ConfigWitness implements SerializableWitness {
         workers = new LongGauge("workers");
         batchDelay = new LongGauge("batch_delay");
         configReloadInterval = new LongGauge("config_reload_interval");
+        deadLetterQueuePath = new TextGauge("dead_letter_queue_path");
         snitch = new Snitch(this);
     }
 
@@ -83,6 +86,15 @@ final public class ConfigWitness implements SerializableWitness {
      */
     public void deadLetterQueueEnabled(boolean enabled) {
         deadLetterQueueEnabled.set(enabled);
+    }
+
+    /**
+     * The configured path for the dead letter queue.
+     *
+     * @param path the path used by the dead letter queue
+     */
+    public void deadLetterQueuePath(String path) {
+        deadLetterQueuePath.set(path);
     }
 
     /**
@@ -141,6 +153,7 @@ final public class ConfigWitness implements SerializableWitness {
 
             MetricSerializer<Metric<Long>> longSerializer = MetricSerializer.Get.longSerializer(gen);
             MetricSerializer<Metric<Boolean>> booleanSerializer = MetricSerializer.Get.booleanSerializer(gen);
+            MetricSerializer<Metric<String>> stringSerializer = MetricSerializer.Get.stringSerializer(gen);
 
             longSerializer.serialize(witness.batchSize);
             longSerializer.serialize(witness.workers);
@@ -148,6 +161,7 @@ final public class ConfigWitness implements SerializableWitness {
             longSerializer.serialize(witness.configReloadInterval);
             booleanSerializer.serialize(witness.configReloadAutomatic);
             booleanSerializer.serialize(witness.deadLetterQueueEnabled);
+            stringSerializer.serialize(witness.deadLetterQueuePath);
             gen.writeEndObject();
         }
     }
@@ -206,7 +220,17 @@ final public class ConfigWitness implements SerializableWitness {
          * @return true if the dead letter queue is configured to be enabled, false otherwise
          */
         public boolean deadLetterQueueEnabled() {
-            return witness.deadLetterQueueEnabled.getValue();
+            Boolean enabled = witness.deadLetterQueueEnabled.getValue();
+            return enabled == null ? false : enabled;
+        }
+
+        /**
+         * Gets the path that the dead letter queue is configured.
+         *
+         * @return the configured path for the dead letter queue. May be {@code null}
+         */
+        public String deadLetterQueuePath() {
+            return witness.deadLetterQueuePath.getValue();
         }
 
         /**
@@ -217,9 +241,5 @@ final public class ConfigWitness implements SerializableWitness {
         public long workers() {
             return witness.workers.getValue();
         }
-
-
     }
-
-
 }

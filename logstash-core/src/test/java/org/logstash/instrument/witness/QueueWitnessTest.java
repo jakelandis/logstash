@@ -33,7 +33,7 @@ public class QueueWitnessTest {
     @Test
     public void testSerializeEmpty() throws Exception{
         String json = witness.asJson();
-        assertThat(json).isEqualTo("{\"queue\":{}}");
+        assertThat(json).isEqualTo("{\"queue\":{\"type\":null}}");
     }
 
     @Test

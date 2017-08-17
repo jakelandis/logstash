@@ -109,6 +109,8 @@ class LogStash::Plugin
     [self.class.to_s, original_params]
   end
 
+  #TODO: jake !!! add witness here.
+
   # return the configured name of this plugin
   # @return [String] The name of the plugin defined by `config_name`
   def config_name
