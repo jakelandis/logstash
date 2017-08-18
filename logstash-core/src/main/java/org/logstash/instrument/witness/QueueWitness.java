@@ -85,7 +85,9 @@ final public class QueueWitness implements SerializableWitness {
         SERIALIZER.innerSerialize(this, gen, provider);
     }
 
-
+    /**
+     * Inner witness for the queue capacity
+     */
     public class CapacityWitness {
 
         private final LongGauge queueSizeInBytes;
@@ -199,6 +201,9 @@ final public class QueueWitness implements SerializableWitness {
         }
     }
 
+    /**
+     * Inner witness for the queue data
+     */
     public class DataWitness {
 
         private final TextGauge path;
