@@ -6,11 +6,6 @@ require "support/shared_contexts"
 
 describe LogStash::OutputDelegator do
 
-  class MockGauge
-    def increment(_)
-    end
-  end
-
   let(:logger) { double("logger") }
   let(:events) { 7.times.map { LogStash::Event.new }}
   let(:plugin_args) { {"id" => "foo", "arg1" => "val1"} }

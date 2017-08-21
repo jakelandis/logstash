@@ -16,6 +16,10 @@ module LogStash::Codecs; class Base < LogStash::Plugin
 
   def initialize(params={})
     super
+
+    puts "******************"
+    puts caller
+    puts "******************"
     config_init(@params)
     register if respond_to?(:register)
     setup_multi_encode!
