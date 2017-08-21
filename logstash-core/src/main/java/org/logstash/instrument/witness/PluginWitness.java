@@ -4,10 +4,19 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import org.jruby.RubySymbol;
 import org.logstash.instrument.metrics.Metric;
+import org.logstash.instrument.metrics.counter.CounterMetric;
+import org.logstash.instrument.metrics.counter.LongCounter;
+import org.logstash.instrument.metrics.gauge.GaugeMetric;
+import org.logstash.instrument.metrics.gauge.LazyDelegatingGauge;
 import org.logstash.instrument.metrics.gauge.TextGauge;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Witness for a single plugin.
@@ -19,6 +28,9 @@ public class PluginWitness implements SerializableWitness {
     private final TextGauge id;
     private final TextGauge name;
     private final Snitch snitch;
+    private final Map<String, LazyDelegatingGauge> customGauges = new ConcurrentHashMap<>();
+    private final Map<String, LongCounter> customCounters = new ConcurrentHashMap<>();
+
     private static final Serializer SERIALIZER = new Serializer();
 
     /**
@@ -52,6 +64,40 @@ public class PluginWitness implements SerializableWitness {
         this.name.set(name);
         return this;
     }
+
+
+    public void gauge(RubySymbol key, Object value) {
+        gauge(key.asJavaString(), value);
+    }
+
+    public void gauge(String key, Object  value) {
+        LazyDelegatingGauge gauge = customGauges.get(key);
+        if( gauge != null){
+            gauge.set(value);
+        }else{
+            gauge = new LazyDelegatingGauge(key, value);
+            customGauges.put(key, gauge);
+        }
+    }
+
+    //TODO: find actual usages of this
+//    public void counter(RubySymbol key, String value) {
+//        System.out.println(key.asJavaString() + value);
+//
+//    }
+//
+//    public void counter(String key, String value) {
+//
+//        LongCounter counter = customCounters.get(key);
+//        if( counter == null){
+//            counter..set(value);
+//        }else{
+//            gauge = new LazyDelegatingGauge(key, value);
+//            customGauges.put(key, gauge);
+//        }
+//        System.out.println(key + value);
+//
+//    }
 
     /**
      * Get a reference to associated snitch to get discrete metric values.
@@ -100,6 +146,9 @@ public class PluginWitness implements SerializableWitness {
             stringSerializer.serialize(witness.id);
             witness.events().genJson(gen, provider);
             stringSerializer.serialize(witness.name);
+            for(LazyDelegatingGauge gauge : witness.customGauges.values()){
+                gen.writeObjectField(gauge.getName(), gauge.getValue());
+            }
         }
     }
 
@@ -130,6 +179,15 @@ public class PluginWitness implements SerializableWitness {
          */
         public String name() {
             return witness.name.getValue();
+        }
+
+        //tODO: return a defensive copy
+        public GaugeMetric gauge(String key){
+            return customGauges.get(key);
+        }
+
+        public  Map<String, LazyDelegatingGauge> gauges(){
+            return Collections.unmodifiableMap(customGauges);
         }
 
     }

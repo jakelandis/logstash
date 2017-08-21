@@ -138,13 +138,14 @@ module LogStash; class BasePipeline
       OutputDelegator.new(@logger, klass, witness_plugins.outputs(id), execution_context, OutputDelegatorStrategyRegistry.instance, args)
     elsif plugin_type == "filter"
       FilterDelegator.new(@logger, klass, witness_plugins.filters(id), execution_context, args)
-    else # input
+    else # input or codec
       input_plugin = klass.new(args)
       if plugin_type.eql? "input"
         witness_plugins.inputs(id).name(input_plugin.config_name)
-      #jakelandis - are codecs intended to flow through here?
+        input_plugin.metric = witness_plugins.inputs(id)
       elsif plugin_type.eql? "codecs"
         witness_plugins.codecs(id).name(input_plugin.config_name)
+        input_plugin.metric = witness_plugins.codecs(id)
       end
       input_plugin.execution_context = execution_context
       input_plugin
