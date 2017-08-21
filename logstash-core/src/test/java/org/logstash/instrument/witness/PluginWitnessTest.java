@@ -33,20 +33,22 @@ public class PluginWitnessTest {
 
     @Test
     public void testCustomGauge() {
-        witness.gauge("a", "foo");
-        witness.gauge("b", 1);
-        witness.gauge("c", true);
-        witness.gauge("d", URI.create("unknown"));
-        assertThat(witness.snitch().gauges().size()).isEqualTo(4);
-        assertThat(witness.snitch().gauge("a").getValue()).isEqualTo("foo");
-        assertThat(witness.snitch().gauge("a").getType()).isEqualTo(MetricType.GAUGE_TEXT);
-        assertThat(witness.snitch().gauge("b").getValue()).isEqualTo(1);
-        assertThat(witness.snitch().gauge("b").getType()).isEqualTo(MetricType.GAUGE_NUMBER);
-        assertThat(witness.snitch().gauge("c").getValue()).isEqualTo(Boolean.TRUE);
-        assertThat(witness.snitch().gauge("c").getType()).isEqualTo(MetricType.GAUGE_BOOLEAN);
-        assertThat(witness.snitch().gauge("d").getValue()).isEqualTo(URI.create("unknown"));
-        assertThat(witness.snitch().gauge("d").getType()).isEqualTo(MetricType.GAUGE_UNKNOWN);
+        witness.custom().gauge("a", "foo");
+        witness.custom().gauge("b", 1);
+        witness.custom().gauge("c", true);
+        witness.custom().gauge("d", URI.create("unknown"));
+        assertThat(witness.custom().snitch().gauges().size()).isEqualTo(4);
+        assertThat(witness.custom().snitch().gauge("a").getValue()).isEqualTo("foo");
+        assertThat(witness.custom().snitch().gauge("a").getType()).isEqualTo(MetricType.GAUGE_TEXT);
+        assertThat(witness.custom().snitch().gauge("b").getValue()).isEqualTo(1);
+        assertThat(witness.custom().snitch().gauge("b").getType()).isEqualTo(MetricType.GAUGE_NUMBER);
+        assertThat(witness.custom().snitch().gauge("c").getValue()).isEqualTo(Boolean.TRUE);
+        assertThat(witness.custom().snitch().gauge("c").getType()).isEqualTo(MetricType.GAUGE_BOOLEAN);
+        assertThat(witness.custom().snitch().gauge("d").getValue()).isEqualTo(URI.create("unknown"));
+        assertThat(witness.custom().snitch().gauge("d").getType()).isEqualTo(MetricType.GAUGE_UNKNOWN);
     }
+
+    //TODO: Test counter
 
     @Test
     public void testEvents() {
@@ -81,9 +83,9 @@ public class PluginWitnessTest {
 
     @Test
     public void testSerializationCustomGauge() throws Exception {
-        witness.gauge("a", "foo");
-        witness.gauge("b", 1);
-        witness.gauge("c", true);
+        witness.custom().gauge("a", "foo");
+        witness.custom().gauge("b", 1);
+        witness.custom().gauge("c", true);
 
         String json = witness.asJson();
         assertThat(json).isEqualTo("{\"id\":\"123\",\"events\":{\"duration_in_millis\":0,\"in\":0,\"out\":0,\"filtered\":0,\"queue_push_duration_in_millis\":0},\"name\":null," +
@@ -98,11 +100,11 @@ public class PluginWitnessTest {
         double d = 1;
         BigDecimal e = new BigDecimal(1);
 
-        witness.gauge("a", a);
-        witness.gauge("b", b);
-        witness.gauge("c", c);
-        witness.gauge("d", d);
-        witness.gauge("e", e);
+        witness.custom().gauge("a", a);
+        witness.custom().gauge("b", b);
+        witness.custom().gauge("c", c);
+        witness.custom().gauge("d", d);
+        witness.custom().gauge("e", e);
 
         String json = witness.asJson();
         assertThat(json).isEqualTo("{\"id\":\"123\",\"events\":{\"duration_in_millis\":0,\"in\":0,\"out\":0,\"filtered\":0,\"queue_push_duration_in_millis\":0},\"name\":null," +
@@ -112,7 +114,7 @@ public class PluginWitnessTest {
     @Test(expected = IllegalStateException.class)
     public void testSerializationUnknownCustomGauge() throws Exception {
         //There are not default Jackson serializers for UUID
-        witness.gauge("a", UUID.randomUUID());
+        witness.custom().gauge("a", UUID.randomUUID());
         witness.asJson();
     }
 }

@@ -25,11 +25,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class PluginWitness implements SerializableWitness {
 
     private final EventsWitness eventsWitness;
+    private final CustomWitness customWitness;
     private final TextGauge id;
     private final TextGauge name;
     private final Snitch snitch;
-    private final Map<String, LazyDelegatingGauge> customGauges = new ConcurrentHashMap<>();
-    private final Map<String, LongCounter> customCounters = new ConcurrentHashMap<>();
+
 
     private static final Serializer SERIALIZER = new Serializer();
 
@@ -40,6 +40,7 @@ public class PluginWitness implements SerializableWitness {
      */
     public PluginWitness(String id) {
         eventsWitness = new EventsWitness();
+        customWitness = new CustomWitness();
         this.id = new TextGauge("id", id);
         this.name = new TextGauge("name");
         this.snitch = new Snitch(this);
@@ -65,39 +66,9 @@ public class PluginWitness implements SerializableWitness {
         return this;
     }
 
-
-    public void gauge(RubySymbol key, Object value) {
-        gauge(key.asJavaString(), value);
+    public CustomWitness custom() {
+        return this.customWitness;
     }
-
-    public void gauge(String key, Object  value) {
-        LazyDelegatingGauge gauge = customGauges.get(key);
-        if( gauge != null){
-            gauge.set(value);
-        }else{
-            gauge = new LazyDelegatingGauge(key, value);
-            customGauges.put(key, gauge);
-        }
-    }
-
-    //TODO: find actual usages of this
-//    public void counter(RubySymbol key, String value) {
-//        System.out.println(key.asJavaString() + value);
-//
-//    }
-//
-//    public void counter(String key, String value) {
-//
-//        LongCounter counter = customCounters.get(key);
-//        if( counter == null){
-//            counter..set(value);
-//        }else{
-//            gauge = new LazyDelegatingGauge(key, value);
-//            customGauges.put(key, gauge);
-//        }
-//        System.out.println(key + value);
-//
-//    }
 
     /**
      * Get a reference to associated snitch to get discrete metric values.
@@ -146,10 +117,103 @@ public class PluginWitness implements SerializableWitness {
             stringSerializer.serialize(witness.id);
             witness.events().genJson(gen, provider);
             stringSerializer.serialize(witness.name);
-            for(LazyDelegatingGauge gauge : witness.customGauges.values()){
+            for (GaugeMetric<Object, Object> gauge : witness.customWitness.gauges.values()) {
                 gen.writeObjectField(gauge.getName(), gauge.getValue());
             }
         }
+    }
+
+    /**
+     * A custom witness that we can hand off to plugin's to contribute to the metrics
+     */
+    public class CustomWitness {
+
+        private final Snitch snitch;
+
+        /**
+         * private Constructor - not for external instantiation
+         */
+        private CustomWitness() {
+            this.snitch = new Snitch(this);
+        }
+
+        private final Map<String, GaugeMetric<Object, Object>> gauges = new ConcurrentHashMap<>();
+        private final Map<String, CounterMetric<Long>> counters = new ConcurrentHashMap<>();
+
+        public void gauge(RubySymbol key, Object value) {
+            gauge(key.asJavaString(), value);
+        }
+
+        public void gauge(String key, Object value) {
+            GaugeMetric<Object, Object> gauge = gauges.get(key);
+            if (gauge != null) {
+                gauge.set(value);
+            } else {
+                gauge = new LazyDelegatingGauge(key, value);
+                gauges.put(key, gauge);
+            }
+        }
+
+        public void increment(RubySymbol key) {
+            increment(key.asJavaString());
+        }
+
+        public void increment(String key) {
+            increment(key, 0);
+        }
+
+        public void increment(RubySymbol key, long by) {
+            increment(key.asJavaString(), by);
+        }
+
+        public void increment(String key, long by) {
+            CounterMetric<Long> counter = counters.get(key);
+            if (counter != null) {
+                counter.increment(by);
+            } else {
+                counter = new LongCounter(key, by);
+                counters.put(key, counter);
+            }
+        }
+
+        /**
+         * Get a reference to associated snitch to get discrete metric values.
+         *
+         * @return the associate {@link Snitch}
+         */
+        public Snitch snitch() {
+            return snitch;
+        }
+
+        /**
+         * Snitch for a plugin. Provides discrete metric values.
+         */
+        public class Snitch {
+
+            private final CustomWitness witness;
+
+            private Snitch(CustomWitness witness) {
+                this.witness = witness;
+            }
+
+            public GaugeMetric gauge(String key) {
+                return witness.gauges.get(key);
+            }
+
+            public Map<String, GaugeMetric<?, ?>> gauges() {
+                return Collections.unmodifiableMap(witness.gauges);
+            }
+
+            public CounterMetric<?> counter(String key) {
+                return witness.counters.get(key);
+            }
+
+            public Map<String, CounterMetric<?>> counters() {
+                return Collections.unmodifiableMap(witness.counters);
+            }
+
+        }
+
     }
 
     /**
@@ -181,13 +245,8 @@ public class PluginWitness implements SerializableWitness {
             return witness.name.getValue();
         }
 
-        //tODO: return a defensive copy
-        public GaugeMetric gauge(String key){
-            return customGauges.get(key);
-        }
-
-        public  Map<String, LazyDelegatingGauge> gauges(){
-            return Collections.unmodifiableMap(customGauges);
+        public CustomWitness custom() {
+            return customWitness;
         }
 
     }

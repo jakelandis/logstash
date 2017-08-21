@@ -142,10 +142,10 @@ module LogStash; class BasePipeline
       input_plugin = klass.new(args)
       if plugin_type.eql? "input"
         witness_plugins.inputs(id).name(input_plugin.config_name)
-        input_plugin.metric = witness_plugins.inputs(id)
+        input_plugin.metric = witness_plugins.inputs(id).custom
       elsif plugin_type.eql? "codecs"
         witness_plugins.codecs(id).name(input_plugin.config_name)
-        input_plugin.metric = witness_plugins.codecs(id)
+        input_plugin.metric = witness_plugins.codecs(id).custom
       end
       input_plugin.execution_context = execution_context
       input_plugin
