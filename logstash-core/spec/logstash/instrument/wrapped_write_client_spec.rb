@@ -1,5 +1,4 @@
 # encoding: utf-8
-require "logstash/instrument/metric"
 require "logstash/instrument/wrapped_write_client"
 require "logstash/util/wrapped_synchronous_queue"
 require "logstash/event"
