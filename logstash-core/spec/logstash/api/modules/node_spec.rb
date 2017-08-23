@@ -4,37 +4,39 @@ require "json-schema"
 require "sinatra"
 # require "logstash/api/modules/node"
 
-#TODO jake find suitable replacement
 describe LogStash::Api::Modules::Node do
   # include_context "api setup"
   # include_examples "not found"
 
-  #
-  # describe "#hot threads" do
+  #TODO jake
+  before { skip("DO NOT MERGE!! METRICS API IS CURRENTLY IN A TRANSITIONAL STATE") }
+
+
+  describe "#hot threads" do
   #
   #   before(:all) do
   #     get "/hot_threads"
   #   end
   #
-  #   it "respond OK" do
+    it "respond OK" do
   #     expect(last_response).to be_ok
-  #   end
+    end
   #
-  #   it "should return a JSON object" do
+    it "should return a JSON object" do
   #     expect(JSON::Validator.validate({}, last_response.body)).to eq(true)
-  #   end
+    end
   #
-  #   context "#threads count" do
+    context "#threads count" do
   #
   #     before(:all) do
   #       get "/hot_threads?threads=5"
   #     end
   #
-  #     it "should return a json payload content type" do
+      it "should return a json payload content type" do
   #       expect(last_response.content_type).to eq("application/json")
-  #     end
+      end
   #
-  #     it "should return information for <= # requested threads" do
+      it "should return information for <= # requested threads" do
   #       expect(JSON::Validator.fully_validate(
   #         {
   #           "properties" => {
@@ -46,9 +48,9 @@ describe LogStash::Api::Modules::Node do
   #         last_response.body
   #       )).to be_empty
   #     end
-  #   end
+    end
   #
-  #   context "when asking for human output" do
+    context "when asking for human output" do
   #     [
   #       "/hot_threads?human",
   #       "/hot_threads?human=true",
@@ -68,9 +70,9 @@ describe LogStash::Api::Modules::Node do
   #         expect {JSON::Validator.fully_validate({}, payload)}.to raise_error
   #       end
   #     end
-  #   end
+    end
   #
-  #   context "When asking for human output and threads count" do
+    context "When asking for human output and threads count" do
   #     before(:all) do
   #       # Make sure we have enough threads for this to work.
   #       @threads = []
@@ -86,9 +88,9 @@ describe LogStash::Api::Modules::Node do
   #     it "should return information for <= # requested threads" do
   #       expect(last_response.body.scan(/thread name/).size).to eq(2)
   #     end
-  #   end
+    end
   #
-  #   context "when not asking for human output" do
+    context "when not asking for human output" do
   #     [
   #       "/hot_threads?human=false",
   #       "/hot_threads?human=0",
@@ -106,9 +108,9 @@ describe LogStash::Api::Modules::Node do
   #         expect(JSON::Validator.validate({}, last_response.body)).to eq(true)
   #       end
   #     end
-  #   end
+    end
   #
-  #   describe "Generic JSON testing" do
+    describe "Generic JSON testing" do
   #     extend ResourceDSLMethods
   #
   #     root_structure = {
@@ -151,6 +153,7 @@ describe LogStash::Api::Modules::Node do
   #     }
   #
   #     test_api_and_resources(root_structure, :exclude_from_root => ["hot_threads"])
-  #   end
-  # end
+      end
+    end
+  end
 end

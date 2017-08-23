@@ -132,7 +132,7 @@ public class ErrorWitness implements SerializableWitness {
         /**
          * Gets the error message
          *
-         * @return the error message
+         * @return the error message. May be {@code null}
          */
         public String message() {
             return witness.message.getValue();
@@ -141,7 +141,7 @@ public class ErrorWitness implements SerializableWitness {
         /**
          * Gets the error stack/back trace
          *
-         * @return the backtrace as a String
+         * @return the backtrace as a String. May be {@code null}
          */
         public String backtrace() {
             return witness.backtrace.getValue();
