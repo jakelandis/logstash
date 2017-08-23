@@ -16,7 +16,7 @@ module LogStash
 
     attr_reader :id
 
-    def initialize(logger, klass, witness, execution_context, plugin_args)
+    def initialize(logger, klass, witness_plugin, execution_context, plugin_args)
       @logger = logger
       @klass = klass
       @id = plugin_args["id"]
@@ -24,8 +24,10 @@ module LogStash
 
       @filter.execution_context = execution_context
 
-      @witness_events = witness.events
-      witness.name(config_name)
+      @witness_events = witness_plugin.events
+      witness_plugin.name(config_name)
+
+      @filter.metric = witness_plugin.custom
 
       # Not all the filters will do bufferings
       define_flush_method if @filter.respond_to?(:flush)

@@ -3,16 +3,13 @@ require 'json'
 
 java_import org.logstash.instrument.witness.Witness
 
+#TODO: Add support for os, jvm, and process! (jake)
 module LogStash
   module Api
     module Modules
       class NodeStats < ::LogStash::Api::Modules::Base
 
-        before do
-          @stats = factory.build(:stats)
-        end
-
-        get "/pipelines/:id?" do
+       get "/pipelines/:id?" do
           payload = pipeline_payload(params["id"])
           halt(404) if payload.empty?
           respond_with(:pipelines => payload)
@@ -30,10 +27,9 @@ module LogStash
           respond_with(payload, {:filter => params["filter"]})
         end
 
-
         private
         def os_payload
-        #  @stats.os
+        #  TODO: jake
         end
 
         def events_payload
@@ -41,7 +37,7 @@ module LogStash
         end
 
         def jvm_payload
-       #   @stats.jvm
+       #   TODO: jake
         end
 
         def reloads_payload
@@ -49,11 +45,11 @@ module LogStash
         end
 
         def process_payload
-         # @stats.process
+         # TODO: jake
         end
 
         def mem_payload
-          #@stats.memory
+          #TODO: jake
         end
 
         def pipeline_payload(val = nil)
