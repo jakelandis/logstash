@@ -6,16 +6,23 @@ require_relative "../../support/mocks_classes"
 require "spec_helper"
 
 describe LogStash::Instrument::WrappedWriteClient do
+
+  before do
+    Witness.setInstance(Witness.new)
+  end
+
   let!(:write_client) { queue.write_client }
   let!(:read_client) { queue.read_client }
   let(:pipeline) { double("pipeline", :pipeline_id => :main) }
   let(:collector)   { LogStash::Instrument::Collector.new }
-  let(:metric) { LogStash::Instrument::Metric.new(collector) }
+  let(:events_witness) {Witness.instance.events}
+  let(:pipeline_events_witness) {Witness.instance.pipeline("main").events}
+  let(:plugin_input_events_witness) {Witness.instance.pipeline("main").inputs(myid.to_s).events}
   let(:plugin) { LogStash::Inputs::DummyInput.new({ "id" => myid }) }
   let(:event) { LogStash::Event.new }
   let(:myid) { "1234myid" }
 
-  subject { described_class.new(write_client, pipeline, metric, plugin) }
+  subject { described_class.new(write_client, pipeline, plugin, nil) }
 
   def threaded_read_client
     Thread.new do
@@ -67,33 +74,29 @@ describe LogStash::Instrument::WrappedWriteClient do
         [pusher_thread, reader_thread].collect(&:join)
       end
 
-      let(:snapshot_store) { collector.snapshot_metric.metric_store }
-
-      let(:snapshot_metric) { snapshot_store.get_shallow(:stats) }
-
       it "records instance level events `in`" do
-        expect(snapshot_metric[:events][:in].value).to eq(1)
+        expect(events_witness.snitch.in).to eq(1)
       end
 
       it "records pipeline level `in`" do
-        expect(snapshot_metric[:pipelines][:main][:events][:in].value).to eq(1)
+        expect(pipeline_events_witness.snitch.in).to eq(1)
       end
 
       it "record input `out`" do
-        expect(snapshot_metric[:pipelines][:main][:plugins][:inputs][myid.to_sym][:events][:out].value).to eq(1)
+        expect(plugin_input_events_witness.snitch.out).to eq(1)
       end
 
       context "recording of the duration of pushing to the queue" do
         it "records at the `global events` level" do
-          expect(snapshot_metric[:events][:queue_push_duration_in_millis].value).to be_kind_of(Integer)
+          expect(events_witness.snitch.in).to be_kind_of(Integer)
         end
 
         it "records at the `pipeline` level" do
-          expect(snapshot_metric[:pipelines][:main][:events][:queue_push_duration_in_millis].value).to be_kind_of(Integer)
+          expect(pipeline_events_witness.snitch.in).to be_kind_of(Integer)
         end
 
         it "records at the `plugin level" do
-          expect(snapshot_metric[:pipelines][:main][:plugins][:inputs][myid.to_sym][:events][:queue_push_duration_in_millis].value).to be_kind_of(Integer)
+          expect(plugin_input_events_witness.snitch.out).to  be_kind_of(Integer)
         end
       end
     end
@@ -102,21 +105,11 @@ describe LogStash::Instrument::WrappedWriteClient do
   context "WrappedSynchronousQueue" do
     let(:queue) { LogStash::Util::WrappedSynchronousQueue.new(1024) }
 
-    before do
-      read_client.set_events_metric(metric.namespace([:stats, :events]))
-      read_client.set_pipeline_metric(metric.namespace([:stats, :pipelines, :main, :events]))
-    end
-
     include_examples "queue tests"
   end
 
   context "AckedMemoryQueue" do
     let(:queue) { LogStash::Util::WrappedAckedQueue.create_memory_based("", 1024, 10, 4096) }
-
-    before do
-      read_client.set_events_metric(metric.namespace([:stats, :events]))
-      read_client.set_pipeline_metric(metric.namespace([:stats, :pipelines, :main, :events]))
-    end
 
     after do
       queue.close

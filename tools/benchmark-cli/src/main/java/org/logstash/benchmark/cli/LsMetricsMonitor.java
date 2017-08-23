@@ -98,7 +98,7 @@ public final class LsMetricsMonitor implements Callable<EnumMap<LsMetricStats, L
             if (count == -1L) {
                 cpu = -1L;
             } else {
-                cpu = 1;
+                cpu = readNestedLong(data, "process", "cpu", "percent");
             }
             return new long[]{count, cpu};
         } catch (final IOException ex) {
