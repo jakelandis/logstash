@@ -66,6 +66,11 @@ public class PluginWitness implements SerializableWitness {
         return this;
     }
 
+    /**
+     * Get a reference to the associated custom witness
+     *
+     * @return the {@link CustomWitness}
+     */
     public CustomWitness custom() {
         return this.customWitness;
     }
@@ -114,11 +119,15 @@ public class PluginWitness implements SerializableWitness {
 
         void innerSerialize(PluginWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             MetricSerializer<Metric<String>> stringSerializer = MetricSerializer.Get.stringSerializer(gen);
+            MetricSerializer<Metric<Long>> longSerializer = MetricSerializer.Get.longSerializer(gen);
             stringSerializer.serialize(witness.id);
             witness.events().genJson(gen, provider);
             stringSerializer.serialize(witness.name);
             for (GaugeMetric<Object, Object> gauge : witness.customWitness.gauges.values()) {
                 gen.writeObjectField(gauge.getName(), gauge.getValue());
+            }
+            for (CounterMetric<Long> counter : witness.customWitness.counters.values()) {
+                longSerializer.serialize(counter);
             }
         }
     }
@@ -140,10 +149,22 @@ public class PluginWitness implements SerializableWitness {
         private final Map<String, GaugeMetric<Object, Object>> gauges = new ConcurrentHashMap<>();
         private final Map<String, CounterMetric<Long>> counters = new ConcurrentHashMap<>();
 
+        /**
+         * Set that gauge value
+         *
+         * @param key   the {@link RubySymbol} for the key of this gauge. Note - internally this will be converted to a {@link String}
+         * @param value The value of the Gauge. This allows for any {@link Object} type, unless text or numeric type, there is no guarantees of proper serialization.
+         */
         public void gauge(RubySymbol key, Object value) {
             gauge(key.asJavaString(), value);
         }
 
+        /**
+         * Set that gauge value
+         *
+         * @param key   the {@link String} for the key of this gauge. Note - internally this will be converted to a {@link String}
+         * @param value The value of the Gauge. This allows for any {@link Object} type, unless text or numeric type, there is no guarantees of proper serialization.
+         */
         public void gauge(String key, Object value) {
             GaugeMetric<Object, Object> gauge = gauges.get(key);
             if (gauge != null) {
@@ -154,24 +175,47 @@ public class PluginWitness implements SerializableWitness {
             }
         }
 
+        /**
+         * Increments the underlying counter for this {@link RubySymbol} by 1.
+         *
+         * @param key the {@link RubySymbol} key of the counter to increment. Note - internally this will be converted to a {@link String}
+         */
         public void increment(RubySymbol key) {
             increment(key.asJavaString());
         }
 
+        /**
+         * Increments the underlying counter for this {@link RubySymbol} by 1.
+         *
+         * @param key the {@link String} key of the counter to increment. Note - internally this will be converted to a {@link String}
+         */
         public void increment(String key) {
-            increment(key, 0);
+            increment(key, 1);
         }
 
+        /**
+         * Increments the underlying counter for this {@link RubySymbol} by the given value.
+         *
+         * @param key the {@link RubySymbol} key of the counter to increment. Note - internally this will be converted to a {@link String}
+         * @param by the amount to increment by
+         */
         public void increment(RubySymbol key, long by) {
             increment(key.asJavaString(), by);
         }
 
+        /**
+         * Increments the underlying counter for this {@link RubySymbol} by the given value.
+         *
+         * @param key the {@link String} key of the counter to increment. Note - internally this will be converted to a {@link String}
+         * @param by the amount to increment by
+         */
         public void increment(String key, long by) {
             CounterMetric<Long> counter = counters.get(key);
             if (counter != null) {
                 counter.increment(by);
             } else {
-                counter = new LongCounter(key, by);
+                counter = new LongCounter(key);
+                counter.increment();
                 counters.put(key, counter);
             }
         }
@@ -192,28 +236,53 @@ public class PluginWitness implements SerializableWitness {
 
             private final CustomWitness witness;
 
+            /**
+             * Construtor
+             *
+             * @param witness the witness
+             */
             private Snitch(CustomWitness witness) {
                 this.witness = witness;
             }
 
+            /**
+             * Get the underlying {@link GaugeMetric}.  May call {@link GaugeMetric#getType()} to get the underlying type.
+             *
+             * @param key the key/name of the {@link GaugeMetric}.
+             * @return the {@link GaugeMetric}  May return {@code null}
+             */
             public GaugeMetric gauge(String key) {
                 return witness.gauges.get(key);
             }
 
+            /**
+             * Gets the full set of custom {@link GaugeMetric}
+             *
+             * @return the map of all of the {@link GaugeMetric}, keyed by the associated {@link GaugeMetric} key/name
+             */
             public Map<String, GaugeMetric<?, ?>> gauges() {
                 return Collections.unmodifiableMap(witness.gauges);
             }
 
+            /**
+             * Get the custom Counter. May call {@link CounterMetric#getType()} to get the underlying type.
+             *
+             * @param key the key/name of the {@link CounterMetric}
+             * @return the {@link CounterMetric} for the given key. May return {@code null}
+             */
             public CounterMetric<?> counter(String key) {
                 return witness.counters.get(key);
             }
 
+            /**
+             * Gets the full set of the custom {@link CounterMetric}
+             *
+             * @return the map of all of the {@link CounterMetric}, keyed by the associated {@link CounterMetric} key/name
+             */
             public Map<String, CounterMetric<?>> counters() {
                 return Collections.unmodifiableMap(witness.counters);
             }
-
         }
-
     }
 
     /**
@@ -243,10 +312,6 @@ public class PluginWitness implements SerializableWitness {
          */
         public String name() {
             return witness.name.getValue();
-        }
-
-        public CustomWitness custom() {
-            return customWitness;
         }
 
     }

@@ -2,10 +2,13 @@ package org.logstash.instrument.witness;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.jruby.RubySymbol;
 import org.junit.Before;
 import org.junit.Test;
+import org.logstash.RubyUtil;
 import org.logstash.instrument.metrics.MetricType;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.UUID;
@@ -48,7 +51,42 @@ public class PluginWitnessTest {
         assertThat(witness.custom().snitch().gauge("d").getType()).isEqualTo(MetricType.GAUGE_UNKNOWN);
     }
 
-    //TODO: Test counter
+    @Test
+    public void testCustomCounter(){
+        witness.custom().increment("foo");
+        witness.custom().increment("bar");
+
+        assertThat(witness.custom().snitch().counters().size()).isEqualTo(2);
+        assertThat(witness.custom().snitch().counters().values().stream().allMatch(v -> MetricType.COUNTER_LONG.equals(v.getType()))).isTrue();
+        assertThat(witness.custom().snitch().counter("foo").getValue()).isEqualTo(1l);
+        assertThat(witness.custom().snitch().counter("bar").getValue()).isEqualTo(1l);
+        witness.custom().increment("foo");
+        witness.custom().increment("foo");
+        witness.custom().increment("bar");
+        assertThat(witness.custom().snitch().counter("foo").getValue()).isEqualTo(3l);
+        assertThat(witness.custom().snitch().counter("bar").getValue()).isEqualTo(2l);
+    }
+
+    @Test
+    public void testRubySymbol() throws IOException {
+        RubySymbol symbol = RubySymbol.newSymbol(RubyUtil.RUBY, "mysymbol");
+        witness.custom().increment(symbol);
+        witness.custom().increment(symbol, 99);
+        assertThat(witness.custom().snitch().counter("mysymbol").getValue()).isEqualTo(100l);
+
+        witness.custom().gauge(symbol, "blah");
+        assertThat(witness.custom().snitch().gauge("mysymbol").getValue()).isEqualTo("blah");
+        witness.custom().gauge(symbol, "blah2");
+        assertThat(witness.custom().snitch().gauge("mysymbol").getValue()).isEqualTo("blah2");
+    }
+
+    @Test
+    public void testCustomNotSet(){
+        assertThat(witness.custom().snitch().counter("nothing")).isNull();
+        assertThat(witness.custom().snitch().gauge("nothing")).isNull();
+        assertThat(witness.custom().snitch().gauges()).isEmpty();
+        assertThat(witness.custom().snitch().counters()).isEmpty();
+    }
 
     @Test
     public void testEvents() {
@@ -79,6 +117,17 @@ public class PluginWitnessTest {
         witness.events().in();
         String json = witness.asJson();
         assertThat(json).isEqualTo("{\"id\":\"123\",\"events\":{\"duration_in_millis\":0,\"in\":1,\"out\":0,\"filtered\":0,\"queue_push_duration_in_millis\":0},\"name\":null}");
+    }
+
+    @Test
+    public void testSerializationCustomCounter() throws Exception {
+        witness.custom().increment("a");
+        witness.custom().increment("a");
+        witness.custom().increment("b");
+
+        String json = witness.asJson();
+        assertThat(json).isEqualTo("{\"id\":\"123\",\"events\":{\"duration_in_millis\":0,\"in\":0,\"out\":0,\"filtered\":0,\"queue_push_duration_in_millis\":0},\"name\":null," +
+                "\"a\":2,\"b\":1}");
     }
 
     @Test

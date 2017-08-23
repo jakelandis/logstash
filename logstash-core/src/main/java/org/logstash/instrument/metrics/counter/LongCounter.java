@@ -15,19 +15,6 @@ public class LongCounter extends AbstractMetric<Long> implements CounterMetric<L
     private static final IllegalArgumentException NEGATIVE_COUNT_EXCEPTION = new IllegalArgumentException("Counters can not be incremented by negative values");
     private LongAdder longAdder;
 
-    //TODO: test this constructor
-    /**
-     * Constructor
-     *
-     * @param name The name of this metric. This value may be used for display purposes.
-     * @param by The initial value for this counter
-     */
-    public LongCounter(String name, long by) {
-        super(name);
-        longAdder = new LongAdder();
-        longAdder.add(by);
-    }
-
     /**
      * Constructor
      *
