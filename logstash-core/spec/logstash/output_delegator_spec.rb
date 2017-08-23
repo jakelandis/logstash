@@ -31,6 +31,7 @@ describe LogStash::OutputDelegator do
       allow(out_inst).to receive(:register)
       allow(out_inst).to receive(:multi_receive)
       allow(out_inst).to receive(:execution_context=).with(execution_context)
+      allow(out_inst).to receive(:metric=).with(witness.custom)
       allow(out_inst).to receive(:id).and_return(plugin_id)
       allow(logger).to receive(:debug).with(any_args)
     end

@@ -18,7 +18,7 @@ module LogStash class OutputDelegator
     @witness_plugin_events = witness_plugin.events
     @strategy = strategy_registry.
                   class_for(self.concurrency).
-                  new(@logger, @output_class, witness_plugin.custom, execution_context, plugin_args)
+                  new(@logger, @output_class, witness_plugin, execution_context, plugin_args)
   end
 
   def config_name

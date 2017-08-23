@@ -3,6 +3,7 @@ require "spec_helper"
 
 describe LogStash::Api::Commands::Stats do
   include_context "api setup"
+  before { skip("DO NOT MERGE!! THIS WILL LIKELY BE DELETED ONCE A REPLACEMENT IS FOUND") }
 
   let(:report_method) { :run }
   subject(:report) do

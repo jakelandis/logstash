@@ -6,7 +6,7 @@ module LogStash module OutputDelegatorStrategies class Legacy
     @worker_count = (plugin_args["workers"] || 1).to_i
     @workers = @worker_count.times.map { klass.new(plugin_args) }
     @workers.each do |w|
-      w.metric = metric
+      w.metric = metric.custom
       w.execution_context = execution_context
     end
     @worker_queue = SizedQueue.new(@worker_count)

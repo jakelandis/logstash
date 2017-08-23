@@ -56,16 +56,18 @@ describe LogStash::Agent do
   end
 
   context "when we try to start one pipeline" do
+
+    let(:reload_errors_snitch) { Witness.instance.reloads.error.snitch } # reloads error snitch
     context "and it succeed" do
       let(:source_loader) do
         TestSourceLoader.new(pipeline_config)
       end
 
       let(:pipeline_name) { :main }
-      let(:snitch) { Witness.instance.pipeline("main").reloads.snitch }
+      let(:snitch) { Witness.instance.pipeline("main").reloads.snitch } # pipeline reload snitch
 
       context "global state" do
-        let(:snitch) { Witness.instance.reloads.snitch } # global snitch
+        let(:snitch) { Witness.instance.reloads.snitch } # global reload snitch
 
         it "success doesnt changes" do
           expect { subject.converge_state_and_update }.not_to change { snitch.successes }
@@ -88,8 +90,8 @@ describe LogStash::Agent do
 
       it "sets the `last_error` to nil" do
         subject.converge_state_and_update
-        expect(snitch.error.snitch.message).to be_nil
-        expect(snitch.error.snitch.backtrace).to be_nil
+        expect(reload_errors_snitch.message).to be_nil
+        expect(reload_errors_snitch.backtrace).to be_nil
       end
 
       it "sets the `last_failure_timestamp` to nil" do
@@ -136,13 +138,9 @@ describe LogStash::Agent do
         expect(snitch.successes).to eq(0)
       end
 
-      it "records the `last_error`" do
-        expect(snitch.error).to_not be_nil
-      end
-
       it "records the `message` and the `backtrace`" do
-        expect(snitch.error.snitch.message).to_not be_nil
-        expect(snitch.error.snitch.backtrace).to_not be_nil
+        expect(reload_errors_snitch.message).to_not be_nil
+        expect(reload_errors_snitch.backtrace).to_not be_nil
       end
 
       it "records the time of the last failure" do

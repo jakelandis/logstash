@@ -1,7 +1,7 @@
 module LogStash module OutputDelegatorStrategies class Single
   def initialize(logger, klass, metric, execution_context, plugin_args)
     @output = klass.new(plugin_args)
-    @output.metric = metric
+    @output.metric = metric.custom
     @output.execution_context = execution_context
     @mutex = Mutex.new
   end
