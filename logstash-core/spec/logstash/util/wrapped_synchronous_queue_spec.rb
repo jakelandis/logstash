@@ -1,11 +1,14 @@
 # encoding: utf-8
 require "spec_helper"
 require "logstash/util/wrapped_synchronous_queue"
-require "logstash/instrument/collector"
 
 describe LogStash::Util::WrappedSynchronousQueue do
 
   subject {LogStash::Util::WrappedSynchronousQueue.new(5)}
+
+  before do
+    Witness.setInstance(Witness.new)
+  end
 
   describe "queue clients" do
     context "when requesting a write client" do
@@ -21,40 +24,31 @@ describe LogStash::Util::WrappedSynchronousQueue do
     end
 
     describe "WriteClient | ReadClient" do
-      let(:write_client) { LogStash::Util::WrappedSynchronousQueue::WriteClient.new(subject)}
-      let(:read_client)  { LogStash::Util::WrappedSynchronousQueue::ReadClient.new(subject)}
+      let(:write_client) {LogStash::Util::WrappedSynchronousQueue::WriteClient.new(subject)}
+      let(:read_client) {LogStash::Util::WrappedSynchronousQueue::ReadClient.new(subject)}
+      let(:events_witness) {Witness.instance.events}
+      let(:pipeline_events_witness) {Witness.instance.pipeline("main").events}
 
       context "when reading from the queue" do
-        let(:collector) { LogStash::Instrument::Collector.new }
 
         before do
-          read_client.set_events_metric(LogStash::Instrument::Metric.new(collector).namespace(:events))
-          read_client.set_pipeline_metric(LogStash::Instrument::Metric.new(collector).namespace(:pipeline))
+          read_client.set_events_metric(events_witness)
+          read_client.set_pipeline_metric(pipeline_events_witness)
         end
 
         context "when the queue is empty" do
           it "doesnt record the `duration_in_millis`" do
             batch = read_client.read_batch
             read_client.close_batch(batch)
-            store = collector.snapshot_metric.metric_store
 
-            expect(store.get_shallow(:events, :out).value).to eq(0)
-            expect(store.get_shallow(:events, :out)).to be_kind_of(LogStash::Instrument::MetricType::Counter)
+            expect(events_witness.snitch.out).to eq(0)
+            expect(events_witness.snitch.filtered).to eq(0)
+            expect(events_witness.snitch.duration).to eq(0)
 
-            expect(store.get_shallow(:events, :filtered).value).to eq(0)
-            expect(store.get_shallow(:events, :filtered)).to be_kind_of(LogStash::Instrument::MetricType::Counter)
+            expect(pipeline_events_witness.snitch.out).to eq(0)
+            expect(pipeline_events_witness.snitch.filtered).to eq(0)
+            expect(pipeline_events_witness.snitch.duration).to eq(0)
 
-            expect(store.get_shallow(:events, :duration_in_millis).value).to eq(0)
-            expect(store.get_shallow(:events, :duration_in_millis)).to be_kind_of(LogStash::Instrument::MetricType::Counter)
-
-            expect(store.get_shallow(:pipeline, :duration_in_millis).value).to eq(0)
-            expect(store.get_shallow(:pipeline, :duration_in_millis)).to be_kind_of(LogStash::Instrument::MetricType::Counter)
-
-            expect(store.get_shallow(:pipeline, :out).value).to eq(0)
-            expect(store.get_shallow(:pipeline, :out)).to be_kind_of(LogStash::Instrument::MetricType::Counter)
-
-            expect(store.get_shallow(:pipeline, :filtered).value).to eq(0)
-            expect(store.get_shallow(:pipeline, :filtered)).to be_kind_of(LogStash::Instrument::MetricType::Counter)
           end
         end
 
@@ -71,23 +65,21 @@ describe LogStash::Util::WrappedSynchronousQueue do
             read_client.add_filtered_metrics(read_batch)
             read_client.add_output_metrics(read_batch)
             read_client.close_batch(read_batch)
-            store = collector.snapshot_metric.metric_store
 
-            expect(store.get_shallow(:events, :out).value).to eq(5)
-            expect(store.get_shallow(:events, :filtered).value).to eq(5)
-            expect(store.get_shallow(:events, :duration_in_millis).value).to be > 0
-            expect(store.get_shallow(:pipeline, :duration_in_millis).value).to be > 0
-            expect(store.get_shallow(:pipeline, :out).value).to eq(5)
-            expect(store.get_shallow(:pipeline, :filtered).value).to eq(5)
+
+            expect(events_witness.snitch.out).to eq(5)
+            expect(events_witness.snitch.filtered).to eq(5)
+            expect(events_witness.snitch.duration).to be > 0
+
+            expect(pipeline_events_witness.snitch.out).to eq(5)
+            expect(pipeline_events_witness.snitch.filtered).to eq(5)
+            expect(pipeline_events_witness.snitch.duration).to be > 0
+
           end
         end
       end
 
       context "when writing to the queue" do
-        before :each do
-          read_client.set_events_metric(LogStash::Instrument::NamespacedNullMetric.new([], :null))
-          read_client.set_pipeline_metric(LogStash::Instrument::NamespacedNullMetric.new([], :null))
-        end
 
         it "appends batches to the queue" do
           batch = []
