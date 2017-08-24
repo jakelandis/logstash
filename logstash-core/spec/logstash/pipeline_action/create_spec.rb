@@ -73,8 +73,8 @@ describe LogStash::PipelineAction::Create do
     let(:system_pipeline_config) { mock_pipeline_config(:main_2, "input { generator { id => '123' } } output { null {} }", { "pipeline.system" => true }) }
 
     it "should give higher priority to system pipeline" do
-      action_user_pipeline = described_class.new(pipeline_config, metric)
-      action_system_pipeline = described_class.new(system_pipeline_config, metric)
+      action_user_pipeline = described_class.new(pipeline_config)
+      action_system_pipeline = described_class.new(system_pipeline_config)
 
       sorted = [action_user_pipeline, action_system_pipeline].sort
       expect(sorted).to eq([action_system_pipeline, action_user_pipeline])

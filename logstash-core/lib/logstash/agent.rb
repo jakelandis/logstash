@@ -60,6 +60,8 @@ class LogStash::Agent
     # Normalize time interval to seconds
     @reload_interval = setting("config.reload.interval") / 1_000_000_000.0
 
+    #TODO: jake - start periodic pollers
+
     @state_resolver = LogStash::StateResolver.new
 
     @witness_pipelines = witness.pipelines

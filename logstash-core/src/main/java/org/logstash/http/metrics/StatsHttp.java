@@ -1,8 +1,8 @@
 package org.logstash.http.metrics;
 
-import org.logstash.instrument.witness.EventsWitness;
-import org.logstash.instrument.witness.PipelinesWitness;
-import org.logstash.instrument.witness.ReloadWitness;
+import org.logstash.instrument.witness.pipeline.EventsWitness;
+import org.logstash.instrument.witness.pipeline.PipelinesWitness;
+import org.logstash.instrument.witness.pipeline.ReloadWitness;
 import org.logstash.instrument.witness.Witness;
 
 import javax.ws.rs.GET;
