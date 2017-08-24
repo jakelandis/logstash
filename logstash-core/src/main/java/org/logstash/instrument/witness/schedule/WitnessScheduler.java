@@ -5,7 +5,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -51,7 +50,7 @@ public class WitnessScheduler {
      */
     class RefreshRunnable implements Runnable {
 
-        Map<String, Long> lastLogged = new HashMap<>(1);
+       long lastLogged = 0;
 
         @Override
         public void run() {
@@ -59,13 +58,12 @@ public class WitnessScheduler {
                 witness.refresh();
             } catch (Exception e) {
                 long now = System.currentTimeMillis();
-                String witnessName = witness.getClass().getSimpleName();
-                Long lastLogTime = lastLogged.put(witnessName, now);
                 //throttle to only log the warning if it hasn't been logged in the past 120 seconds, this will ensure at least 1 log message, and logging for intermittent issues,
                 // but keep from flooding the log file on a repeating error on every schedule
-                if (lastLogTime == null || now - lastLogTime > 120_000) {
-                    LOGGER.warn("Can not fully refresh the metrics for the " + witnessName, e);
+                if (lastLogged == 0 || now - lastLogged > 120_000) {
+                    LOGGER.warn("Can not fully refresh the metrics for the " + witness.getClass().getSimpleName(), e);
                 }
+                lastLogged = now;
             }
         }
     }
