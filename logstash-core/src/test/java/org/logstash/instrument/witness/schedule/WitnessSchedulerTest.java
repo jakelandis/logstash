@@ -69,7 +69,7 @@ public class WitnessSchedulerTest {
                 .contains("Witness3-thread");
 
         ArgumentCaptor<LogEvent> argument = ArgumentCaptor.forClass(LogEvent.class);
-        //only gets logged once
+        //tests that Witness3 is the only error and that it only gets logged once
         verify(appender).append(argument.capture());
         assertThat(argument.getAllValues().stream().filter(a -> a.getMessage().toString().equals("Can not fully refresh the metrics for the Witness3")).count()).isEqualTo(1);
     }
@@ -120,6 +120,4 @@ public class WitnessSchedulerTest {
             return Duration.ofSeconds(1);
         }
     }
-
-
 }
