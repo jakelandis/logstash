@@ -55,10 +55,11 @@ public class WitnessSchedulerTest {
 
     @Test
     public void testSchedule() throws InterruptedException {
-        new WitnessScheduler(witness1).schedule();
+        WitnessScheduler witness1Scheduler = new WitnessScheduler(witness1);
+        witness1Scheduler.schedule();
         new WitnessScheduler(witness2).schedule();
         new WitnessScheduler(witness3).schedule();
-        //Sleep 15 seconds
+        //Give some time fo the schedules to run.
         Thread.sleep(15000);
         assertThat(witness1.counter).isBetween(15, 60);
         assertThat(witness2.counter).isBetween(3, 10);
@@ -72,6 +73,20 @@ public class WitnessSchedulerTest {
         //tests that Witness3 is the only error and that it only gets logged once
         verify(appender).append(argument.capture());
         assertThat(argument.getAllValues().stream().filter(a -> a.getMessage().toString().equals("Can not fully refresh the metrics for the Witness3")).count()).isEqualTo(1);
+
+        //shutdown 1 of the schedulers
+        witness1Scheduler.shutdown();
+        int count1 = witness1.counter;
+        int count2 = witness2.counter;
+        int count3 = witness3.counter;
+
+        Thread.sleep(10000);
+        //witness 1 has been stopped but the others keep on truckin
+        assertThat(count1).isEqualTo(witness1.counter);
+        assertThat(count2).isLessThan(witness2.counter);
+        assertThat(count3).isLessThan(witness3.counter);
+
+        assertThat(Thread.getAllStackTraces().keySet().stream().map(t -> t.getName()).collect(Collectors.toSet())).doesNotContain("Witness1-thread");
     }
 
 

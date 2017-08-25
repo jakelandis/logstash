@@ -15,7 +15,7 @@ public interface ScheduledWitness {
      */
     default Duration every() {
         //note - the system property is an only an escape hatch if this proves to cause performance issues. Do not document this system property, it is not part of the contract.
-        return Duration.ofSeconds(Long.parseLong(System.getProperty("witness.scheduled.duration.in.seconds", "1"))); //TODO:jake change back to 60
+        return Duration.ofSeconds(Long.parseLong(System.getProperty("witness.scheduled.duration.in.seconds", "60")));
     }
 
     /**
