@@ -45,7 +45,7 @@ module LogStash
         end
 
         def process_payload
-         # TODO: jake
+          JSON.parse(Witness.instance.process.as_json)["process"]
         end
 
         def mem_payload

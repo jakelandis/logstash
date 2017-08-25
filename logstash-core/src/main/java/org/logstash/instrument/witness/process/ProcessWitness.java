@@ -29,92 +29,69 @@ public class ProcessWitness implements SerializableWitness, ScheduledWitness {
     private final NumberGauge openFileDescriptors;
     private final NumberGauge peakOpenFileDescriptors;
     private final NumberGauge maxFileDescriptors;
+    private final UnixOperatingSystemMXBean unixOsBean;
+    private final Cpu cpu;
+    private final Memory memory;
 
     public ProcessWitness() {
         this.openFileDescriptors = new NumberGauge("open_file_descriptors", -1);
         this.maxFileDescriptors = new NumberGauge("max_file_descriptors", -1);
         this.peakOpenFileDescriptors = new NumberGauge("peak_open_file_descriptors", -1);
         this.isUnix = osMxBean instanceof UnixOperatingSystemMXBean;
+        this.unixOsBean = (UnixOperatingSystemMXBean) osMxBean;
+        this.cpu = new Cpu();
+        this.memory = new Memory();
     }
-
 
     @Override
     public void refresh() {
-        // Defaults are -1
-        if (this.isUnix) {
-            UnixOperatingSystemMXBean unixOsBean = (UnixOperatingSystemMXBean) osMxBean;;
+        if (isUnix) {
             long currentOpen = unixOsBean.getOpenFileDescriptorCount();
             openFileDescriptors.set(currentOpen);
-            if(maxFileDescriptors.getValue() == null || maxFileDescriptors.getValue().longValue() < currentOpen){
+            if (maxFileDescriptors.getValue() == null || maxFileDescriptors.getValue().longValue() < currentOpen) {
                 peakOpenFileDescriptors.set(currentOpen);
             }
             maxFileDescriptors.set(unixOsBean.getMaxFileDescriptorCount());
         }
+        cpu.refresh();
+        memory.refresh();
     }
 
-    public class Cpu implements SerializableWitness, ScheduledWitness {
+    public class Cpu implements ScheduledWitness {
         private final static String KEY = "cpu";
-//              metric.gauge(cpu_path, :percent, cpu_metrics["process_percent"])
-//                metric.gauge(cpu_path, :total_in_millis, cpu_metrics["total_in_millis"])
+        private final NumberGauge processPercent;
+        private final NumberGauge totalInMillis;
 
-        //       cpuMap.put("total_in_millis", this.cpuMillisTotal);
-        //        cpuMap.put("process_percent", this.cpuProcessPercent);
-//        cpuMap.put("system_percent", this.cpuSystemPercent);
-//
-        private Cpu(){
-
-        }
-
-        @Override
-        public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
-
+        private Cpu() {
+            this.processPercent = new NumberGauge("percent", -1);
+            this.totalInMillis = new NumberGauge("total_in_millis", -1);
         }
 
         @Override
         public void refresh() {
-            this.cpuProcessPercent = scaleLoadToPercent(unixOsBean.getProcessCpuLoad());
-            this.cpuSystemPercent = scaleLoadToPercent(unixOsBean.getSystemCpuLoad());
-            this.cpuMillisTotal = TimeUnit.MILLISECONDS.convert(
-                    unixOsBean.getProcessCpuTime(), TimeUnit.NANOSECONDS
-            );
+            processPercent.set(scaleLoadToPercent(unixOsBean.getProcessCpuLoad()));
+            totalInMillis.set(TimeUnit.MILLISECONDS.convert(unixOsBean.getProcessCpuTime(), TimeUnit.NANOSECONDS));
         }
     }
-    public class Memory implements SerializableWitness, ScheduledWitness {
+
+    public class Memory implements ScheduledWitness {
         private final static String KEY = "mem";
-        //    metric.gauge(path + [:mem], :total_virtual_in_bytes, process_metrics["mem"]["total_virtual_in_bytes"])
+        private final NumberGauge totalVirtualInBytes;
 
-        //        Map<String, Object> memoryMap = new HashMap<>();
-//        map.put("mem", memoryMap);
-//        memoryMap.put("total_virtual_in_bytes", this.memTotalVirtualInBytes);
-        private Memory(){
-
-        }
-
-        @Override
-        public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
-
+        private Memory() {
+            totalVirtualInBytes = new NumberGauge("total_virtual_in_bytes", -1);
         }
 
         @Override
         public void refresh() {
-            this.memTotalVirtualInBytes = unixOsBean.getCommittedVirtualMemorySize();
-
+            totalVirtualInBytes.set(unixOsBean.getCommittedVirtualMemorySize());
         }
-    }
-
-    public Map<String, Object> toMap() {
-
-//
-
-//
-//        return map;
     }
 
     @Override
     public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
-
+        SERIALIZER.innerSerialize(this, gen, provider);
     }
-
 
     /**
      * The Jackson serializer.
@@ -144,16 +121,29 @@ public class ProcessWitness implements SerializableWitness, ScheduledWitness {
         }
 
         void innerSerialize(ProcessWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            MetricSerializer<Metric<Number>> numberSerializer = MetricSerializer.Get.numberSerializer(gen);
             gen.writeObjectFieldStart(KEY);
+            numberSerializer.serialize(witness.openFileDescriptors);
+            numberSerializer.serialize(witness.peakOpenFileDescriptors);
+            numberSerializer.serialize(witness.maxFileDescriptors);
+            //memory
+            gen.writeObjectFieldStart(Memory.KEY);
+            numberSerializer.serialize(witness.memory.totalVirtualInBytes);
+            gen.writeEndObject();
+            //cpu
+            gen.writeObjectFieldStart(Cpu.KEY);
+            numberSerializer.serialize(witness.cpu.totalInMillis);
+            numberSerializer.serialize(witness.cpu.processPercent);
+            //TODO: jake load average
 
+            gen.writeEndObject();
             gen.writeEndObject();
         }
     }
 
-
-
-    private static short scaleLoadToPercent(double load) {
-        if (osMxBean instanceof UnixOperatingSystemMXBean) {
+    //TODO: add snitch
+    private short scaleLoadToPercent(double load) {
+        if (isUnix) {
             if (load >= 0) {
                 return (short) (load * 100);
             } else {

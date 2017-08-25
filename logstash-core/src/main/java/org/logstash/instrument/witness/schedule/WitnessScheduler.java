@@ -44,6 +44,21 @@ public class WitnessScheduler {
     }
 
     /**
+     * Shuts down the underlying executor service
+     */
+    public void shutdown(){
+        executorService.shutdown();
+        try {
+            executorService.awaitTermination(5, TimeUnit.SECONDS);
+            if(!executorService.isShutdown()){
+                executorService.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            //do nothing
+        }
+    }
+
+    /**
      * Runnable that will won't cancel the scheduled tasks on refresh if an exception is thrown, and throttles the log message.
      */
     class RefreshRunnable implements Runnable {
