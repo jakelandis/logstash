@@ -93,5 +93,5 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
                 lazyMetric = new UnknownGauge(key, value);
             }
         }
-    }
+     }
 }

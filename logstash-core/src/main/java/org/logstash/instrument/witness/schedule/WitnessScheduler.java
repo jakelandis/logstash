@@ -44,13 +44,12 @@ public class WitnessScheduler {
     }
 
     /**
-     * Shuts down the underlying executor service
+     * Shuts down the underlying executor service. Since these are daemon threads, this is not absolutely necessary.
      */
     public void shutdown(){
         executorService.shutdown();
         try {
-            executorService.awaitTermination(5, TimeUnit.SECONDS);
-            if(!executorService.isShutdown()){
+            if(!executorService.awaitTermination(5, TimeUnit.SECONDS)){
                 executorService.shutdownNow();
             }
         } catch (InterruptedException e) {

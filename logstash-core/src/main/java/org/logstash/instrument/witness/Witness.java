@@ -33,7 +33,7 @@ final public class Witness implements SerializableWitness {
     private final ProcessWitness processWitness;
     private final WitnessScheduler processWitnessScheduler;
 
-    private static Witness _instance;
+    private static Witness instance;
     private static final Serializer SERIALIZER = new Serializer();
 
     /**
@@ -53,15 +53,19 @@ final public class Witness implements SerializableWitness {
      * active instance at any time.  Exposing this allows Ruby to create the instance for use in it's agent constructor, then set it here for all to use as a singleton.
      * <p>THIS IS ONLY TO BE USED BY THE RUBY AGENT</p>
      *
-     * @param __instance The instance of the {@link Witness} to use as the singleton instance that mirror's the agent's lifecycle.
+     * @param newInstance The instance of the {@link Witness} to use as the singleton instance that mirror's the agent's lifecycle.
      */
-    public static void setInstance(Witness __instance) {
+    public static void setInstance(Witness newInstance) {
         //Ruby agent restart
-        if(_instance != null){
-            _instance.processWitnessScheduler.shutdown();
+        if (instance != null) {
+            instance.processWitnessScheduler.shutdown();
         }
-        _instance = __instance;
-        _instance.processWitnessScheduler.schedule();
+
+        instance = newInstance;
+
+        if (instance != null) {
+            instance.processWitnessScheduler.schedule();
+        }
     }
 
     /**
@@ -71,10 +75,10 @@ final public class Witness implements SerializableWitness {
      * @throws IllegalStateException if attempted to be used before being set.
      */
     public static Witness instance() {
-        if (_instance == null) {
+        if (instance == null) {
             throw new IllegalStateException("The stats witness instance must be set before it used. Called from: " + Arrays.toString(new Throwable().getStackTrace()));
         }
-        return _instance;
+        return instance;
     }
 
     public EventsWitness events() {
@@ -152,6 +156,7 @@ final public class Witness implements SerializableWitness {
         }
 
         void innerSerialize(Witness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            witness.process().genJson(gen, provider);
             witness.events().genJson(gen, provider);
             witness.reloads().genJson(gen, provider);
             witness.pipelinesWitness.genJson(gen, provider);
