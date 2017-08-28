@@ -2,24 +2,24 @@ package org.logstash.instrument.witness.process;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.sun.management.UnixOperatingSystemMXBean;
 import org.logstash.instrument.metrics.Metric;
-import org.logstash.instrument.metrics.gauge.BooleanGauge;
 import org.logstash.instrument.metrics.gauge.NumberGauge;
 import org.logstash.instrument.witness.MetricSerializer;
 import org.logstash.instrument.witness.SerializableWitness;
-import org.logstash.instrument.witness.pipeline.ErrorWitness;
-import org.logstash.instrument.witness.pipeline.QueueWitness;
 import org.logstash.instrument.witness.schedule.ScheduledWitness;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * A scheduled witness for process metrics
+ */
+@JsonSerialize(using = ProcessWitness.Serializer.class)
 public class ProcessWitness implements SerializableWitness, ScheduledWitness {
 
     private static final OperatingSystemMXBean osMxBean = ManagementFactory.getOperatingSystemMXBean();
@@ -32,7 +32,11 @@ public class ProcessWitness implements SerializableWitness, ScheduledWitness {
     private final UnixOperatingSystemMXBean unixOsBean;
     private final Cpu cpu;
     private final Memory memory;
+    private final Snitch snitch;
 
+    /**
+     * Constructor
+     */
     public ProcessWitness() {
         this.openFileDescriptors = new NumberGauge("open_file_descriptors", -1);
         this.maxFileDescriptors = new NumberGauge("max_file_descriptors", -1);
@@ -41,6 +45,7 @@ public class ProcessWitness implements SerializableWitness, ScheduledWitness {
         this.unixOsBean = (UnixOperatingSystemMXBean) osMxBean;
         this.cpu = new Cpu();
         this.memory = new Memory();
+        this.snitch = new Snitch(this);
     }
 
     @Override
@@ -48,7 +53,7 @@ public class ProcessWitness implements SerializableWitness, ScheduledWitness {
         if (isUnix) {
             long currentOpen = unixOsBean.getOpenFileDescriptorCount();
             openFileDescriptors.set(currentOpen);
-            if (maxFileDescriptors.getValue() == null || maxFileDescriptors.getValue().longValue() < currentOpen) {
+            if (maxFileDescriptors.getValue() == null || peakOpenFileDescriptors.getValue().longValue() < currentOpen) {
                 peakOpenFileDescriptors.set(currentOpen);
             }
             maxFileDescriptors.set(unixOsBean.getMaxFileDescriptorCount());
@@ -57,34 +62,49 @@ public class ProcessWitness implements SerializableWitness, ScheduledWitness {
         memory.refresh();
     }
 
+    /**
+     * Get a reference to associated snitch to get discrete metric values.
+     *
+     * @return the associate {@link Snitch}
+     */
+    public Snitch snitch() {
+        return snitch;
+    }
+
+    /**
+     * An inner witness for the process / cpu metrics
+     */
     public class Cpu implements ScheduledWitness {
         private final static String KEY = "cpu";
-        private final NumberGauge processPercent;
-        private final NumberGauge totalInMillis;
+        private final NumberGauge cpuProcessPercent;
+        private final NumberGauge cpuTotalInMillis;
 
         private Cpu() {
-            this.processPercent = new NumberGauge("percent", -1);
-            this.totalInMillis = new NumberGauge("total_in_millis", -1);
+            this.cpuProcessPercent = new NumberGauge("percent", -1);
+            this.cpuTotalInMillis = new NumberGauge("total_in_millis", -1);
         }
 
         @Override
         public void refresh() {
-            processPercent.set(scaleLoadToPercent(unixOsBean.getProcessCpuLoad()));
-            totalInMillis.set(TimeUnit.MILLISECONDS.convert(unixOsBean.getProcessCpuTime(), TimeUnit.NANOSECONDS));
+            cpuProcessPercent.set(scaleLoadToPercent(unixOsBean.getProcessCpuLoad()));
+            cpuTotalInMillis.set(TimeUnit.MILLISECONDS.convert(unixOsBean.getProcessCpuTime(), TimeUnit.NANOSECONDS));
         }
     }
 
+    /**
+     * An inner witness for the the process / memory metrics
+     */
     public class Memory implements ScheduledWitness {
         private final static String KEY = "mem";
-        private final NumberGauge totalVirtualInBytes;
+        private final NumberGauge memTotalVirtualInBytes;
 
         private Memory() {
-            totalVirtualInBytes = new NumberGauge("total_virtual_in_bytes", -1);
+            memTotalVirtualInBytes = new NumberGauge("total_virtual_in_bytes", -1);
         }
 
         @Override
         public void refresh() {
-            totalVirtualInBytes.set(unixOsBean.getCommittedVirtualMemorySize());
+            memTotalVirtualInBytes.set(unixOsBean.getCommittedVirtualMemorySize());
         }
     }
 
@@ -128,12 +148,13 @@ public class ProcessWitness implements SerializableWitness, ScheduledWitness {
             numberSerializer.serialize(witness.maxFileDescriptors);
             //memory
             gen.writeObjectFieldStart(Memory.KEY);
-            numberSerializer.serialize(witness.memory.totalVirtualInBytes);
+            numberSerializer.serialize(witness.memory.memTotalVirtualInBytes);
             gen.writeEndObject();
             //cpu
             gen.writeObjectFieldStart(Cpu.KEY);
-            numberSerializer.serialize(witness.cpu.totalInMillis);
-            numberSerializer.serialize(witness.cpu.processPercent);
+            numberSerializer.serialize(witness.cpu.cpuTotalInMillis);
+            numberSerializer.serialize(witness.cpu.cpuProcessPercent);
+
             //TODO: jake load average
 
             gen.writeEndObject();
@@ -141,16 +162,86 @@ public class ProcessWitness implements SerializableWitness, ScheduledWitness {
         }
     }
 
-    //TODO: add snitch
+    /**
+     * The Process snitch. Provides a means to get discrete metric values.
+     */
+    public static class Snitch {
+
+        private final ProcessWitness witness;
+
+        private Snitch(ProcessWitness witness) {
+            this.witness = witness;
+        }
+
+        /**
+         * Get the number of open file descriptors for this process
+         *
+         * @return the open file descriptors
+         */
+        public long openFileDescriptors() {
+            return witness.openFileDescriptors.getValue().longValue();
+        }
+
+        /**
+         * Get the max file descriptors for this process
+         *
+         * @return the max file descriptors
+         */
+        public long maxFileDescriptors() {
+            return witness.maxFileDescriptors.getValue().longValue();
+        }
+
+        /**
+         * Get the high water number of open file descriptors for this process
+         *
+         * @return the high water/ peak of the seen open file descriptors
+         */
+        public long peakOpenFileDescriptors() {
+            return witness.peakOpenFileDescriptors.getValue().longValue();
+        }
+
+        /**
+         * Get the cpu percent for this process
+         *
+         * @return the cpu percent
+         */
+        public short cpuProcessPercent() {
+            return witness.cpu.cpuProcessPercent.getValue().shortValue();
+        }
+
+        /**
+         * Get the total time of the cpu in milliseconds for this process
+         *
+         * @return the cpu total in milliseconds
+         */
+        public long cpuTotalInMillis() {
+            return witness.cpu.cpuTotalInMillis.getValue().longValue();
+        }
+
+        /**
+         * Get the committed (virtual) memory for this process
+         *
+         * @return the committed memory
+         */
+        public long memTotalVirtualInBytes() {
+            return witness.memory.memTotalVirtualInBytes.getValue().longValue();
+        }
+
+        /**
+         * Gets if this process is running on *nix based system.
+         *
+         * @return true if host is *nix, false otherwise
+         */
+        public boolean isUnix() {
+            return witness.isUnix;
+        }
+    }
+
     private short scaleLoadToPercent(double load) {
-        if (isUnix) {
-            if (load >= 0) {
-                return (short) (load * 100);
-            } else {
-                return -1;
-            }
+        if (isUnix && load >= 0) {
+            return Double.valueOf(Math.floor(load * 100)).shortValue();
         } else {
-            return -1;
+            return (short) -1;
         }
     }
 }

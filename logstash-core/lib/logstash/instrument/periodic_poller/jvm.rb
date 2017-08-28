@@ -14,7 +14,6 @@ java_import 'javax.management.ObjectName'
 java_import 'javax.management.AttributeList'
 java_import 'javax.naming.directory.Attribute'
 java_import 'org.logstash.instrument.reports.MemoryReport'
-java_import 'org.logstash.instrument.reports.ProcessReport'
 
 
 module LogStash module Instrument module PeriodicPoller
