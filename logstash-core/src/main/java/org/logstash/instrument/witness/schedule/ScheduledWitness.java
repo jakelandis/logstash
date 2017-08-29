@@ -28,16 +28,6 @@ public interface ScheduledWitness {
     }
 
     /**
-     * Sets the priority for the underlying thread. Consumers should NOT set this unless they are absolutely certain. Defaults to {@link Thread#NORM_PRIORITY}
-     *
-     * @return the thread scheduled thread priority
-     */
-    default int priority() {
-        //note - the system property is an only an escape hatch if this proves to cause performance issues. Do not document this system property, it is not part of the contract.
-        return Integer.parseInt(System.getProperty("witness.schedule.priority", Integer.toString(Thread.NORM_PRIORITY)));
-    }
-
-    /**
      * Updates the underlying metrics on the given schedule.
      */
     void refresh();

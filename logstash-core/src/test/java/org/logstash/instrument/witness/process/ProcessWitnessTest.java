@@ -40,7 +40,7 @@ public class ProcessWitnessTest {
     @Test
     public void testRefresh(){
         ProcessWitness.Snitch snitch = witness.snitch();
-        assumeTrue(snitch.isUnix());
+        assumeTrue(ProcessWitness.isUnix);
         witness.refresh();
         assertThat(snitch.cpuProcessPercent()).isGreaterThanOrEqualTo((short) 0);
         assertThat(snitch.cpuTotalInMillis()).isGreaterThan(0);
@@ -53,7 +53,7 @@ public class ProcessWitnessTest {
     @Test
     public void testRefreshChanges() throws InterruptedException {
         ProcessWitness.Snitch snitch = witness.snitch();
-        assumeTrue(snitch.isUnix());
+        assumeTrue(ProcessWitness.isUnix);
         witness.refresh();
         long before = snitch.cpuProcessPercent();
 
@@ -101,7 +101,7 @@ public class ProcessWitnessTest {
 
     @Test
     public void testSerializePopulated() throws Exception {
-        assumeTrue(witness.snitch().isUnix());
+        assumeTrue(ProcessWitness.isUnix);
         String emptyJson = witness.asJson();
         witness.refresh();
         String populatedJson = witness.asJson();

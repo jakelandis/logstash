@@ -30,8 +30,6 @@ public class WitnessScheduler {
             t.setDaemon(true);
             //Set the name
             t.setName(witness.threadName());
-            //Set the priority
-            t.setPriority(witness.priority());
             return t;
         }));
     }

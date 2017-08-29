@@ -22,17 +22,22 @@ import java.util.concurrent.TimeUnit;
 @JsonSerialize(using = ProcessWitness.Serializer.class)
 public class ProcessWitness implements SerializableWitness, ScheduledWitness {
 
-    private static final OperatingSystemMXBean osMxBean = ManagementFactory.getOperatingSystemMXBean();
-    private final static String KEY = "process";
-    private static final Serializer SERIALIZER = new Serializer();
-    private final boolean isUnix;
+    private static final OperatingSystemMXBean osMxBean;
+    private static final String KEY = "process";
+    public  static final boolean isUnix;
+    private static final UnixOperatingSystemMXBean unixOsBean;
     private final NumberGauge openFileDescriptors;
     private final NumberGauge peakOpenFileDescriptors;
     private final NumberGauge maxFileDescriptors;
-    private final UnixOperatingSystemMXBean unixOsBean;
     private final Cpu cpu;
     private final Memory memory;
     private final Snitch snitch;
+
+    static {
+        osMxBean = ManagementFactory.getOperatingSystemMXBean();
+        isUnix = osMxBean instanceof UnixOperatingSystemMXBean;
+        unixOsBean = isUnix ? (UnixOperatingSystemMXBean) osMxBean : null;
+    }
 
     /**
      * Constructor
@@ -41,8 +46,6 @@ public class ProcessWitness implements SerializableWitness, ScheduledWitness {
         this.openFileDescriptors = new NumberGauge("open_file_descriptors", -1);
         this.maxFileDescriptors = new NumberGauge("max_file_descriptors", -1);
         this.peakOpenFileDescriptors = new NumberGauge("peak_open_file_descriptors", -1);
-        this.isUnix = osMxBean instanceof UnixOperatingSystemMXBean;
-        this.unixOsBean = (UnixOperatingSystemMXBean) osMxBean;
         this.cpu = new Cpu();
         this.memory = new Memory();
         this.snitch = new Snitch(this);
@@ -75,7 +78,7 @@ public class ProcessWitness implements SerializableWitness, ScheduledWitness {
      * An inner witness for the process / cpu metrics
      */
     public class Cpu implements ScheduledWitness {
-        private final static String KEY = "cpu";
+        private static final String KEY = "cpu";
         private final NumberGauge cpuProcessPercent;
         private final NumberGauge cpuTotalInMillis;
 
@@ -95,7 +98,7 @@ public class ProcessWitness implements SerializableWitness, ScheduledWitness {
      * An inner witness for the the process / memory metrics
      */
     public class Memory implements ScheduledWitness {
-        private final static String KEY = "mem";
+        private static final String KEY = "mem";
         private final NumberGauge memTotalVirtualInBytes;
 
         private Memory() {
@@ -110,13 +113,13 @@ public class ProcessWitness implements SerializableWitness, ScheduledWitness {
 
     @Override
     public void genJson(JsonGenerator gen, SerializerProvider provider) throws IOException {
-        SERIALIZER.innerSerialize(this, gen, provider);
+        Serializer.innerSerialize(this, gen);
     }
 
     /**
      * The Jackson serializer.
      */
-    static class Serializer extends StdSerializer<ProcessWitness> {
+    public static final class Serializer extends StdSerializer<ProcessWitness> {
         /**
          * Default constructor - required for Jackson
          */
@@ -136,11 +139,11 @@ public class ProcessWitness implements SerializableWitness, ScheduledWitness {
         @Override
         public void serialize(ProcessWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
             gen.writeStartObject();
-            innerSerialize(witness, gen, provider);
+            innerSerialize(witness, gen);
             gen.writeEndObject();
         }
 
-        void innerSerialize(ProcessWitness witness, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        static void innerSerialize(ProcessWitness witness, JsonGenerator gen) throws IOException {
             MetricSerializer<Metric<Number>> numberSerializer = MetricSerializer.Get.numberSerializer(gen);
             gen.writeObjectFieldStart(KEY);
             numberSerializer.serialize(witness.openFileDescriptors);
@@ -165,7 +168,7 @@ public class ProcessWitness implements SerializableWitness, ScheduledWitness {
     /**
      * The Process snitch. Provides a means to get discrete metric values.
      */
-    public static class Snitch {
+    public static final class Snitch {
 
         private final ProcessWitness witness;
 
@@ -227,14 +230,6 @@ public class ProcessWitness implements SerializableWitness, ScheduledWitness {
             return witness.memory.memTotalVirtualInBytes.getValue().longValue();
         }
 
-        /**
-         * Gets if this process is running on *nix based system.
-         *
-         * @return true if host is *nix, false otherwise
-         */
-        public boolean isUnix() {
-            return witness.isUnix;
-        }
     }
 
     private short scaleLoadToPercent(double load) {

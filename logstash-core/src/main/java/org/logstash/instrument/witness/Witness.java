@@ -54,7 +54,7 @@ public final class Witness implements SerializableWitness {
      *
      * @param newInstance The instance of the {@link Witness} to use as the singleton instance that mirror's the agent's lifecycle.
      */
-    public static void setInstance(Witness newInstance) {
+    public static synchronized void setInstance(Witness newInstance) {
         //Ruby agent restart
         if (instance != null) {
             instance.processWitnessScheduler.shutdown();
