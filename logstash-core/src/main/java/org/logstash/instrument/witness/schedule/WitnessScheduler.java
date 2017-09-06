@@ -51,7 +51,7 @@ public class WitnessScheduler {
                 executorService.shutdownNow();
             }
         } catch (InterruptedException e) {
-            //do nothing
+            throw new IllegalStateException("Witness should be scheduled from the main thread, and the main thread does not expect to be interrupted", e);
         }
     }
 
