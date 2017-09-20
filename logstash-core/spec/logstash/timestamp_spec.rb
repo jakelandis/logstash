@@ -13,10 +13,12 @@ describe LogStash::Timestamp do
     # we may need to use `be_within(0.000999999).of()` in other places too
     it "should work" do
       t = LogStash::Timestamp.new
-      expect(t.time.to_i).to be_within(1).of Time.now.to_i
+      expect(t.time.to_i).to be_within(10).of Time.now.to_i
+
+      sleep(1)
 
       t = LogStash::Timestamp.now
-      expect(t.time.to_i).to be_within(1).of Time.now.to_i
+      expect(t.time.to_i).to be_within(10).of Time.now.to_i
 
       now = DateTime.now.to_time.utc
       t = LogStash::Timestamp.new(now)
