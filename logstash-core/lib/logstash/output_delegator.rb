@@ -41,7 +41,7 @@ module LogStash class OutputDelegator
     @witness_plugin_events.in(events.length)
     start_time = java.lang.System.nano_time
     @strategy.multi_receive(events)
-    @time_metric.increment((java.lang.System.nano_time - start_time) / 1_000_000)
+    @witness_plugin_events.duration((java.lang.System.nano_time - start_time) / 1_000_000)
     @witness_plugin_events.out(events.length)
   end
 
