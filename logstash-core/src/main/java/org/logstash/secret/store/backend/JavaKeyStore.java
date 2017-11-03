@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 import org.logstash.secret.SecretIdentifier;
 import org.logstash.secret.store.SecretStore;
 import org.logstash.secret.store.SecretStoreException;
+import org.logstash.secret.store.SecretStoreUtil;
 
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
@@ -46,7 +47,7 @@ public final class JavaKeyStore implements SecretStore {
      * Constructor - will create the keystore if it does not exist
      *
      * @param keyStorePath The full path to the java keystore
-     * @param keyStorePass The password to the keystore
+     * @param keyStorePass The password to the keystore, base64 encoded and obfuscated
      * @throws SecretStoreException if errors occur while trying to create or access the keystore
      */
     public JavaKeyStore(Path keyStorePath, char[] keyStorePass) {
@@ -75,7 +76,7 @@ public final class JavaKeyStore implements SecretStore {
                     keyStore = KeyStore.Builder.newInstance(keyStoreType, null, protectionParameter).getKeyStore();
                     SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
                     byte[] base64 = Base64.getEncoder().encode(LOGSTASH_MARKER.getBytes(StandardCharsets.UTF_8));
-                    SecretKey secretKey = factory.generateSecret(new PBEKeySpec(asciiBytesToChar(base64)));
+                    SecretKey secretKey = factory.generateSecret(new PBEKeySpec(SecretStoreUtil.asciiBytesToChar(base64)));
                     keyStore.setEntry(logstashMarker.toExternalForm(), new KeyStore.SecretKeyEntry(secretKey), protectionParameter);
                     keyStore.store(os, keyStorePass);
 
@@ -90,49 +91,7 @@ public final class JavaKeyStore implements SecretStore {
         }
     }
 
-    /**
-     * Converts bytes from ascii encoded text to a char[] and zero outs the original byte[]
-     *
-     * @param bytes the bytes from an ascii encoded text (note - no validation is done to ensure ascii encoding)
-     * @return the corresponding char[]
-     */
-    private char[] asciiBytesToChar(byte[] bytes) {
-        char[] chars = new char[bytes.length];
-        for (int i = 0; i < bytes.length; i++) {
-            chars[i] = (char) bytes[i];
-            bytes[i] = '\0';
-        }
-        return chars;
-    }
 
-    /**
-     * Converts characters from ascii encoded text to a byte[] and zero outs the original char[]
-     *
-     * @param chars the chars from an ascii encoded text (note - no validation is done to ensure ascii encoding)
-     * @return the corresponding byte[]
-     */
-    private byte[] asciiCharToBytes(char[] chars) {
-        byte[] bytes = new byte[chars.length];
-        for (int i = 0; i < chars.length; i++) {
-            bytes[i] = (byte) chars[i];
-            chars[i] = '\0';
-        }
-        return bytes;
-    }
-
-    /**
-     * Attempt to keep the secret data out of the heap.
-     *
-     * @param secret the secret to zero out
-     */
-    private void clearSecret(byte[] secret) {
-        if (secret != null) {
-            for (int i = 0; i < secret.length; ++i) {
-                secret[i] = '\0';
-            }
-            secret = null;
-        }
-    }
 
     @Override
     public Collection<SecretIdentifier> list() {
@@ -159,14 +118,14 @@ public final class JavaKeyStore implements SecretStore {
             SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
             //PBEKey requires an ascii password, so base64 encode it
             byte[] base64 = Base64.getEncoder().encode(secret);
-            PBEKeySpec passwordBasedKeySpec = new PBEKeySpec(asciiBytesToChar(base64));
+            PBEKeySpec passwordBasedKeySpec = new PBEKeySpec(SecretStoreUtil.asciiBytesToChar(base64));
             SecretKey secretKey = factory.generateSecret(passwordBasedKeySpec);
             keyStore.setEntry(identifier.toExternalForm(), new KeyStore.SecretKeyEntry(secretKey), protectionParameter);
             try (final OutputStream os = Files.newOutputStream(keyStorePath)) {
                 keyStore.store(os, keyStorePass);
             } finally {
                 passwordBasedKeySpec.clearPassword();
-                clearSecret(secret);
+                SecretStoreUtil.clear(secret);
             }
         } catch (Exception e) {
             throw new SecretStoreException.PersistException(identifier, e);
@@ -211,7 +170,7 @@ public final class JavaKeyStore implements SecretStore {
                     PBEKeySpec passwordBasedKeySpec = (PBEKeySpec) factory.getKeySpec(secretKeyEntry.getSecretKey(), PBEKeySpec.class);
                     //base64 encoded char[]
                     char[] base64secret = passwordBasedKeySpec.getPassword().clone();
-                    byte[] secret = Base64.getDecoder().decode(asciiCharToBytes(base64secret));
+                    byte[] secret = Base64.getDecoder().decode(SecretStoreUtil.asciiCharToBytes(base64secret));
                     passwordBasedKeySpec.clearPassword();
                     return secret;
                 }

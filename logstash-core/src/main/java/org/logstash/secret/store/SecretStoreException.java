@@ -39,4 +39,10 @@ public class SecretStoreException extends RuntimeException {
         }
     }
 
+    static public class ConfigurationException extends SecretStoreException{
+        public ConfigurationException(String message) {
+            super(message);
+        }
+    }
+
 }

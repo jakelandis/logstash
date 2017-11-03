@@ -235,9 +235,13 @@ public class JavaKeyStoreTest {
     public void testNonAscii() throws Exception {
         int[] codepoints = {0xD83E, 0xDD21, 0xD83E, 0xDD84};
         String nonAscii = new String(codepoints, 0, codepoints.length);
+        JavaKeyStore nonAsciiKeyStore = new JavaKeyStore(keyStorePath, nonAscii.toCharArray());
+
         SecretIdentifier id = new SecretIdentifier(nonAscii);
-        keyStore.persistSecret(id, nonAscii.getBytes(StandardCharsets.UTF_8));
-        assertThat(new String(keyStore.retrieveSecret(id), StandardCharsets.UTF_8)).isEqualTo(nonAscii);
+        nonAsciiKeyStore.persistSecret(id, nonAscii.getBytes(StandardCharsets.UTF_8));
+        assertThat(new String(nonAsciiKeyStore.retrieveSecret(id), StandardCharsets.UTF_8)).isEqualTo(nonAscii);
+
+
     }
 
     /**
