@@ -3,19 +3,19 @@ package org.logstash.secret.store.backend;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.secret.SecretIdentifier;
-import org.logstash.secret.store.SecretStore;
-import org.logstash.secret.store.SecretStoreException;
-import org.logstash.secret.store.SecretStoreUtil;
+import org.logstash.secret.store.*;
 
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.security.KeyStore;
@@ -36,8 +36,8 @@ public final class JavaKeyStore implements SecretStore {
     public static final String LOGSTASH_MARKER = "logstash-key-store";
     private static final Logger LOGGER = LogManager.getLogger(JavaKeyStore.class);
 
-    private final char[] keyStorePass;
-    private final Path keyStorePath;
+    private char[] keyStorePass;
+    private Path keyStorePath;
     private final ProtectionParameter protectionParameter;
     private final Lock readLock;
     private final Lock writeLock;
@@ -46,16 +46,18 @@ public final class JavaKeyStore implements SecretStore {
     /**
      * Constructor - will create the keystore if it does not exist
      *
-     * @param keyStorePath The full path to the java keystore
-     * @param keyStorePass The password to the keystore, base64 encoded and obfuscated
+     * @param config The configuration for this keystore
      * @throws SecretStoreException if errors occur while trying to create or access the keystore
      */
-    public JavaKeyStore(Path keyStorePath, char[] keyStorePass) {
+    public JavaKeyStore(SecureConfig config) {
         try {
-            this.keyStorePath = keyStorePath;
-            String keyStoreType = System.getProperty("java.keystore.type", "pkcs12");
+            this.keyStorePath = Paths.get(new String(config.getPlainText("keystore.path")));
+            this.keyStorePass = SecretStoreUtil.base64encode(config.getPlainText(SecretStoreFactory.KEYSTORE_ACCESS_KEY));
+            config.clearValues();
+            char[] configuredType = config.getPlainText("keystore.type");
+            String keyStoreType = configuredType == null ? "pkcs12" : new String(configuredType);
             this.keyStore = KeyStore.getInstance(keyStoreType);
-            this.keyStorePass = keyStorePass;
+
             ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
             readLock = readWriteLock.readLock();
             writeLock = readWriteLock.writeLock();
@@ -92,7 +94,6 @@ public final class JavaKeyStore implements SecretStore {
     }
 
 
-
     @Override
     public Collection<SecretIdentifier> list() {
         Set<SecretIdentifier> identifiers = new HashSet<>();
@@ -125,7 +126,7 @@ public final class JavaKeyStore implements SecretStore {
                 keyStore.store(os, keyStorePass);
             } finally {
                 passwordBasedKeySpec.clearPassword();
-                SecretStoreUtil.clear(secret);
+                SecretStoreUtil.clearBytes(secret);
             }
         } catch (Exception e) {
             throw new SecretStoreException.PersistException(identifier, e);
@@ -182,5 +183,8 @@ public final class JavaKeyStore implements SecretStore {
         }
         return null;
     }
+
+
+
 }
 

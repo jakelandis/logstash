@@ -45,4 +45,10 @@ public class SecretStoreException extends RuntimeException {
         }
     }
 
+    static public class ImplementationNotFoundException extends SecretStoreException{
+        public ImplementationNotFoundException(String message, Throwable throwable) {
+            super(message, throwable);
+        }
+    }
+
 }

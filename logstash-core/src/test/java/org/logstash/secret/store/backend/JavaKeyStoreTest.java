@@ -8,6 +8,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.logstash.secret.SecretIdentifier;
 import org.logstash.secret.store.SecretStoreException;
+import org.logstash.secret.store.SecretStoreFactory;
+import org.logstash.secret.store.SecureConfig;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -35,7 +37,23 @@ public class JavaKeyStoreTest {
     public ExpectedException thrown = ExpectedException.none();
     private JavaKeyStore keyStore;
     private char[] keyStorePass;
-    private Path keyStorePath;
+    private char[] keyStorePath;
+    private SecureConfig secureConfig;
+    private SecureConfig existingSecureConfig;
+
+    @Before
+    public void setup() throws Exception {
+        keyStorePath = folder.newFolder().toPath().resolve("logstash.keystore").toString().toCharArray();
+        keyStorePass = UUID.randomUUID().toString().toCharArray();
+        secureConfig = new SecureConfig();
+        secureConfig.add(SecretStoreFactory.KEYSTORE_ACCESS_KEY, keyStorePass.clone());
+        secureConfig.add("path", keyStorePath.clone());
+        keyStore = new JavaKeyStore(secureConfig);
+
+        existingSecureConfig = new SecureConfig();
+        existingSecureConfig.add(SecretStoreFactory.KEYSTORE_ACCESS_KEY, "mypassword".toCharArray().clone());
+        existingSecureConfig.add("path", Paths.get(this.getClass().getClassLoader().getResource("logstash.keystore").toURI()).toString().toCharArray().clone());
+    }
 
     /**
      * Simple example usage.
@@ -67,7 +85,7 @@ public class JavaKeyStoreTest {
         assertThat(new String(marker, StandardCharsets.UTF_8)).isEqualTo(JavaKeyStore.LOGSTASH_MARKER);
 
         //exiting
-        JavaKeyStore existingKeyStore = new JavaKeyStore(Paths.get(this.getClass().getClassLoader().getResource("logstash.keystore").toURI()), "mypassword".toCharArray());
+        JavaKeyStore existingKeyStore = new JavaKeyStore(existingSecureConfig);
         marker = existingKeyStore.retrieveSecret(new SecretIdentifier(JavaKeyStore.LOGSTASH_MARKER));
         assertThat(new String(marker, StandardCharsets.UTF_8)).isEqualTo(JavaKeyStore.LOGSTASH_MARKER);
     }
@@ -81,7 +99,8 @@ public class JavaKeyStoreTest {
     public void notLogstashKeystore() throws Exception {
         thrown.expect(SecretStoreException.class);
         thrown.expectCause(instanceOf(SecretStoreException.NotLogstashKeyStore.class));
-        new JavaKeyStore(Paths.get(this.getClass().getClassLoader().getResource("not.a.logstash.keystore").toURI()), "mypassword".toCharArray());
+        existingSecureConfig.add("path", Paths.get(this.getClass().getClassLoader().getResource("not.a.logstash.keystore").toURI()).toString().toCharArray().clone());
+        new JavaKeyStore(existingSecureConfig);
     }
 
     /**
@@ -118,7 +137,7 @@ public class JavaKeyStoreTest {
      */
     @Test
     public void readExisting() throws Exception {
-        JavaKeyStore existingKeyStore = new JavaKeyStore(Paths.get(this.getClass().getClassLoader().getResource("logstash.keystore").toURI()), "mypassword".toCharArray());
+        JavaKeyStore existingKeyStore = new JavaKeyStore(existingSecureConfig);
         //contents of the existing is a-z for both the key and value
         for (int i = 65; i <= 90; i++) {
             byte[] expected = new byte[]{(byte) i};
@@ -131,7 +150,7 @@ public class JavaKeyStoreTest {
      * Comprehensive tests that uses a freshly created keystore to write 26 entries, list them, read them, and delete them.
      */
     @Test
-    public void readWriteListDelete() {
+    public void readWriteListDelete() throws InterruptedException {
         Set<String> values = new HashSet<>(27);
         Set<SecretIdentifier> keys = new HashSet<>(27);
         SecretIdentifier markerId = new SecretIdentifier(JavaKeyStore.LOGSTASH_MARKER);
@@ -176,12 +195,6 @@ public class JavaKeyStoreTest {
         assertThat(keyStore.retrieveSecret(null)).isNull();
     }
 
-    @Before
-    public void setup() throws Exception {
-        keyStorePath = folder.newFolder().toPath().resolve("logstash.keystore");
-        keyStorePass = UUID.randomUUID().toString().toCharArray();
-        keyStore = new JavaKeyStore(keyStorePath, keyStorePass);
-    }
 
     /**
      * Test to ensure that keystore is tamper proof.  This really ends up testing the Java's KeyStore implementation, not the code here....but an important attribute to ensure
@@ -193,13 +206,16 @@ public class JavaKeyStoreTest {
     public void tamperedKeystore() throws Exception {
 
         thrown.expect(SecretStoreException.class);
-        byte[] keyStoreAsBytes = Files.readAllBytes(keyStorePath);
+        byte[] keyStoreAsBytes = Files.readAllBytes(Paths.get(new String(keyStorePath)));
         //bump the middle byte by 1
         int tamperLocation = keyStoreAsBytes.length / 2;
         keyStoreAsBytes[tamperLocation] = (byte) (keyStoreAsBytes[tamperLocation] + 1);
         Path tamperedPath = folder.newFolder().toPath().resolve("tampered.logstash.keystore");
         Files.write(tamperedPath, keyStoreAsBytes);
-        new JavaKeyStore(tamperedPath, keyStorePass);
+        SecureConfig sc = new SecureConfig();
+        sc.add(SecretStoreFactory.KEYSTORE_ACCESS_KEY, "mypassword".toCharArray());
+        sc.add("path", tamperedPath.toUri().toString().toCharArray());
+        new JavaKeyStore(sc);
     }
 
     /**
@@ -235,13 +251,15 @@ public class JavaKeyStoreTest {
     public void testNonAscii() throws Exception {
         int[] codepoints = {0xD83E, 0xDD21, 0xD83E, 0xDD84};
         String nonAscii = new String(codepoints, 0, codepoints.length);
-        JavaKeyStore nonAsciiKeyStore = new JavaKeyStore(keyStorePath, nonAscii.toCharArray());
+        SecureConfig sc = new SecureConfig();
+        sc.add(SecretStoreFactory.KEYSTORE_ACCESS_KEY, nonAscii.toCharArray());
+
+        sc.add("path", (new String(keyStorePath) + ".nonAscii").toCharArray());
+        JavaKeyStore nonAsciiKeyStore = new JavaKeyStore(sc);
 
         SecretIdentifier id = new SecretIdentifier(nonAscii);
         nonAsciiKeyStore.persistSecret(id, nonAscii.getBytes(StandardCharsets.UTF_8));
         assertThat(new String(nonAsciiKeyStore.retrieveSecret(id), StandardCharsets.UTF_8)).isEqualTo(nonAscii);
-
-
     }
 
     /**
@@ -251,7 +269,7 @@ public class JavaKeyStoreTest {
      */
     @Test
     public void testPermissions() throws Exception {
-        PosixFileAttributeView attrs = Files.getFileAttributeView(keyStorePath, PosixFileAttributeView.class);
+        PosixFileAttributeView attrs = Files.getFileAttributeView(Paths.get(new String(keyStorePath)), PosixFileAttributeView.class);
 
         boolean isWindows = System.getProperty("os.name").startsWith("Windows");
         //not all Windows FS are Posix
@@ -274,6 +292,7 @@ public class JavaKeyStoreTest {
     @Test
     public void wrongPassword() throws Exception {
         thrown.expect(SecretStoreException.class);
-        new JavaKeyStore(Paths.get(this.getClass().getClassLoader().getResource("logstash.keystore").toURI()), "wrongpassword".toCharArray());
+        existingSecureConfig.add(SecretStoreFactory.KEYSTORE_ACCESS_KEY, "wrongpassword".toCharArray());
+        new JavaKeyStore(existingSecureConfig);
     }
 }

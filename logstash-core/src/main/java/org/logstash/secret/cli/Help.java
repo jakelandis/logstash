@@ -1,5 +1,8 @@
 package org.logstash.secret.cli;
 
+/**
+ * Placeholder action that has does nothing but echo's a display.
+ */
 public class Help implements SecretStoreAction{
     @Override
     public String getDescription() {

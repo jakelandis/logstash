@@ -14,8 +14,8 @@ import org.logstash.ext.JrubyEventExtLibrary;
  * {@link Dataset}.</p>
  * <p>Each {@link Dataset} either represents a filter, output or one branch of an {@code if}
  * statement in a Logstash configuration file.</p>
- * <p>Note: It does seem more natural to use the {@code clear} invocation to set the next
- * batch of input trueData. For now this is intentionally not implemented since we want to clear
+ * <p>Note: It does seem more natural to use the {@code clearBytes} invocation to set the next
+ * batch of input trueData. For now this is intentionally not implemented since we want to clearBytes
  * the trueData stored in the Dataset tree as early as possible and before the output operations
  * finish. Once the whole execution tree including the output operation is implemented in
  * Java, this API can be adjusted as such.</p>

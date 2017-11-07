@@ -1,32 +1,21 @@
 package org.logstash.secret.store;
 
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
 
-public class SecretStoreUtil {
+/**
+ * Conversion utility between String, bytes, and chars. All methods attempt to keep sensitive data out of memory. Sensitive data should avoid using Java {@link String}'s.
+ */
+final public class SecretStoreUtil {
 
-    public static byte[] base64encode(String s) {
-        byte[] bytes = Base64.getEncoder().encode(s.getBytes(StandardCharsets.UTF_8));
-        //a poor attempt to clear the String from memory
-        s = null;
-        System.gc();
-        return bytes;
+    /**
+     * Private constructor. Utility class.
+     */
+    private SecretStoreUtil() {
     }
 
-    public static byte[] base64Decode(byte[] b) {
-        byte[] bytes = Base64.getDecoder().decode(b);
-        clear(b);
-        return bytes;
-    }
-
-
-    public static char[] obfuscate(String s){
-        return obfuscate(asciiBytesToChar(base64encode(s)));
-    }
     /**
      * Converts bytes from ascii encoded text to a char[] and zero outs the original byte[]
      *
@@ -57,12 +46,24 @@ public class SecretStoreUtil {
         return bytes;
     }
 
+
+
+    public static byte[] base64Encode(byte[] b) {
+        byte[] bytes = Base64.getEncoder().encode(b);
+        clearBytes(b);
+        return bytes;
+    }
+
+    public static char[] base64encode(char[] chars) {
+        return asciiBytesToChar(base64Encode(asciiCharToBytes(chars)));
+    }
+
     /**
      * Attempt to keep data out of the heap.
      *
      * @param bytes the bytes to zero out
      */
-    public static void clear(byte[] bytes) {
+    public static void clearBytes(byte[] bytes) {
         for (int i = 0; i < bytes.length; i++) {
             bytes[i] = '\0';
         }
@@ -70,24 +71,15 @@ public class SecretStoreUtil {
     }
 
     /**
-     * Simple obfuscation that adds a bit of randomness and shuffles the bits of a char[]. Note - this is NOT security, will only deter the lazy, and is admittedly kinda silly.
+     * Attempt to keep data out of the heap.
      *
-     * @param chars The chars to obscure
-     * @return the obscured bytes
+     * @param chars the chars to zero out
      */
-    public static char[] obfuscate(char[] chars) {
-        byte[] bytes = asciiCharToBytes(chars);
-        byte[] random = new byte[bytes.length];
-        new Random().nextBytes(random);
-        //TODO get of byte buffer and work with arrays directly
-        ByteBuffer obfuscated = ByteBuffer.allocate(bytes.length * 2);
-        for (int i = 0; i < bytes.length; i++) {
-            int xor = bytes[i] ^ random[i];
-            obfuscated.put((byte) (0xff & xor));
+    public static void clearChars(char[] chars) {
+        for (int i = 0; i < chars.length; i++) {
+            chars[i] = '\0';
         }
-        //TODO: clear arrays
-        obfuscated.put(random);
-        return asciiBytesToChar(obfuscated.array());
+        chars = null;
     }
 
     /**
@@ -105,5 +97,28 @@ public class SecretStoreUtil {
             deObfuscated[i] = ((byte) (xor & 0xff));
         }
         return asciiBytesToChar(deObfuscated);
+    }
+
+    /**
+     * <p>Simple obfuscation that adds a bit of randomness and shuffles the bits of a char[].</p>
+     * <p>Note - this is NOT security and will only deter the lazy.</p>
+     *
+     * @param chars The chars to obscure
+     * @return the obscured bytes
+     */
+    public static char[] obfuscate(char[] chars) {
+        byte[] bytes = asciiCharToBytes(chars);
+        byte[] random = new byte[bytes.length];
+        new Random().nextBytes(random);
+
+        ByteBuffer obfuscated = ByteBuffer.allocate(bytes.length * 2);
+        for (int i = 0; i < bytes.length; i++) {
+            int xor = bytes[i] ^ random[i];
+            obfuscated.put((byte) (0xff & xor));
+        }
+        obfuscated.put(random);
+        char[] result = asciiBytesToChar(obfuscated.array());
+        clearBytes(obfuscated.array());
+        return result;
     }
 }

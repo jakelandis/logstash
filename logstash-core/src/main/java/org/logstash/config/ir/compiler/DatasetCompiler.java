@@ -54,7 +54,7 @@ public final class DatasetCompiler {
     public static synchronized Dataset compile(final String compute, final String clear,
         final Object... fieldValues) {
         final String source = String.format(
-            "public Collection compute(RubyArray batch, boolean flush, boolean shutdown) { %s } public void clear() { %s }",
+            "public Collection compute(RubyArray batch, boolean flush, boolean shutdown) { %s } public void clearBytes() { %s }",
             compute, clear
         );
         try {
@@ -224,7 +224,7 @@ public final class DatasetCompiler {
     }
 
     private static String clear(final int fieldIndex) {
-        return String.format("%s.clear();", field(fieldIndex));
+        return String.format("%s.clearBytes();", field(fieldIndex));
     }
 
     private static String computeDataset(final int fieldIndex) {
