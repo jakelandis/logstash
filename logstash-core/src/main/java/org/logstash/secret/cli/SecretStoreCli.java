@@ -23,12 +23,12 @@ public class SecretStoreCli {
 
             Terminal terminal = hasConsole ? new ConsoleTerminal() : new SystemTerminal();
 
-
+            SecureConfig configuration = getConfiguration();
             Map<String, SecretStoreAction> actions = new HashMap<>(5);
-            actions.put("list", new ListEntries());
+            actions.put("list", new ListEntries(configuration));
             actions.put("add", new AddSecret());
             actions.put("remove", new RemoveSecret());
-            actions.put("create", new CreateStore(getConfiguration()));
+            actions.put("loadSecretStore", new CreateStore(configuration));
             actions.put("help", new Help());
 
             boolean help = false;

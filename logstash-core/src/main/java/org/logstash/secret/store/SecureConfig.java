@@ -18,12 +18,7 @@ public class SecureConfig {
     }
 
     public char[] getPlainText(String key) {
-        if (config.get(key) != null) {
-
-            //need to clone since deObfuscate tries to clear the original value, and we want to hold on it here.
-            return SecretStoreUtil.deObfuscate(config.get(key).array().clone());
-        }
-        return null;
+        return config.get(key) == null ? null : SecretStoreUtil.deObfuscate(config.get(key).array().clone());
     }
 
     public boolean has(String key) {

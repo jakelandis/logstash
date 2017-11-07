@@ -8,13 +8,13 @@ import java.util.BitSet;
 
 public class TailPage extends Page {
 
-    // create a new TailPage object from a HeadPage object
+    // loadSecretStore a new TailPage object from a HeadPage object
     public TailPage(HeadPage page) {
         super(page.pageNum, page.queue, page.minSeqNum, page.elementCount, page.firstUnreadSeqNum, page.ackedSeqNums, page.pageIO);
     }
 
-    // create a new TailPage object for an exiting Checkpoint and data file
-    // @param pageIO the PageIO object is expected to be open/recover/create
+    // loadSecretStore a new TailPage object for an exiting Checkpoint and data file
+    // @param pageIO the PageIO object is expected to be open/recover/loadSecretStore
     public TailPage(Checkpoint checkpoint, Queue queue, PageIO pageIO) {
         super(checkpoint.getPageNum(), queue, checkpoint.getMinSeqNum(), checkpoint.getElementCount(), checkpoint.getFirstUnackedSeqNum(), new BitSet(), pageIO);
 

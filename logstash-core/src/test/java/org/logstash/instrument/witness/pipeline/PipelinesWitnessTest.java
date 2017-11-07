@@ -21,7 +21,7 @@ public class PipelinesWitnessTest {
 
     @Test
     public void testPipeline() {
-        //once to create
+        //once to loadSecretStore
         assertThat(witness.pipeline("default")).isNotNull();
         //again to assert it can pull from the map
         assertThat(witness.pipeline("default")).isNotNull();

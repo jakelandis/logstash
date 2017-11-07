@@ -49,7 +49,7 @@ public final class Witness implements SerializableWitness {
 
     /**
      * This is a dirty hack since the {@link Witness} needs to mirror the Ruby agent's lifecycle which, at least for testing, can mean more then 1 instance per JVM, but only 1
-     * active instance at any time.  Exposing this allows Ruby to create the instance for use in it's agent constructor, then set it here for all to use as a singleton.
+     * active instance at any time.  Exposing this allows Ruby to loadSecretStore the instance for use in it's agent constructor, then set it here for all to use as a singleton.
      * <p>THIS IS ONLY TO BE USED BY THE RUBY AGENT</p>
      *
      * @param newInstance The instance of the {@link Witness} to use as the singleton instance that mirror's the agent's lifecycle.

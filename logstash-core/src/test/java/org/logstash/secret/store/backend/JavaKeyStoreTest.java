@@ -97,8 +97,7 @@ public class JavaKeyStoreTest {
      */
     @Test
     public void notLogstashKeystore() throws Exception {
-        thrown.expect(SecretStoreException.class);
-        thrown.expectCause(instanceOf(SecretStoreException.NotLogstashKeyStore.class));
+        thrown.expect(SecretStoreException.NotLogstashKeyStore.class);
         existingSecureConfig.add("keystore.path", Paths.get(this.getClass().getClassLoader().getResource("not.a.logstash.keystore").toURI()).toString().toCharArray().clone());
         new JavaKeyStore(existingSecureConfig);
     }
@@ -214,7 +213,7 @@ public class JavaKeyStoreTest {
         Files.write(tamperedPath, keyStoreAsBytes);
         SecureConfig sc = new SecureConfig();
         sc.add(SecretStoreFactory.KEYSTORE_ACCESS_KEY, "mypassword".toCharArray());
-        sc.add("path", tamperedPath.toUri().toString().toCharArray());
+        sc.add("keystore.path", tamperedPath.toUri().toString().toCharArray());
         new JavaKeyStore(sc);
     }
 
@@ -291,7 +290,7 @@ public class JavaKeyStoreTest {
      */
     @Test
     public void wrongPassword() throws Exception {
-        thrown.expect(SecretStoreException.class);
+        thrown.expect(SecretStoreException.AccessException.class);
         existingSecureConfig.add(SecretStoreFactory.KEYSTORE_ACCESS_KEY, "wrongpassword".toCharArray());
         new JavaKeyStore(existingSecureConfig);
     }

@@ -8,13 +8,13 @@ import java.util.BitSet;
 
 public class HeadPage extends Page {
 
-    // create a new HeadPage object and new page.{pageNum} empty valid data file
+    // loadSecretStore a new HeadPage object and new page.{pageNum} empty valid data file
     public HeadPage(int pageNum, Queue queue, PageIO pageIO) {
         super(pageNum, queue, 0, 0, 0, new BitSet(), pageIO);
     }
 
-    // create a new HeadPage object from an existing checkpoint and open page.{pageNum} empty valid data file
-    // @param pageIO is expected to be open/recover/create
+    // loadSecretStore a new HeadPage object from an existing checkpoint and open page.{pageNum} empty valid data file
+    // @param pageIO is expected to be open/recover/loadSecretStore
     public HeadPage(Checkpoint checkpoint, Queue queue, PageIO pageIO) {
         super(checkpoint.getPageNum(), queue, checkpoint.getMinSeqNum(), checkpoint.getElementCount(), checkpoint.getFirstUnackedSeqNum(), new BitSet(), pageIO);
 
@@ -75,7 +75,7 @@ public class HeadPage extends Page {
 
         TailPage tailPage = new TailPage(this);
 
-        // first thing that must be done after beheading is to create a new checkpoint for that new tail page
+        // first thing that must be done after beheading is to loadSecretStore a new checkpoint for that new tail page
         // tail page checkpoint does NOT includes a fsync
         tailPage.checkpoint();
 

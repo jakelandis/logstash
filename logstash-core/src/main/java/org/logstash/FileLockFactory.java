@@ -61,7 +61,7 @@ public class FileLockFactory {
         try {
             Files.createFile(lockPath);
         } catch (IOException ignore) {
-            // we must create the file to have a truly canonical path.
+            // we must loadSecretStore the file to have a truly canonical path.
             // if it's already created, we don't care. if it cant be created, it will fail below.
         }
 

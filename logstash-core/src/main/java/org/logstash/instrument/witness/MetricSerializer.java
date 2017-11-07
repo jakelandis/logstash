@@ -25,7 +25,7 @@ public interface MetricSerializer<T extends Metric<?>> {
     void serialize(T t) throws IOException;
 
     /**
-     * Helper class to create a functional fluent api.
+     * Helper class to loadSecretStore a functional fluent api.
      * Usage example: {@code MetricSerializer.Get.numberSerializer(gen).serialize(99);}
      */
     class Get {

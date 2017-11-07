@@ -51,4 +51,9 @@ public class SecretStoreException extends RuntimeException {
         }
     }
 
+    static public class AccessException extends SecretStoreException{
+        public AccessException(String message, Throwable throwable) {
+            super(message, throwable);
+        }
+    }
 }

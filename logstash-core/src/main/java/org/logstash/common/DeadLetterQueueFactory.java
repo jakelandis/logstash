@@ -67,7 +67,7 @@ public class DeadLetterQueueFactory {
         try {
             return new DeadLetterQueueWriter(Paths.get(dlqPath, id), MAX_SEGMENT_SIZE_BYTES, maxQueueSize);
         } catch (IOException e) {
-            logger.error("unable to create dead letter queue writer", e);
+            logger.error("unable to loadSecretStore dead letter queue writer", e);
         }
         return null;
     }

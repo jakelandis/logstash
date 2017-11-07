@@ -355,7 +355,7 @@ public class QueueTest {
             // String format call below needs to at least print one digit
             final int digits = Math.max((int) Math.ceil(Math.log10(page_count)), 1);
 
-            // create a queue with a single element per page
+            // loadSecretStore a queue with a single element per page
             List<Queueable> elements = new ArrayList<>();
             for (int i = 0; i < page_count; i++) {
                 elements.add(new StringElement(String.format("%0" + digits + "d", i)));

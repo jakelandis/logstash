@@ -164,7 +164,7 @@ public final class Queue implements Closeable {
             try {
                 headCheckpoint = this.checkpointIO.read(checkpointIO.headFileName());
             } catch (NoSuchFileException e) {
-                // if there is no head checkpoint, create a new headpage and checkpoint it and exit method
+                // if there is no head checkpoint, loadSecretStore a new headpage and checkpoint it and exit method
 
                 logger.debug("No head checkpoint found at: {}, creating new head page", checkpointIO.headFileName());
 
@@ -222,7 +222,7 @@ public final class Queue implements Closeable {
                 // but checkpoint it to update the firstUnackedPageNum if it changed
                 this.headPage.checkpoint();
             } else {
-                // head page is non-empty, transform it into a tail page and create a new empty head page
+                // head page is non-empty, transform it into a tail page and loadSecretStore a new empty head page
                 addPage(headCheckpoint, this.headPage.behead());
 
                 headPageNum = headCheckpoint.getPageNum() + 1;
@@ -269,7 +269,7 @@ public final class Queue implements Closeable {
                 // this is the first tail page and it is fully acked so just purge it
                 this.checkpointIO.purge(this.checkpointIO.tailFileName(checkpoint.getPageNum()));
             } else {
-                // create a tail page with a null PageIO and add it to tail pages but not unreadTailPages
+                // loadSecretStore a tail page with a null PageIO and add it to tail pages but not unreadTailPages
                 // since it is fully read because also fully acked
                 // TODO: I don't like this null pageIO tail page...
                 this.tailPages.add(new TailPage(checkpoint, this, null));
@@ -309,7 +309,7 @@ public final class Queue implements Closeable {
                 // this is the first tail page and it is fully acked so just purge it
                 this.checkpointIO.purge(this.checkpointIO.tailFileName(checkpoint.getPageNum()));
             } else {
-                // create a tail page with a null PageIO and add it to tail pages but not unreadTailPages
+                // loadSecretStore a tail page with a null PageIO and add it to tail pages but not unreadTailPages
                 // since it is fully read because also fully acked
                 // TODO: I don't like this null pageIO tail page...
                 this.tailPages.add(new TailPage(checkpoint, this, null));
@@ -330,7 +330,7 @@ public final class Queue implements Closeable {
         }
     }
 
-    // create a new empty headpage for the given pageNum and immediately checkpoint it
+    // loadSecretStore a new empty headpage for the given pageNum and immediately checkpoint it
     // @param pageNum the page number of the new head page
     private void newCheckpointedHeadpage(int pageNum) throws IOException {
         PageIO headPageIO = this.pageIOFactory.build(pageNum, this.pageCapacity, this.dirPath);
@@ -359,7 +359,7 @@ public final class Queue implements Closeable {
         lock.lock();
         try {
 
-            // create a new head page if the current does not have sufficient space left for data to be written
+            // loadSecretStore a new head page if the current does not have sufficient space left for data to be written
             if (! this.headPage.hasSpace(data.length)) {
 
                 // TODO: verify queue state integrity WRT Queue.open()/recover() at each step of this process
@@ -383,7 +383,7 @@ public final class Queue implements Closeable {
                     }
                 }
 
-                // create new head page
+                // loadSecretStore new head page
                 newCheckpointedHeadpage(newHeadPageNum);
             }
 

@@ -279,7 +279,7 @@ public final class CompiledPipeline {
         /**
          * Build a {@link Dataset} representing the {@link JrubyEventExtLibrary.RubyEvent}s after
          * the application of the given filter.
-         * @param vertex Vertex Id of the filter to create this {@link Dataset} for
+         * @param vertex Vertex Id of the filter to loadSecretStore this {@link Dataset} for
          * @param datasets All the datasets that pass through this filter
          * @return Filter {@link Dataset}
          */
@@ -303,7 +303,7 @@ public final class CompiledPipeline {
         /**
          * Build a {@link Dataset} representing the {@link JrubyEventExtLibrary.RubyEvent}s after
          * the application of the given output.
-         * @param vertexId Vertex Id of the filter to create this {@link Dataset} for
+         * @param vertexId Vertex Id of the filter to loadSecretStore this {@link Dataset} for
          * filter node in the topology once
          * @param datasets All the datasets that are passed into this output
          * @return Output {@link Dataset}

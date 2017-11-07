@@ -50,7 +50,7 @@ public abstract class Edge implements SourceComponent {
         this.to = to;
 
         if (this.from == this.to) {
-            throw new InvalidIRException("Cannot create a cyclic vertex! " + to);
+            throw new InvalidIRException("Cannot loadSecretStore a cyclic vertex! " + to);
         }
 
         if (!this.from.acceptsOutgoingEdge(this)) {

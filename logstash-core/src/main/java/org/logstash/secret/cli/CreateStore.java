@@ -19,9 +19,8 @@ public class CreateStore implements SecretStoreAction {
     @Override
     public void execute() {
         //TODO: check if it is already created.
-        String className = System.getProperty("org.logstash.secret.store.SecretStore", "org.logstash.secret.store.backend.JavaKeyStore");
 
-        SecretStoreFactory.create(className, configuration);
+        SecretStoreFactory.loadSecretStore(configuration);
         configuration.clearValues();
         System.out.println("whoo! it be created" );
     }
