@@ -47,12 +47,12 @@ public class JavaKeyStoreTest {
         keyStorePass = UUID.randomUUID().toString().toCharArray();
         secureConfig = new SecureConfig();
         secureConfig.add(SecretStoreFactory.KEYSTORE_ACCESS_KEY, keyStorePass.clone());
-        secureConfig.add("path", keyStorePath.clone());
+        secureConfig.add("keystore.path", keyStorePath.clone());
         keyStore = new JavaKeyStore(secureConfig);
 
         existingSecureConfig = new SecureConfig();
         existingSecureConfig.add(SecretStoreFactory.KEYSTORE_ACCESS_KEY, "mypassword".toCharArray().clone());
-        existingSecureConfig.add("path", Paths.get(this.getClass().getClassLoader().getResource("logstash.keystore").toURI()).toString().toCharArray().clone());
+        existingSecureConfig.add("keystore.path", Paths.get(this.getClass().getClassLoader().getResource("logstash.keystore").toURI()).toString().toCharArray().clone());
     }
 
     /**
@@ -99,7 +99,7 @@ public class JavaKeyStoreTest {
     public void notLogstashKeystore() throws Exception {
         thrown.expect(SecretStoreException.class);
         thrown.expectCause(instanceOf(SecretStoreException.NotLogstashKeyStore.class));
-        existingSecureConfig.add("path", Paths.get(this.getClass().getClassLoader().getResource("not.a.logstash.keystore").toURI()).toString().toCharArray().clone());
+        existingSecureConfig.add("keystore.path", Paths.get(this.getClass().getClassLoader().getResource("not.a.logstash.keystore").toURI()).toString().toCharArray().clone());
         new JavaKeyStore(existingSecureConfig);
     }
 
@@ -254,7 +254,7 @@ public class JavaKeyStoreTest {
         SecureConfig sc = new SecureConfig();
         sc.add(SecretStoreFactory.KEYSTORE_ACCESS_KEY, nonAscii.toCharArray());
 
-        sc.add("path", (new String(keyStorePath) + ".nonAscii").toCharArray());
+        sc.add("keystore.path", (new String(keyStorePath) + ".nonAscii").toCharArray());
         JavaKeyStore nonAsciiKeyStore = new JavaKeyStore(sc);
 
         SecretIdentifier id = new SecretIdentifier(nonAscii);
