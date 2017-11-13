@@ -109,7 +109,6 @@ module LogStash::Config::Mixin
       params[name.to_s] = deep_replace(value)
     end
 
-
     if !self.class.validate(params)
       raise LogStash::ConfigurationError,
         I18n.t("logstash.runner.configuration.invalid_plugin_settings")

@@ -148,6 +148,8 @@ describe LogStash::Settings do
     end
   end
 
+  #TODO: jake add tests for secret store
+
   describe "#from_yaml" do
 
     context "env placeholders in flat logstash.yml" do
