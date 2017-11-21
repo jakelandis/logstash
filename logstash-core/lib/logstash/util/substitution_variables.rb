@@ -13,6 +13,19 @@ module ::LogStash::Util::SubstitutionVariables
   # Recursive method to replace substitution variable references in parameters
   def deep_replace(value, key = nil)
     if value.is_a?(Hash)
+      # flatten out module names to the command line equivalent, not sure if this right ...cause it would seem that this would have already needed to be done other places as well ?
+      unless value["modules"].nil?
+        value["modules"].clone.each do |h|
+          name = h["name"]
+          h.clone.each do |k, v|
+            if v.is_a?(String) && !v.eql?(name) && !v.start_with?(name)
+              h.delete(k)
+              h[name + "." + k] = v
+            end
+          end
+        end
+      end
+
       value.each do |valueHashKey, valueHashValue|
         value[valueHashKey.to_s] = deep_replace(valueHashValue,  valueHashKey)
       end

@@ -23,6 +23,7 @@ module LogStash module Modules module SettingsMerger
         merged.concat(array)
       end
     end
+    puts "*************" + merged.to_s
     merged
   end
 

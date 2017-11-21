@@ -59,17 +59,20 @@ public class SecretStoreCli {
                     return;
                 }
                 if (SecretStoreFactory.exists(config.clone())) {
-                    Terminal.write(String.format("Enter value for %s: ", secretId));
-                    char[] secret = Terminal.readSecret();
+
                     SecretIdentifier id = new SecretIdentifier(secretId);
                     SecretStore secretStore = SecretStoreFactory.load(config);
                     byte[] s = secretStore.retrieveSecret(id);
                     if (s == null) {
+                        Terminal.write(String.format("Enter value for %s: ", secretId));
+                        char[] secret = Terminal.readSecret();
                         add(secretStore, id, SecretStoreUtil.asciiCharToBytes(secret));
                     } else {
                         SecretStoreUtil.clearBytes(s);
                         Terminal.write(String.format("%s already exists. Overwrite ? [y/N] ", secretId));
                         if (isYes(Terminal.readLine())) {
+                            Terminal.write(String.format("Enter value for %s: ", secretId));
+                            char[] secret = Terminal.readSecret();
                             add(secretStore, id, SecretStoreUtil.asciiCharToBytes(secret));
                         }
                     }
