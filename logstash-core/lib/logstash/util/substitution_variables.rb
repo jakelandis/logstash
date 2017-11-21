@@ -1,9 +1,11 @@
 # encoding: utf-8
 module ::LogStash::Util::SubstitutionVariables
 
+  require "logstash/util/secretstore"
+
   SUBSTITUTION_PLACEHOLDER_REGEX = /\${(?<name>[a-zA-Z_.][a-zA-Z0-9_.]*)(:(?<default>[^}]*))?}/
 
-  # Recursive method to replace environment variable references in parameters
+  # Recursive method to replace substitution variable references in parameters
   def deep_replace(value)
     if value.is_a?(Hash)
       value.each do |valueHashKey, valueHashValue|
@@ -22,7 +24,7 @@ module ::LogStash::Util::SubstitutionVariables
 
   # Replace all substitution variable references in the 'value' param and returns the substituted value, or the original value if a substitution can not be made
   # Process following patterns : ${VAR}, ${VAR:defaultValue}
-  # If value matches the pattern, returns the following precedence : Environment entry value, default value as provided in the pattern
+  # If value matches the pattern, returns the following precedence : Secret store value, Environment entry value, default value as provided in the pattern
   # If the value does not match the pattern, the 'value' param returns as-is
   def replace_placeholders(value)
     return value unless value.is_a?(String)
@@ -35,11 +37,16 @@ module ::LogStash::Util::SubstitutionVariables
       name = Regexp.last_match(:name)
       default = Regexp.last_match(:default)
 
-      replacement = ENV.fetch(name, default)
+      #check the secret store if it exists
+      secret_store = LogStash::Util::SecretStore.get_if_exists
+      replacement = secret_store.nil? ? nil : secret_store.retrieveSecret(LogStash::Util::SecretStore.get_store_id(name))
+      #check the environment
+      replacement = ENV.fetch(name, default) if replacement.nil?
       if replacement.nil?
-        raise LogStash::ConfigurationError, "Cannot evaluate `#{placeholder}`. Environment variable `#{name}` is not set and there is no default value given."
+        raise LogStash::ConfigurationError, "Cannot evaluate `#{placeholder}`. Replacement variable `#{name}` is not defined in a Logstash secret store " +
+            "or as an Environment entry and there is no default value given."
       end
-      replacement
+      replacement.to_s
     end
   end # def replace_placeholders
 end
