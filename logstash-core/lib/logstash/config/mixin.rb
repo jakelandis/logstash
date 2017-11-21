@@ -106,7 +106,7 @@ module LogStash::Config::Mixin
 
     # Resolve environment variables references
     params.each do |name, value|
-      params[name.to_s] = deep_replace(value)
+      params[name.to_s] = deep_replace(value, name)
     end
 
     if !self.class.validate(params)

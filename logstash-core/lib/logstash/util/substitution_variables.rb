@@ -1,15 +1,20 @@
 # encoding: utf-8
+require "logstash/logging"
+require "logstash/util/loggable"
+require "logstash/util/secretstore"
+
 module ::LogStash::Util::SubstitutionVariables
 
-  require "logstash/util/secretstore"
+  include LogStash::Util::Loggable
 
   SUBSTITUTION_PLACEHOLDER_REGEX = /\${(?<name>[a-zA-Z_.][a-zA-Z0-9_.]*)(:(?<default>[^}]*))?}/
+  EMPTY_PLACEHOLDER_REGEX = /\${\s*}/
 
   # Recursive method to replace substitution variable references in parameters
-  def deep_replace(value)
+  def deep_replace(value, key = nil)
     if value.is_a?(Hash)
       value.each do |valueHashKey, valueHashValue|
-        value[valueHashKey.to_s] = deep_replace(valueHashValue)
+        value[valueHashKey.to_s] = deep_replace(valueHashValue,  valueHashKey)
       end
     else
       if value.is_a?(Array)
@@ -17,7 +22,7 @@ module ::LogStash::Util::SubstitutionVariables
           value[valueArrayIndex] = deep_replace(value[valueArrayIndex])
         end
       else
-        return replace_placeholders(value)
+        return replace_placeholders(implicit_placeholder(value, key))
       end
     end
   end
@@ -36,6 +41,7 @@ module ::LogStash::Util::SubstitutionVariables
       # [1] http://ruby-doc.org/core-2.1.1/Regexp.html#method-c-last_match
       name = Regexp.last_match(:name)
       default = Regexp.last_match(:default)
+      logger.info("Replacing `#{placeholder}` with actual value")
 
       #check the secret store if it exists
       secret_store = LogStash::Util::SecretStore.get_if_exists
@@ -49,4 +55,15 @@ module ::LogStash::Util::SubstitutionVariables
       replacement.to_s
     end
   end # def replace_placeholders
+
+  private
+
+  # replaces an empty place holder "${}" with the key. For example, 'xpack.monitoring.elasticsearch.password: ${}' will return '${xpack.monitoring.elasticsearch.password}'
+  def implicit_placeholder(value, key)
+    return value if key.nil?
+    return value unless value.is_a?(String)
+    return value unless key.is_a?(String)
+      value = "${#{key}}" unless EMPTY_PLACEHOLDER_REGEX.match(value).nil?
+      value
+  end
 end
