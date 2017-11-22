@@ -3,9 +3,8 @@ package org.logstash.secret.cli;
 import org.logstash.secret.SecretIdentifier;
 import org.logstash.secret.store.*;
 
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Command line interface for the {@link SecretStore}. <p>Currently expected to be called from Ruby since all the required configuration is currently read from Ruby.</p>
@@ -28,7 +27,9 @@ public class SecretStoreCli {
                 return command.get();
             } else {
                 String message = String.format("Invalid command '%s'", input);
-                Terminal.writeLine(message);
+                if (input != null && !input.isEmpty()) {
+                    Terminal.writeLine(message);
+                }
                 return HELP;
             }
         }
@@ -50,7 +51,9 @@ public class SecretStoreCli {
             }
             case LIST: {
                 Collection<SecretIdentifier> ids = SecretStoreFactory.load(config).list();
-                ids.forEach(id -> Terminal.writeLine(id.getKey()));
+                List<String> keys = ids.stream().map(id -> id.getKey()).collect(Collectors.toList());
+                Collections.sort(keys);
+                keys.forEach(Terminal::writeLine);
                 break;
             }
             case ADD: {
@@ -59,7 +62,6 @@ public class SecretStoreCli {
                     return;
                 }
                 if (SecretStoreFactory.exists(config.clone())) {
-
                     SecretIdentifier id = new SecretIdentifier(secretId);
                     SecretStore secretStore = SecretStoreFactory.load(config);
                     byte[] s = secretStore.retrieveSecret(id);
@@ -120,7 +122,6 @@ public class SecretStoreCli {
     }
 
     private static void create(SecureConfig config) {
-        SecretStoreFactory.delete(config.clone());
         if (System.getenv(SecretStoreFactory.ENVIRONMENT_PASS_KEY) == null) {
             Terminal.write(String.format("WARNING: The keystore password is not set. Please set the environment variable `%s`. Failure to do so will result in" +
                     " reduced security. Continue anyway ? [y/N] ", SecretStoreFactory.ENVIRONMENT_PASS_KEY));
@@ -134,8 +135,9 @@ public class SecretStoreCli {
 
     private static void deleteThenCreate(SecureConfig config) {
         SecretStoreFactory.delete(config.clone());
-        SecretStoreFactory.create(config);
-        Terminal.writeLine("Created Logstash keystore.");
+        SecretStoreFactory.create(config.clone());
+        char[] fileLocation = config.getPlainText("keystore.file");
+        Terminal.writeLine("Created Logstash keystore" + (fileLocation == null ? "." : " at " + new String(fileLocation)));
     }
 
     private static boolean isYes(String response) {
