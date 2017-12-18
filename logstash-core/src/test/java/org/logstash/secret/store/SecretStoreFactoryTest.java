@@ -60,7 +60,7 @@ public class SecretStoreFactoryTest {
     @Test
     public void testAlternativeImplementation() {
         SecureConfig secureConfig = new SecureConfig();
-        secureConfig.add("keystore.classname", "org.logstash.secret.store.SecretStoreFactoryTest$MemoryStore".toCharArray());
+        secureConfig.add("keystore.classname", SecretStoreFactoryTest.MemoryStore.class.getName().toCharArray());
         SecretStore secretStore = SecretStoreFactory.load(secureConfig);
         assertThat(secretStore).isInstanceOf(MemoryStore.class);
         validateMarker(secretStore);
