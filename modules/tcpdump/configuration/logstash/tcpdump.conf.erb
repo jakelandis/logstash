@@ -1,0 +1,49 @@
+input {
+  pipe {
+    command => "tcpdump -nS -i en0 -s0 -tttt"
+  }
+}
+
+filter {
+  grok{
+    match => ["message", "%{TIMESTAMP_ISO8601} IP %{IP:from}.%{INT} > %{IP:to}%{GREEDYDATA} length %{INT:length}"]
+    named_captures_only => true
+    remove_field => [ "command", "host", "message"]
+  }
+
+  if "_grokparsefailure" in [tags] {
+   drop {}
+  }
+
+  mutate {
+    copy => {
+      "to" => "to_host"
+      "from" => "from_host"
+    }
+    convert => {"length" => "integer"}
+  }
+
+  if [to] and [to] !~ "(^127\.0\.0\.1)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^192\.168\.)|(^169\.254\.)"  {
+    geoip {
+     source => "to"
+    }
+    dns{
+      reverse => [ "to_host"]
+      action => "replace"
+    }
+  }
+
+  if [from] and [from] !~ "(^127\.0\.0\.1)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^192\.168\.)|(^169\.254\.)"  {
+    geoip {
+     source => "from"
+    }
+    dns{
+      reverse => ["from_host" ]
+      action => "replace"
+    }
+  }
+}
+
+output {
+<%= elasticsearch_output_config() %>
+}

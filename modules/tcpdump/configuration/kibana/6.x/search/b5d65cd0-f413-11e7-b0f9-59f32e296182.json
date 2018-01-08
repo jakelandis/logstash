@@ -1,0 +1,1 @@
+{"title":"tcpdump","description":"","hits":0,"columns":["_source"],"sort":["@timestamp","desc"],"version":1,"kibanaSavedObjectMeta":{"searchSourceJSON":"{\"index\":\"tcpdump-*\",\"highlightAll\":true,\"version\":true,\"query\":{\"language\":\"lucene\",\"query\":\"\"},\"filter\":[]}"}}
