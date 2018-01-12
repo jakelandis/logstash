@@ -93,7 +93,7 @@ module LogStash
     end
 
     # Compute the default secret store path based on `path.settings`, the path.settings is defaulted in pre_process, and possibly reset to the command line switch in the from_yaml
-    if settings.set?("path.settings")
+    if settings.registered?("path.settings")
       SETTINGS.set("keystore.file", ::File.join(SETTINGS.get("path.settings"), "logstash.keystore"))
     end
 
